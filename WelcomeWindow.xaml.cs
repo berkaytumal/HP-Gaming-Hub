@@ -34,8 +34,6 @@ namespace HP_Gaming_Hub
             
             // Check if OmenMon is already downloaded
             CheckOmenMonStatus();
-            
-            UpdateNavigationState();
         }
 
         private async void UpdateNavigationState()
@@ -190,7 +188,16 @@ namespace HP_Gaming_Hub
             if (currentPage > 1)
             {
                 currentPage--;
-                UpdateNavigationState();
+                
+                // Recheck OmenMon status when navigating to page 3
+                if (currentPage == 3)
+                {
+                    CheckOmenMonStatus();
+                }
+                else
+                {
+                    UpdateNavigationState();
+                }
             }
         }
 
@@ -199,12 +206,22 @@ namespace HP_Gaming_Hub
             if (currentPage < totalPages)
             {
                 currentPage++;
-                UpdateNavigationState();
+                
+                // Recheck OmenMon status when navigating to page 3
+                if (currentPage == 3)
+                {
+                    CheckOmenMonStatus();
+                }
+                else
+                {
+                    UpdateNavigationState();
+                }
             }
         }
 
         private void CheckOmenMonStatus()
         {
+            // Always check current state from AppSettings which verifies file existence
             isOmenMonDownloaded = appSettings.IsOmenMonDownloaded;
             
             if (isOmenMonDownloaded)
@@ -223,6 +240,9 @@ namespace HP_Gaming_Hub
                 DownloadStatus.Text = "";
                 DownloadStatus.Foreground = (SolidColorBrush)Application.Current.Resources["TextFillColorSecondaryBrush"];
             }
+            
+            // Update navigation state after checking status
+            UpdateNavigationState();
         }
         
         private async void DownloadButton_Click(object sender, RoutedEventArgs e)

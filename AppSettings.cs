@@ -100,8 +100,8 @@ namespace HP_Gaming_Hub
             try
             {
                 var localFolder = ApplicationData.Current.LocalFolder;
-                var omenMonPath = Path.Combine(localFolder.Path, "OmenMon.exe");
-                var omenMonXmlPath = Path.Combine(localFolder.Path, "OmenMon.xml");
+                var omenMonPath = Path.Combine(localFolder.Path, "Dependencies", "OmenMon", "OmenMon.exe");
+                var omenMonXmlPath = Path.Combine(localFolder.Path, "Dependencies", "OmenMon", "OmenMon.xml");
                 
                 return File.Exists(omenMonPath) && File.Exists(omenMonXmlPath);
             }
@@ -114,13 +114,13 @@ namespace HP_Gaming_Hub
         public string GetOmenMonPath()
         {
             var localFolder = ApplicationData.Current.LocalFolder;
-            return Path.Combine(localFolder.Path, "OmenMon.exe");
+            return Path.Combine(localFolder.Path, "Dependencies", "OmenMon", "OmenMon.exe");
         }
         
         public string GetOmenMonXmlPath()
         {
             var localFolder = ApplicationData.Current.LocalFolder;
-            return Path.Combine(localFolder.Path, "OmenMon.xml");
+            return Path.Combine(localFolder.Path, "Dependencies", "OmenMon", "OmenMon.xml");
         }
         
         private bool GetAppConfigValue(string key, bool defaultValue)
