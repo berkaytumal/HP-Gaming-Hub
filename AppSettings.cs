@@ -125,6 +125,33 @@ namespace HP_Gaming_Hub
         
         public bool HideCmdWindows => GetProcessConfigValue("HideCmdWindows", true);
         
+        // Settings Page Preferences
+        public int BackdropSelectedIndex
+        {
+            get => _settings.SettingsPage.BackdropSelectedIndex;
+            set
+            {
+                _settings.SettingsPage.BackdropSelectedIndex = value;
+                SaveSettings();
+            }
+        }
+        
+        public int SelectedWallpaperIndex
+        {
+            get => _settings.SettingsPage.SelectedWallpaperIndex;
+            set
+            {
+                _settings.SettingsPage.SelectedWallpaperIndex = value;
+                SaveSettings();
+            }
+        }
+        
+        public void LoadSettingsPagePreferences()
+        {
+            // This method can be called when navigating to settings page
+            // The preferences are already loaded in the constructor
+        }
+        
         private bool GetAppConfigValue(string key, bool defaultValue)
         {
             try
@@ -178,5 +205,12 @@ namespace HP_Gaming_Hub
     {
         public bool IsWelcomeCompleted { get; set; } = false;
         public bool IsAppDevelopment { get; set; } = false;
+        public SettingsPagePreferences SettingsPage { get; set; } = new SettingsPagePreferences();
+    }
+    
+    public class SettingsPagePreferences
+    {
+        public int BackdropSelectedIndex { get; set; } = 0;
+        public int SelectedWallpaperIndex { get; set; } = 0;
     }
 }
