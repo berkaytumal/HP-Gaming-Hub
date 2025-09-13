@@ -67,6 +67,12 @@
                              <ImageIcon Source="Assets/monitor-icon.png"/>
                          </NavigationViewItem.Icon>
                      </NavigationViewItem>
+                     
+                     <NavigationViewItem x:Name="ConsoleNavItem" Content="Console">
+                         <NavigationViewItem.Icon>
+                             <FontIcon Glyph="&#xE756;"/>
+                         </NavigationViewItem.Icon>
+                     </NavigationViewItem>
                  </NavigationView.MenuItems>
                  
                  <NavigationView.FooterMenuItems>
@@ -83,12 +89,7 @@
                      <!-- Fan Page -->
                       <ScrollViewer x:Name="FanPage" Visibility="Collapsed">
                          <StackPanel Spacing="24" Padding="32">
-                             <StackPanel Orientation="Horizontal" Spacing="16">
-                                 <TextBlock Text="Fan Control" Style="{StaticResource TitleTextBlockStyle}"/>
-                                 <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="12" Padding="8,4">
-                                     <TextBlock x:Name="FanConnectionStatusText" Text="Connected" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
-                                 </Border>
-                             </StackPanel>
+                             <TextBlock Text="Fan Control" Style="{StaticResource TitleTextBlockStyle}"/>
                              <TextBlock Text="Control your system's cooling performance with manual fan speed adjustment and intelligent fan profiles powered by OmenMon." TextWrapping="Wrap"/>
                              
                              <!-- Fan Mode Selection -->
@@ -184,12 +185,7 @@
                      <!-- Graphics Page -->
                       <ScrollViewer x:Name="GraphicsPage" Visibility="Collapsed">
                          <StackPanel Spacing="24" Padding="32">
-                             <StackPanel Orientation="Horizontal" Spacing="16">
-                                 <TextBlock Text="Graphics Settings" Style="{StaticResource TitleTextBlockStyle}"/>
-                                 <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="12" Padding="8,4">
-                                     <TextBlock x:Name="GpuConnectionStatusText" Text="Connected" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
-                                 </Border>
-                             </StackPanel>
+                             <TextBlock Text="Graphics Settings" Style="{StaticResource TitleTextBlockStyle}"/>
                              <TextBlock Text="Configure GPU performance settings, switch between graphics modes, and monitor GPU status using OmenMon integration." TextWrapping="Wrap"/>
                              
                              <!-- GPU Mode Selection -->
@@ -279,12 +275,7 @@
                      <!-- Keyboard Page -->
                       <ScrollViewer x:Name="KeyboardPage" Visibility="Collapsed">
                          <StackPanel Spacing="24" Padding="32">
-                             <StackPanel Orientation="Horizontal" Spacing="16">
-                                 <TextBlock Text="Keyboard Settings" Style="{StaticResource TitleTextBlockStyle}"/>
-                                 <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="12" Padding="8,4">
-                                     <TextBlock x:Name="KeyboardConnectionStatusText" Text="Connected" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
-                                 </Border>
-                             </StackPanel>
+                             <TextBlock Text="Keyboard Settings" Style="{StaticResource TitleTextBlockStyle}"/>
                              <TextBlock Text="Configure keyboard backlight settings, RGB colors, and animations using OmenMon integration. Customize your gaming experience with personalized lighting effects." TextWrapping="Wrap"/>
                              
                              <!-- Backlight Control -->
@@ -397,12 +388,7 @@
                      <!-- Monitor Page (Default) -->
                       <ScrollViewer x:Name="MonitorPage" Visibility="Visible">
                          <StackPanel Spacing="24" Padding="32">
-                             <StackPanel Orientation="Horizontal" Spacing="16">
-                                 <TextBlock Text="System Monitor" Style="{StaticResource TitleTextBlockStyle}"/>
-                                 <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="12" Padding="8,4">
-                                     <TextBlock x:Name="ConnectionStatusText" Text="Connecting..." Foreground="White" FontSize="12" FontWeight="SemiBold"/>
-                                 </Border>
-                             </StackPanel>
+                             <TextBlock Text="System Monitor" Style="{StaticResource TitleTextBlockStyle}"/>
                              <TextBlock Text="Real-time hardware monitoring powered by OmenMon utility. Monitor temperatures, fan speeds, and system performance." TextWrapping="Wrap"/>
                              
                              <!-- Status and Controls -->
@@ -503,15 +489,38 @@
                          </StackPanel>
                      </ScrollViewer>
                      
+                     <!-- Console Page -->
+                     <ScrollViewer x:Name="ConsolePage" Visibility="Collapsed">
+                         <StackPanel Spacing="24" Padding="32">
+                             <TextBlock Text="Console" Style="{StaticResource TitleTextBlockStyle}"/>
+                             <TextBlock Text="Real-time application logs and debug information from HP Gaming Hub and OmenMon service." TextWrapping="Wrap"/>
+                             
+                             <!-- Console Controls -->
+                             <StackPanel Orientation="Horizontal" Spacing="12">
+                                 <Button x:Name="ClearConsoleButton" Content="Clear" Click="ClearConsoleButton_Click"/>
+                                 <ToggleButton x:Name="AutoScrollToggle" Content="Auto-scroll" IsChecked="True"/>
+                                 <ComboBox x:Name="LogLevelFilter" Header="Filter" SelectedIndex="0">
+                                     <ComboBoxItem Content="All" Tag="All"/>
+                                     <ComboBoxItem Content="Debug" Tag="Debug"/>
+                                     <ComboBoxItem Content="Info" Tag="Info"/>
+                                     <ComboBoxItem Content="Warning" Tag="Warning"/>
+                                     <ComboBoxItem Content="Error" Tag="Error"/>
+                                 </ComboBox>
+                             </StackPanel>
+                             
+                             <!-- Console Output -->
+                             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16" MinHeight="400">
+                                 <ScrollViewer x:Name="ConsoleScrollViewer" ZoomMode="Disabled" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                     <TextBlock x:Name="ConsoleOutput" FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Text="HP Gaming Hub Console - Ready\n"/>
+                                 </ScrollViewer>
+                             </Border>
+                         </StackPanel>
+                     </ScrollViewer>
+                     
                      <!-- Settings Page -->
                       <ScrollViewer x:Name="SettingsPage" Visibility="Collapsed">
                          <StackPanel Spacing="24" Padding="32">
-                             <StackPanel Orientation="Horizontal" Spacing="16">
-                                 <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}"/>
-                                 <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="12" Padding="8,4">
-                                     <TextBlock x:Name="SettingsConnectionStatusText" Text="Connected" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
-                                 </Border>
-                             </StackPanel>
+                             <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}"/>
                              <TextBlock Text="Configure application settings, BIOS options, and system management preferences." TextWrapping="Wrap"/>
                              
                              <!-- Application Settings -->

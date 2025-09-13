@@ -661,6 +661,7 @@ namespace HP_Gaming_Hub.ViewModels
             try
             {
                 System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Starting hardware data update");
+            MainWindow.Instance?.LogDebug("Starting hardware data update");
                 
                 // Update temperatures
                 System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching temperature data");
@@ -668,6 +669,7 @@ namespace HP_Gaming_Hub.ViewModels
                 CpuTemperature = tempData.CpuTemperature;
                 GpuTemperature = tempData.GpuTemperature;
                 System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Temperature data - CPU: {CpuTemperature}°C, GPU: {GpuTemperature}°C");
+                MainWindow.Instance?.LogInfo($"Temperature update - CPU: {CpuTemperature}°C, GPU: {GpuTemperature}°C");
 
                 // Update fan data
                 System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching fan data");
@@ -713,6 +715,7 @@ namespace HP_Gaming_Hub.ViewModels
             {
                 System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Error during hardware data update: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Stack trace: {ex.StackTrace}");
+                MainWindow.Instance?.LogError($"Hardware data update failed: {ex.Message}");
                 IsConnected = false;
                 LastUpdateTime = "Error";
             }

@@ -31,14 +31,17 @@ namespace HP_Gaming_Hub
     {
         private int _previousSelectedIndex = 3; // Default to Monitor page (index 3)
         private HardwareMonitorViewModel _hardwareMonitorViewModel;
+        public static MainWindow Instance { get; private set; }
         
         public MainWindow()
         {
             this.InitializeComponent();
+            Instance = this;
             // Extend content into title bar and set custom title bar
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
             _hardwareMonitorViewModel = new HardwareMonitorViewModel();
+            LogInfo("HP Gaming Hub started - Initializing monitoring...");
             InitializeMonitoring();
         }
 
@@ -58,21 +61,24 @@ namespace HP_Gaming_Hub
                     });
                 };
                 
-                ConnectionStatusText.Text = "Connecting...";
+                // ConnectionStatusText.Text = "Connecting..."; // Badge removed
+                LogInfo("Connecting to OmenMon service...");
                 await _hardwareMonitorViewModel.RefreshDataAsync();
-                ConnectionStatusText.Text = "Connected";
+                // ConnectionStatusText.Text = "Connected"; // Badge removed
+                LogInfo("Successfully connected to OmenMon service");
                 UpdateMonitoringUI();
                 
                 // Start auto monitoring if enabled
                 if (MonitoringToggle.IsChecked == true)
                 {
+                    LogInfo("Starting automatic monitoring...");
                     await _hardwareMonitorViewModel.StartMonitoringAsync();
                 }
             }
             catch (Exception ex)
             {
-                ConnectionStatusText.Text = "Error";
-                Debug.WriteLine($"Error initializing monitoring: {ex.Message}");
+                // ConnectionStatusText.Text = "Error"; // Badge removed
+                LogError($"Error initializing monitoring: {ex.Message}");
                 await ShowErrorMessageAsync("Initialization Error", 
                     "Failed to initialize hardware monitoring. Some features may not work properly.", 
                     ex.Message);
@@ -187,14 +193,14 @@ namespace HP_Gaming_Hub
         {
             try
             {
-                ConnectionStatusText.Text = "Refreshing...";
-                await _hardwareMonitorViewModel.RefreshDataAsync();
-                ConnectionStatusText.Text = "Connected";
+                // ConnectionStatusText.Text = "Refreshing..."; // Badge removed
+            await _hardwareMonitorViewModel.RefreshDataAsync();
+            // ConnectionStatusText.Text = "Connected"; // Badge removed
                 UpdateMonitoringUI();
             }
             catch (Exception ex)
             {
-                ConnectionStatusText.Text = "Error";
+                // ConnectionStatusText.Text = "Error"; // Badge removed
             }
         }
 
@@ -203,12 +209,12 @@ namespace HP_Gaming_Hub
             if (MonitoringToggle.IsChecked == true)
             {
                 await _hardwareMonitorViewModel.StartMonitoringAsync();
-                ConnectionStatusText.Text = "Monitoring";
+                // ConnectionStatusText.Text = "Monitoring"; // Badge removed
             }
             else
             {
                 _hardwareMonitorViewModel.StopMonitoring();
-                ConnectionStatusText.Text = "Stopped";
+                // ConnectionStatusText.Text = "Stopped"; // Badge removed
             }
         }
 
@@ -218,14 +224,14 @@ namespace HP_Gaming_Hub
             {
                 TestOmenMonButton.IsEnabled = false;
                 TestOmenMonButton.Content = "Testing...";
-                ConnectionStatusText.Text = "Testing OmenMon...";
+                // ConnectionStatusText.Text = "Testing OmenMon..."; // Badge removed
                 
                 var omenMonService = new HP_Gaming_Hub.Services.OmenMonService();
                 var testResult = await omenMonService.TestConnectivityAsync();
                 
                 if (testResult.Success)
                 {
-                    ConnectionStatusText.Text = "OmenMon Test: Success";
+                    // ConnectionStatusText.Text = "OmenMon Test: Success"; // Badge removed
                     if (SettingsInfoBar != null)
                     {
                         SettingsInfoBar.IsOpen = true;
@@ -235,7 +241,7 @@ namespace HP_Gaming_Hub
                 }
                 else
                 {
-                    ConnectionStatusText.Text = "OmenMon Test: Failed";
+                    // ConnectionStatusText.Text = "OmenMon Test: Failed"; // Badge removed
                     if (SettingsInfoBar != null)
                     {
                         SettingsInfoBar.IsOpen = true;
@@ -248,7 +254,7 @@ namespace HP_Gaming_Hub
             }
             catch (Exception ex)
             {
-                ConnectionStatusText.Text = "Test Error";
+                // ConnectionStatusText.Text = "Test Error"; // Badge removed
                 if (SettingsInfoBar != null)
                 {
                     SettingsInfoBar.IsOpen = true;
@@ -292,14 +298,14 @@ namespace HP_Gaming_Hub
         {
             try
             {
-                FanConnectionStatusText.Text = "Applying...";
+                // FanConnectionStatusText.Text = "Applying..."; // Badge removed
                 await _hardwareMonitorViewModel.SetFanModeAsync(mode);
-                FanConnectionStatusText.Text = "Connected";
+                // FanConnectionStatusText.Text = "Connected"; // Badge removed
                 UpdateFanUI();
             }
             catch (Exception ex)
             {
-                FanConnectionStatusText.Text = "Error";
+                // FanConnectionStatusText.Text = "Error"; // Badge removed
             }
         }
 
@@ -321,7 +327,7 @@ namespace HP_Gaming_Hub
 
         private async void ApplyFanSpeedButton_Click(object sender, RoutedEventArgs e)
         {
-            FanConnectionStatusText.Text = "Applying...";
+            // FanConnectionStatusText.Text = "Applying..."; // Badge removed
             int fan1Level = (int)Fan1SpeedSlider.Value;
             int fan2Level = (int)Fan2SpeedSlider.Value;
             
@@ -332,13 +338,13 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                FanConnectionStatusText.Text = "Connected";
+                // FanConnectionStatusText.Text = "Connected"; // Badge removed
                 await ShowSuccessMessageAsync("Fan Settings Applied", "Fan speed levels have been successfully updated.");
                 UpdateFanUI();
             }
             else
             {
-                FanConnectionStatusText.Text = "Error";
+                // FanConnectionStatusText.Text = "Error"; // Badge removed
             }
         }
 
@@ -346,8 +352,8 @@ namespace HP_Gaming_Hub
         {
             try
             {
-                if (FanConnectionStatusText != null)
-                    FanConnectionStatusText.Text = "Resetting...";
+                // if (FanConnectionStatusText != null)
+                //     FanConnectionStatusText.Text = "Resetting..."; // Badge removed
                     
                 await _hardwareMonitorViewModel.SetFanModeAsync("Default");
                 
@@ -360,15 +366,15 @@ namespace HP_Gaming_Hub
                 if (FanControlInfoBar != null)
                     FanControlInfoBar.IsOpen = false;
                     
-                if (FanConnectionStatusText != null)
-                    FanConnectionStatusText.Text = "Connected";
+                // if (FanConnectionStatusText != null)
+                //     FanConnectionStatusText.Text = "Connected"; // Badge removed
                     
                 UpdateFanUI();
             }
             catch (Exception ex)
             {
-                if (FanConnectionStatusText != null)
-                    FanConnectionStatusText.Text = "Error";
+                // if (FanConnectionStatusText != null)
+                //     FanConnectionStatusText.Text = "Error"; // Badge removed
             }
         }
 
@@ -376,14 +382,14 @@ namespace HP_Gaming_Hub
         {
             try
             {
-                FanConnectionStatusText.Text = "Enabling Max...";
+                // FanConnectionStatusText.Text = "Enabling Max..."; // Badge removed
                 await _hardwareMonitorViewModel.SetMaxFanAsync(true);
-                FanConnectionStatusText.Text = "Connected";
+                // FanConnectionStatusText.Text = "Connected"; // Badge removed
                 UpdateFanUI();
             }
             catch (Exception ex)
             {
-                FanConnectionStatusText.Text = "Error";
+                // FanConnectionStatusText.Text = "Error"; // Badge removed
             }
         }
 
@@ -549,8 +555,8 @@ namespace HP_Gaming_Hub
                 CurrentGpuTempText.Text = $"{_hardwareMonitorViewModel.GpuTemperature}°C";
             
             // Update connection status
-            if (GpuConnectionStatusText != null)
-                GpuConnectionStatusText.Text = _hardwareMonitorViewModel.IsConnected ? "Connected" : "Disconnected";
+            // if (GpuConnectionStatusText != null)
+            //     GpuConnectionStatusText.Text = _hardwareMonitorViewModel.IsConnected ? "Connected" : "Disconnected"; // Badge removed
         }
 
         // Keyboard Settings Event Handlers
@@ -709,8 +715,8 @@ namespace HP_Gaming_Hub
         private void UpdateKeyboardUI()
         {
             // Update keyboard status display
-            if (KeyboardConnectionStatusText != null)
-                KeyboardConnectionStatusText.Text = _hardwareMonitorViewModel.IsConnected ? "Connected" : "Disconnected";
+            // if (KeyboardConnectionStatusText != null)
+            //     KeyboardConnectionStatusText.Text = _hardwareMonitorViewModel.IsConnected ? "Connected" : "Disconnected"; // Badge removed
             if (BacklightToggle != null)
                 BacklightToggle.IsOn = _hardwareMonitorViewModel.KeyboardBacklightEnabled;
         }
@@ -788,14 +794,14 @@ namespace HP_Gaming_Hub
         {
             try
             {
-                FanConnectionStatusText.Text = "Refreshing...";
+                // FanConnectionStatusText.Text = "Refreshing..."; // Badge removed
                 await _hardwareMonitorViewModel.RefreshDataAsync();
-                FanConnectionStatusText.Text = "Connected";
+                // FanConnectionStatusText.Text = "Connected"; // Badge removed
                 UpdateFanUI();
             }
             catch (Exception ex)
             {
-                FanConnectionStatusText.Text = "Error";
+                // FanConnectionStatusText.Text = "Error"; // Badge removed
             }
         }
 
@@ -804,12 +810,12 @@ namespace HP_Gaming_Hub
             if (FanMonitoringToggle.IsChecked == true)
             {
                 await _hardwareMonitorViewModel.StartMonitoringAsync();
-                FanConnectionStatusText.Text = "Monitoring";
+                // FanConnectionStatusText.Text = "Monitoring"; // Badge removed
             }
             else
             {
                 _hardwareMonitorViewModel.StopMonitoring();
-                FanConnectionStatusText.Text = "Connected";
+                // FanConnectionStatusText.Text = "Connected"; // Badge removed
             }
         }
 
@@ -844,6 +850,7 @@ namespace HP_Gaming_Hub
             else if (GraphicsPage.Visibility == Visibility.Visible) currentPage = GraphicsPage;
             else if (KeyboardPage.Visibility == Visibility.Visible) currentPage = KeyboardPage;
             else if (MonitorPage.Visibility == Visibility.Visible) currentPage = MonitorPage;
+            else if (ConsolePage.Visibility == Visibility.Visible) currentPage = ConsolePage;
             else if (SettingsPage.Visibility == Visibility.Visible) currentPage = SettingsPage;
 
             // Determine target page and index
@@ -853,7 +860,8 @@ namespace HP_Gaming_Hub
             else if (args.SelectedItem == GraphicsNavItem) { targetPage = GraphicsPage; currentSelectedIndex = 1; }
             else if (args.SelectedItem == KeyboardNavItem) { targetPage = KeyboardPage; currentSelectedIndex = 2; }
             else if (args.SelectedItem == MonitorNavItem) { targetPage = MonitorPage; currentSelectedIndex = 3; }
-            else if (args.SelectedItem == SettingsNavItem) { targetPage = SettingsPage; currentSelectedIndex = 4; }
+            else if (args.SelectedItem == ConsoleNavItem) { targetPage = ConsolePage; currentSelectedIndex = 4; }
+            else if (args.SelectedItem == SettingsNavItem) { targetPage = SettingsPage; currentSelectedIndex = 5; }
 
             // If same page is selected, do nothing
             if (currentPage == targetPage) return;
@@ -1249,8 +1257,8 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                if (SettingsConnectionStatusText != null)
-                    SettingsConnectionStatusText.Text = "Connected";
+                // if (SettingsConnectionStatusText != null)
+                //     SettingsConnectionStatusText.Text = "Connected"; // Badge removed
                 if (SettingsInfoBar != null)
                 {
                     SettingsInfoBar.IsOpen = true;
@@ -1260,8 +1268,8 @@ namespace HP_Gaming_Hub
             }
             else
             {
-                if (SettingsConnectionStatusText != null)
-                    SettingsConnectionStatusText.Text = "Disconnected";
+                // if (SettingsConnectionStatusText != null)
+                //     SettingsConnectionStatusText.Text = "Disconnected"; // Badge removed
             }
         }
 
@@ -1393,6 +1401,52 @@ namespace HP_Gaming_Hub
                 SystemBornDateText.Text = _hardwareMonitorViewModel.SystemBornDate ?? "Unknown";
             if (AdapterInfoText != null)
                 AdapterInfoText.Text = _hardwareMonitorViewModel.AdapterInfo ?? "Unknown";
+        }
+
+        // Console functionality
+        private void ClearConsoleButton_Click(object sender, RoutedEventArgs e)
+        {
+            ConsoleOutput.Text = "HP Gaming Hub Console - Ready\n";
+        }
+
+        public void AppendToConsole(string message, string level = "INFO")
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
+                var logEntry = $"[{timestamp}] [{level}] {message}\n";
+                ConsoleOutput.Text += logEntry;
+                
+                // Auto-scroll to bottom if enabled
+                if (AutoScrollToggle.IsChecked == true)
+                {
+                    ConsoleScrollViewer.ScrollToVerticalOffset(ConsoleScrollViewer.ScrollableHeight);
+                }
+            });
+        }
+
+        public void LogDebug(string message)
+        {
+            AppendToConsole(message, "DEBUG");
+            Debug.WriteLine($"[DEBUG] {message}");
+        }
+
+        public void LogInfo(string message)
+        {
+            AppendToConsole(message, "INFO");
+            Debug.WriteLine($"[INFO] {message}");
+        }
+
+        public void LogWarning(string message)
+        {
+            AppendToConsole(message, "WARNING");
+            Debug.WriteLine($"[WARNING] {message}");
+        }
+
+        public void LogError(string message)
+        {
+            AppendToConsole(message, "ERROR");
+            Debug.WriteLine($"[ERROR] {message}");
         }
     }
 }

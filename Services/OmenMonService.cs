@@ -214,6 +214,7 @@ namespace HP_Gaming_Hub.Services
             try
             {
                 Debug.WriteLine($"Executing OmenMon command: {arguments}");
+            MainWindow.Instance?.LogDebug($"Executing OmenMon: {arguments}");
                 
                 var processInfo = new ProcessStartInfo
                 {
@@ -275,14 +276,27 @@ namespace HP_Gaming_Hub.Services
                 var error = errorBuilder.ToString();
                     
                     Debug.WriteLine($"OmenMon Output: {output}");
+                    if (!string.IsNullOrEmpty(output.Trim()))
+                    {
+                        MainWindow.Instance?.LogInfo($"OmenMon Output: {output.Trim()}");
+                    }
                     if (!string.IsNullOrEmpty(error))
                     {
                         Debug.WriteLine($"OmenMon Error: {error}");
+                        MainWindow.Instance?.LogError($"OmenMon Error: {error.Trim()}");
                     }
                     
                     var exitCode = process.ExitCode;
                     
                     Debug.WriteLine($"OmenMon completed with exit code: {exitCode}, duration: {duration.TotalMilliseconds}ms");
+                if (exitCode == 0)
+                {
+                    MainWindow.Instance?.LogInfo($"OmenMon command completed successfully in {duration.TotalMilliseconds:F0}ms");
+                }
+                else
+                {
+                    MainWindow.Instance?.LogWarning($"OmenMon command failed with exit code {exitCode} after {duration.TotalMilliseconds:F0}ms");
+                }
 
                     // Determine error type based on output and exit code
                     var errorType = DetermineErrorType(exitCode, error, output);
@@ -301,6 +315,7 @@ namespace HP_Gaming_Hub.Services
             }
             catch (UnauthorizedAccessException ex)
             {
+                MainWindow.Instance?.LogError($"Permission denied executing OmenMon: {ex.Message}");
                 return new OmenMonResult
                 {
                     Success = false,
@@ -313,6 +328,7 @@ namespace HP_Gaming_Hub.Services
             }
             catch (FileNotFoundException ex)
             {
+                MainWindow.Instance?.LogError($"OmenMon executable not found: {ex.Message}");
                 return new OmenMonResult
                 {
                     Success = false,
@@ -326,6 +342,7 @@ namespace HP_Gaming_Hub.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"Unexpected error executing OmenMon: {ex}");
+                MainWindow.Instance?.LogError($"Unexpected error executing OmenMon: {ex.Message}");
                 return new OmenMonResult
                 {
                     Success = false,
