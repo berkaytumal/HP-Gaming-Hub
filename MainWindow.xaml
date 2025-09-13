@@ -213,15 +213,7 @@
                                  <TextBlock Text="Hybrid mode automatically switches between integrated and discrete GPU. Discrete mode uses dedicated GPU for maximum performance. Optimus provides balanced performance and battery life." TextWrapping="Wrap" Opacity="0.7" FontSize="12"/>
                              </StackPanel>
                              
-                             <!-- GPU Performance Presets -->
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="Performance Preset" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <ComboBox x:Name="GpuPresetComboBox" Header="Select Performance Preset" SelectedIndex="1" SelectionChanged="GpuPresetComboBox_SelectionChanged">
-                                     <ComboBoxItem Content="Minimum (Power Saving)" Tag="Minimum"/>
-                                     <ComboBoxItem Content="Medium (Balanced)" Tag="Medium"/>
-                                     <ComboBoxItem Content="Maximum (Performance)" Tag="Maximum"/>
-                                 </ComboBox>
-                             </StackPanel>
+
                              
                              <!-- Current GPU Status -->
                              <Grid>
@@ -237,10 +229,7 @@
                                                  <TextBlock Text="Active Mode:" FontWeight="SemiBold"/>
                                                  <TextBlock x:Name="CurrentGpuModeText" Text="Unknown" FontWeight="SemiBold" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                                              </StackPanel>
-                                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                                 <TextBlock Text="Preset:" FontWeight="SemiBold"/>
-                                                 <TextBlock x:Name="CurrentGpuPresetText" Text="Unknown" FontWeight="SemiBold"/>
-                                             </StackPanel>
+
                                              <StackPanel Orientation="Horizontal" Spacing="8">
                                                  <TextBlock Text="Temperature:" FontWeight="SemiBold"/>
                                                  <TextBlock x:Name="CurrentGpuTempText" Text="--°C" FontWeight="SemiBold"/>
@@ -290,112 +279,8 @@
                       <ScrollViewer x:Name="KeyboardPage" Visibility="Collapsed">
                          <StackPanel Spacing="24">
                              <TextBlock Text="Keyboard Settings" Style="{StaticResource TitleTextBlockStyle}"/>
-                             <TextBlock Text="Configure keyboard backlight settings, RGB colors, and animations using OmenMon integration. Customize your gaming experience with personalized lighting effects." TextWrapping="Wrap"/>
                              
-                             <!-- Backlight Control -->
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="Backlight Control" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <ToggleSwitch x:Name="BacklightToggle" Header="Keyboard Backlight" OnContent="Enabled" OffContent="Disabled" Toggled="BacklightToggle_Toggled"/>
-                                 <TextBlock Text="Enable or disable the keyboard backlight. When disabled, all RGB effects will be turned off." TextWrapping="Wrap" Opacity="0.7" FontSize="12"/>
-                             </StackPanel>
-                             
-                             <!-- Color Presets -->
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="Color Presets" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <ComboBox x:Name="ColorPresetComboBox" Header="Select Color Preset" SelectedIndex="0" SelectionChanged="ColorPresetComboBox_SelectionChanged">
-                                     <ComboBoxItem Content="Red" Tag="Red"/>
-                                     <ComboBoxItem Content="Green" Tag="Green"/>
-                                     <ComboBoxItem Content="Blue" Tag="Blue"/>
-                                     <ComboBoxItem Content="Yellow" Tag="Yellow"/>
-                                     <ComboBoxItem Content="Purple" Tag="Purple"/>
-                                     <ComboBoxItem Content="Cyan" Tag="Cyan"/>
-                                     <ComboBoxItem Content="White" Tag="White"/>
-                                     <ComboBoxItem Content="Orange" Tag="Orange"/>
-                                     <ComboBoxItem Content="Custom" Tag="Custom"/>
-                                 </ComboBox>
-                             </StackPanel>
-                             
-                             <!-- Custom Color Settings -->
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="Custom RGB Colors" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <Grid>
-                                     <Grid.ColumnDefinitions>
-                                         <ColumnDefinition Width="*"/>
-                                         <ColumnDefinition Width="*"/>
-                                     </Grid.ColumnDefinitions>
-                                     <StackPanel Grid.Column="0" Spacing="16" Margin="0,0,12,0">
-                                         <TextBlock Text="Zone Colors" FontWeight="SemiBold"/>
-                                         <StackPanel Spacing="12">
-                                             <StackPanel Spacing="8">
-                                                 <TextBlock Text="Zone 1 (RGB)" FontWeight="SemiBold"/>
-                                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                                     <Slider x:Name="Zone1RedSlider" Minimum="0" Maximum="255" Value="255" Header="R" Width="80" ValueChanged="ColorSlider_ValueChanged"/>
-                                                     <Slider x:Name="Zone1GreenSlider" Minimum="0" Maximum="255" Value="0" Header="G" Width="80" ValueChanged="ColorSlider_ValueChanged"/>
-                                                     <Slider x:Name="Zone1BlueSlider" Minimum="0" Maximum="255" Value="0" Header="B" Width="80" ValueChanged="ColorSlider_ValueChanged"/>
-                                                     <Border x:Name="Zone1ColorPreview" Width="40" Height="30" CornerRadius="4" Background="Red"/>
-                                                 </StackPanel>
-                                             </StackPanel>
-                                             <StackPanel Spacing="8">
-                                                 <TextBlock Text="Zone 2 (RGB)" FontWeight="SemiBold"/>
-                                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                                     <Slider x:Name="Zone2RedSlider" Minimum="0" Maximum="255" Value="0" Header="R" Width="80" ValueChanged="ColorSlider_ValueChanged"/>
-                                                     <Slider x:Name="Zone2GreenSlider" Minimum="0" Maximum="255" Value="255" Header="G" Width="80" ValueChanged="ColorSlider_ValueChanged"/>
-                                                     <Slider x:Name="Zone2BlueSlider" Minimum="0" Maximum="255" Value="0" Header="B" Width="80" ValueChanged="ColorSlider_ValueChanged"/>
-                                                     <Border x:Name="Zone2ColorPreview" Width="40" Height="30" CornerRadius="4" Background="Green"/>
-                                                 </StackPanel>
-                                             </StackPanel>
-                                         </StackPanel>
-                                     </StackPanel>
-                                     <StackPanel Grid.Column="1" Spacing="16" Margin="12,0,0,0">
-                                         <TextBlock Text="Zone Colors (Continued)" FontWeight="SemiBold"/>
-                                         <StackPanel Spacing="12">
-                                             <StackPanel Spacing="8">
-                                                 <TextBlock Text="Zone 3 (RGB)" FontWeight="SemiBold"/>
-                                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                                     <Slider x:Name="Zone3RedSlider" Minimum="0" Maximum="255" Value="0" Header="R" Width="80" ValueChanged="ColorSlider_ValueChanged"/>
-                                                     <Slider x:Name="Zone3GreenSlider" Minimum="0" Maximum="255" Value="0" Header="G" Width="80" ValueChanged="ColorSlider_ValueChanged"/>
-                                                     <Slider x:Name="Zone3BlueSlider" Minimum="0" Maximum="255" Value="255" Header="B" Width="80" ValueChanged="ColorSlider_ValueChanged"/>
-                                                     <Border x:Name="Zone3ColorPreview" Width="40" Height="30" CornerRadius="4" Background="Blue"/>
-                                                 </StackPanel>
-                                             </StackPanel>
-                                             <StackPanel Spacing="8">
-                                                 <TextBlock Text="Zone 4 (RGB)" FontWeight="SemiBold"/>
-                                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                                     <Slider x:Name="Zone4RedSlider" Minimum="0" Maximum="255" Value="255" Header="R" Width="80" ValueChanged="ColorSlider_ValueChanged"/>
-                                                     <Slider x:Name="Zone4GreenSlider" Minimum="0" Maximum="255" Value="255" Header="G" Width="80" ValueChanged="ColorSlider_ValueChanged"/>
-                                                     <Slider x:Name="Zone4BlueSlider" Minimum="0" Maximum="255" Value="0" Header="B" Width="80" ValueChanged="ColorSlider_ValueChanged"/>
-                                                     <Border x:Name="Zone4ColorPreview" Width="40" Height="30" CornerRadius="4" Background="Yellow"/>
-                                                 </StackPanel>
-                                             </StackPanel>
-                                         </StackPanel>
-                                     </StackPanel>
-                                 </Grid>
-                             </StackPanel>
-                             
-                             <!-- Animation Settings -->
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="Animation Effects" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <ComboBox x:Name="AnimationComboBox" Header="Select Animation" SelectedIndex="0" SelectionChanged="AnimationComboBox_SelectionChanged">
-                                     <ComboBoxItem Content="Static" Tag="Static"/>
-                                     <ComboBoxItem Content="Breathing" Tag="Breathing"/>
-                                     <ComboBoxItem Content="Wave" Tag="Wave"/>
-                                     <ComboBoxItem Content="Rainbow" Tag="Rainbow"/>
-                                     <ComboBoxItem Content="Custom" Tag="Custom"/>
-                                 </ComboBox>
-                                 <TextBlock Text="Choose from predefined animation effects or create custom patterns. Some animations may override individual zone colors." TextWrapping="Wrap" Opacity="0.7" FontSize="12"/>
-                             </StackPanel>
-                             
-                             <!-- Control Buttons -->
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="Actions" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <StackPanel Orientation="Horizontal" Spacing="16">
-                                     <Button x:Name="ApplyKeyboardSettingsButton" Content="Apply Settings" Click="ApplyKeyboardSettingsButton_Click"/>
-                                     <Button x:Name="RefreshKeyboardDataButton" Content="Refresh Data" Click="RefreshKeyboardDataButton_Click"/>
-                                     <Button x:Name="ResetKeyboardButton" Content="Reset to Default" Click="ResetKeyboardButton_Click"/>
-                                 </StackPanel>
-                                 
-                                 <InfoBar x:Name="KeyboardSettingsInfoBar" IsOpen="False" Severity="Informational" Title="Settings Applied" Message="Keyboard settings have been applied successfully."/>
-                             </StackPanel>
+                             <InfoBar x:Name="KeyboardSettingsInfoBar" IsOpen="False" Severity="Informational" Title="Settings Applied" Message="Keyboard settings have been applied successfully."/>
                          </StackPanel>
                      </ScrollViewer>
                      
@@ -473,10 +358,7 @@
                                                  <TextBlock Text="Mode:" FontWeight="SemiBold"/>
                                                  <TextBlock x:Name="GpuModeText" Text="Unknown" FontWeight="SemiBold"/>
                                              </StackPanel>
-                                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                                 <TextBlock Text="Preset:" FontWeight="SemiBold"/>
-                                                 <TextBlock x:Name="GpuPresetText" Text="Unknown" FontWeight="SemiBold"/>
-                                             </StackPanel>
+
                                          </StackPanel>
                                      </Border>
                                  </StackPanel>
@@ -534,114 +416,53 @@
                       <ScrollViewer x:Name="SettingsPage" Visibility="Collapsed">
                          <StackPanel Spacing="24">
                              <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}"/>
-                             <TextBlock Text="Configure application settings, BIOS options, and system management preferences." TextWrapping="Wrap"/>
+                             <TextBlock Text="Customize your application appearance with backdrop effects and wallpapers." TextWrapping="Wrap"/>
                              
-                             <!-- Application Settings -->
+                             <!-- Backdrop Settings -->
                              <StackPanel Spacing="16">
-                                 <TextBlock Text="Application Settings" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                 <TextBlock Text="Backdrop" Style="{StaticResource SubtitleTextBlockStyle}"/>
                                  <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
-                                     <StackPanel Spacing="12">
-                                         <ToggleSwitch x:Name="StartWithWindowsToggle" Header="Start with Windows" IsOn="False" Toggled="StartWithWindowsToggle_Toggled"/>
-                                         <ToggleSwitch x:Name="MinimizeToTrayToggle" Header="Minimize to System Tray" IsOn="True" Toggled="MinimizeToTrayToggle_Toggled"/>
-                                         <ToggleSwitch x:Name="AutoRefreshToggle" Header="Auto-refresh monitoring data" IsOn="True" Toggled="AutoRefreshToggle_Toggled"/>
-                                         <ComboBox x:Name="ThemeComboBox" Header="Theme" SelectedIndex="0" SelectionChanged="ThemeComboBox_SelectionChanged">
-                                             <ComboBoxItem Content="System Default" Tag="Default"/>
-                                             <ComboBoxItem Content="Light" Tag="Light"/>
-                                             <ComboBoxItem Content="Dark" Tag="Dark"/>
+                                     <StackPanel Spacing="16">
+                                         <ComboBox x:Name="BackdropComboBox" Header="Backdrop Type" SelectedIndex="0" SelectionChanged="BackdropComboBox_SelectionChanged">
+                                             <ComboBoxItem Content="Mica (Default)" Tag="Mica"/>
+                                             <ComboBoxItem Content="Acrylic" Tag="Acrylic"/>
+                                             <ComboBoxItem Content="Image" Tag="Image"/>
                                          </ComboBox>
-                                         <ComboBox x:Name="RefreshIntervalComboBox" Header="Monitoring Refresh Interval" SelectedIndex="1" SelectionChanged="RefreshIntervalComboBox_SelectionChanged">
-                                             <ComboBoxItem Content="1 second" Tag="1000"/>
-                                             <ComboBoxItem Content="2 seconds" Tag="2000"/>
-                                             <ComboBoxItem Content="5 seconds" Tag="5000"/>
-                                             <ComboBoxItem Content="10 seconds" Tag="10000"/>
-                                         </ComboBox>
-                                     </StackPanel>
-                                 </Border>
-                             </StackPanel>
-                             
-                             <!-- BIOS Settings -->
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="BIOS Settings" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
-                                     <StackPanel Spacing="12">
-                                         <ToggleSwitch x:Name="BiosBacklightToggle" Header="Keyboard Backlight" IsOn="True" Toggled="BiosBacklightToggle_Toggled"/>
-                                         <ToggleSwitch x:Name="BiosFanMaxToggle" Header="Maximum Fan Speed" IsOn="False" Toggled="BiosFanMaxToggle_Toggled"/>
-                                         <ToggleSwitch x:Name="BiosOverclockToggle" Header="Overclocking Support" IsOn="False" Toggled="BiosOverclockToggle_Toggled"/>
-                                         <ToggleSwitch x:Name="BiosMemoryOverclockToggle" Header="Memory Overclocking" IsOn="False" Toggled="BiosMemoryOverclockToggle_Toggled"/>
-                                         <ToggleSwitch x:Name="BiosUndervoltToggle" Header="CPU Undervolting" IsOn="False" Toggled="BiosUndervoltToggle_Toggled"/>
-                                         <ComboBox x:Name="BiosFanModeComboBox" Header="Default Fan Mode" SelectedIndex="0" SelectionChanged="BiosFanModeComboBox_SelectionChanged">
-                                             <ComboBoxItem Content="Auto" Tag="auto"/>
-                                             <ComboBoxItem Content="Manual" Tag="manual"/>
-                                             <ComboBoxItem Content="Performance" Tag="performance"/>
-                                             <ComboBoxItem Content="Quiet" Tag="quiet"/>
-                                         </ComboBox>
-                                         <Button x:Name="ApplyBiosSettingsButton" Content="Apply BIOS Settings" Click="ApplyBiosSettingsButton_Click" HorizontalAlignment="Left"/>
-                                     </StackPanel>
-                                 </Border>
-                             </StackPanel>
-                             
-                             <!-- Task Management -->
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="Task Management" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
-                                     <StackPanel Spacing="12">
-                                         <StackPanel Orientation="Horizontal" Spacing="12">
-                                             <Button x:Name="RestartOmenMonButton" Content="Restart OmenMon Service" Click="RestartOmenMonButton_Click"/>
-                                             <Button x:Name="CheckOmenMonStatusButton" Content="Check Service Status" Click="CheckOmenMonStatusButton_Click"/>
-                                         </StackPanel>
-                                         <StackPanel Orientation="Horizontal" Spacing="12">
-                                             <Button x:Name="ClearLogsButton" Content="Clear Application Logs" Click="ClearLogsButton_Click"/>
-                                             <Button x:Name="ExportSettingsButton" Content="Export Settings" Click="ExportSettingsButton_Click"/>
-                                             <Button x:Name="ImportSettingsButton" Content="Import Settings" Click="ImportSettingsButton_Click"/>
-                                         </StackPanel>
-                                         <ToggleSwitch x:Name="DebugModeToggle" Header="Debug Mode" IsOn="False" Toggled="DebugModeToggle_Toggled"/>
-                                         <TextBlock Text="Debug mode enables detailed logging and diagnostic information." TextWrapping="Wrap" Opacity="0.7" FontSize="12"/>
-                                     </StackPanel>
-                                 </Border>
-                             </StackPanel>
-                             
-                             <!-- System Information -->
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="System Information" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
-                                     <StackPanel Spacing="12">
-                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                             <TextBlock Text="OmenMon Version:" FontWeight="SemiBold"/>
-                                             <TextBlock x:Name="OmenMonVersionText" Text="Unknown" FontWeight="SemiBold"/>
-                                         </StackPanel>
-                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                             <TextBlock Text="Application Version:" FontWeight="SemiBold"/>
-                                             <TextBlock x:Name="AppVersionText" Text="1.0.0" FontWeight="SemiBold"/>
-                                         </StackPanel>
-                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                             <TextBlock Text="System Born Date:" FontWeight="SemiBold"/>
-                                             <TextBlock x:Name="SystemBornDateText" Text="Unknown" FontWeight="SemiBold"/>
-                                         </StackPanel>
-                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                             <TextBlock Text="Adapter Info:" FontWeight="SemiBold"/>
-                                             <TextBlock x:Name="AdapterInfoText" Text="Unknown" FontWeight="SemiBold"/>
-                                         </StackPanel>
-                                         <Button x:Name="RefreshSystemInfoButton" Content="Refresh System Info" Click="RefreshSystemInfoButton_Click" HorizontalAlignment="Left"/>
-                                     </StackPanel>
-                                 </Border>
-                             </StackPanel>
-                             
-                             <!-- About Section -->
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="About" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
-                                     <StackPanel Spacing="12">
-                                         <TextBlock Text="HP Gaming Hub" FontWeight="Bold" FontSize="16"/>
-                                         <TextBlock Text="A comprehensive hardware monitoring and control application for HP gaming laptops, powered by OmenMon utility." TextWrapping="Wrap"/>
-                                         <StackPanel Orientation="Horizontal" Spacing="12">
-                                             <Button x:Name="CheckUpdatesButton" Content="Check for Updates" Click="CheckUpdatesButton_Click"/>
-                                             <Button x:Name="ViewLogsButton" Content="View Application Logs" Click="ViewLogsButton_Click"/>
+                                         
+                                         <!-- Wallpaper Selection Panel -->
+                                         <StackPanel x:Name="WallpaperPanel" Visibility="Collapsed" Spacing="12">
+                                             <TextBlock Text="Select Wallpaper" FontWeight="SemiBold"/>
+                                             <ScrollViewer HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled">
+                                                 <StackPanel Orientation="Horizontal" Spacing="12">
+                                                     <Border x:Name="Wallpaper0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="0">
+                                                         <Image Source="/Assets/wallpapers/0.png" Stretch="UniformToFill"/>
+                                                     </Border>
+                                                     <Border x:Name="Wallpaper1" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="1">
+                                                         <Image Source="/Assets/wallpapers/1.png" Stretch="UniformToFill"/>
+                                                     </Border>
+                                                     <Border x:Name="Wallpaper2" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="2">
+                                                         <Image Source="/Assets/wallpapers/2.png" Stretch="UniformToFill"/>
+                                                     </Border>
+                                                     <Border x:Name="Wallpaper3" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="3">
+                                                         <Image Source="/Assets/wallpapers/3.png" Stretch="UniformToFill"/>
+                                                     </Border>
+                                                     <Border x:Name="Wallpaper4" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="4">
+                                                         <Image Source="/Assets/wallpapers/4.png" Stretch="UniformToFill"/>
+                                                     </Border>
+                                                     <Border x:Name="Wallpaper6" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="6">
+                                                         <Image Source="/Assets/wallpapers/6.png" Stretch="UniformToFill"/>
+                                                     </Border>
+                                                     <Border x:Name="Wallpaper7" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="7">
+                                                         <Image Source="/Assets/wallpapers/7.png" Stretch="UniformToFill"/>
+                                                     </Border>
+                                                 </StackPanel>
+                                             </ScrollViewer>
                                          </StackPanel>
                                      </StackPanel>
                                  </Border>
                              </StackPanel>
                              
-                             <InfoBar x:Name="SettingsInfoBar" IsOpen="False" Severity="Informational" Title="Settings" Message="Settings have been applied successfully."/>
+                             <InfoBar x:Name="SettingsInfoBar" IsOpen="False" Severity="Informational" Title="Settings" Message="Backdrop settings have been applied successfully."/>
                          </StackPanel>
                      </ScrollViewer>
                  </Grid>

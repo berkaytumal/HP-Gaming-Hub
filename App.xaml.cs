@@ -37,6 +37,14 @@ namespace HP_Gaming_Hub
         public App()
         {
             InitializeComponent();
+            
+#if DEBUG
+            // Attach debugger if not already attached
+            if (!System.Diagnostics.Debugger.IsAttached)
+            {
+                System.Diagnostics.Debugger.Launch();
+            }
+#endif
         }
 
         public static bool IsAdmin()

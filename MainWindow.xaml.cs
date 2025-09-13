@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -178,7 +179,6 @@ namespace HP_Gaming_Hub
             
             // Update GPU info
             GpuModeText.Text = data.GpuMode ?? "Unknown";
-            GpuPresetText.Text = data.GpuPreset ?? "Unknown";
             
             // Update system status
             OverclockStatusText.Text = data.HasOverclock ? "Yes" : "No";
@@ -400,8 +400,12 @@ namespace HP_Gaming_Hub
             {
                 try
                 {
-                    await _hardwareMonitorViewModel.SetGpuModeAsync(mode);
-                    UpdateGpuUI();
+                    // Check if _hardwareMonitorViewModel is initialized
+                    if (_hardwareMonitorViewModel != null)
+                    {
+                        await _hardwareMonitorViewModel.SetGpuModeAsync(mode);
+                        UpdateGpuUI();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -415,26 +419,7 @@ namespace HP_Gaming_Hub
             }
         }
 
-        private async void GpuPresetComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (GpuPresetComboBox?.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string preset)
-            {
-                try
-                {
-                    await _hardwareMonitorViewModel.SetGpuPresetAsync(preset);
-                    UpdateGpuUI();
-                }
-                catch (Exception ex)
-                {
-                    if (GpuSettingsInfoBar != null)
-                    {
-                        GpuSettingsInfoBar.IsOpen = true;
-                        GpuSettingsInfoBar.Message = $"Failed to set GPU preset: {ex.Message}";
-                        GpuSettingsInfoBar.Severity = InfoBarSeverity.Error;
-                    }
-                }
-            }
-        }
+
 
         private void CpuPL1Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
@@ -549,8 +534,7 @@ namespace HP_Gaming_Hub
             // Update GPU status display
             if (CurrentGpuModeText != null)
                 CurrentGpuModeText.Text = _hardwareMonitorViewModel.GpuMode ?? "Unknown";
-            if (CurrentGpuPresetText != null)
-                CurrentGpuPresetText.Text = _hardwareMonitorViewModel.GpuPreset ?? "Unknown";
+
             if (CurrentGpuTempText != null)
                 CurrentGpuTempText.Text = $"{_hardwareMonitorViewModel.GpuTemperature}°C";
             
@@ -562,6 +546,8 @@ namespace HP_Gaming_Hub
         // Keyboard Settings Event Handlers
         private async void BacklightToggle_Toggled(object sender, RoutedEventArgs e)
         {
+            // UI elements removed - method kept for compatibility
+            /*
             try
             {
                 await _hardwareMonitorViewModel.SetKeyboardBacklightAsync(BacklightToggle.IsOn);
@@ -582,17 +568,23 @@ namespace HP_Gaming_Hub
                     KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Error;
                 }
             }
+            */
         }
 
         private async void ColorPresetComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // UI elements removed - method kept for compatibility
+            /*
             if (ColorPresetComboBox?.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string preset)
             {
                 try
                 {
-                    await _hardwareMonitorViewModel.SetKeyboardColorPresetAsync(preset);
-                    UpdateColorSlidersFromPreset(preset);
-                    UpdateKeyboardUI();
+                    if (_hardwareMonitorViewModel != null)
+                    {
+                        await _hardwareMonitorViewModel.SetKeyboardColorPresetAsync(preset);
+                        UpdateColorSlidersFromPreset(preset);
+                        UpdateKeyboardUI();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -604,6 +596,7 @@ namespace HP_Gaming_Hub
                     }
                 }
             }
+            */
         }
 
         private void ColorSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
@@ -613,6 +606,8 @@ namespace HP_Gaming_Hub
 
         private async void AnimationComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // UI elements removed - method kept for compatibility
+            /*
             if (AnimationComboBox?.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string animation)
             {
                 try
@@ -630,10 +625,13 @@ namespace HP_Gaming_Hub
                     }
                 }
             }
+            */
         }
 
         private async void ApplyKeyboardSettingsButton_Click(object sender, RoutedEventArgs e)
         {
+            // UI elements removed - method kept for compatibility
+            /*
             // Apply custom colors
             var colors = new int[]
             {
@@ -661,6 +659,7 @@ namespace HP_Gaming_Hub
                 KeyboardSettingsInfoBar.Message = "Failed to apply keyboard settings. Please check the error messages and try again.";
                 KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Error;
             }
+            */
         }
 
         private async void RefreshKeyboardDataButton_Click(object sender, RoutedEventArgs e)
@@ -687,6 +686,8 @@ namespace HP_Gaming_Hub
 
         private async void ResetKeyboardButton_Click(object sender, RoutedEventArgs e)
         {
+            // UI elements removed - method kept for compatibility
+            /*
             var success = await HandleServiceOperationAsync(
                 () => _hardwareMonitorViewModel.ResetKeyboardSettingsAsync(),
                 "reset keyboard settings"
@@ -710,19 +711,25 @@ namespace HP_Gaming_Hub
                 KeyboardSettingsInfoBar.Message = "Failed to reset keyboard settings. Please check the error messages and try again.";
                 KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Error;
             }
+            */
         }
 
         private void UpdateKeyboardUI()
         {
+            // UI elements removed - method kept for compatibility
+            /*
             // Update keyboard status display
             // if (KeyboardConnectionStatusText != null)
             //     KeyboardConnectionStatusText.Text = _hardwareMonitorViewModel.IsConnected ? "Connected" : "Disconnected"; // Badge removed
             if (BacklightToggle != null)
                 BacklightToggle.IsOn = _hardwareMonitorViewModel.KeyboardBacklightEnabled;
+            */
         }
 
         private void UpdateColorPreviews()
         {
+            // UI elements removed - method kept for compatibility
+            /*
             if (Zone1ColorPreview != null && Zone1RedSlider != null && Zone1GreenSlider != null && Zone1BlueSlider != null)
                 Zone1ColorPreview.Background = new SolidColorBrush(Color.FromArgb(255, (byte)Zone1RedSlider.Value, (byte)Zone1GreenSlider.Value, (byte)Zone1BlueSlider.Value));
             if (Zone2ColorPreview != null && Zone2RedSlider != null && Zone2GreenSlider != null && Zone2BlueSlider != null)
@@ -731,6 +738,7 @@ namespace HP_Gaming_Hub
                 Zone3ColorPreview.Background = new SolidColorBrush(Color.FromArgb(255, (byte)Zone3RedSlider.Value, (byte)Zone3GreenSlider.Value, (byte)Zone3BlueSlider.Value));
             if (Zone4ColorPreview != null && Zone4RedSlider != null && Zone4GreenSlider != null && Zone4BlueSlider != null)
                 Zone4ColorPreview.Background = new SolidColorBrush(Color.FromArgb(255, (byte)Zone4RedSlider.Value, (byte)Zone4GreenSlider.Value, (byte)Zone4BlueSlider.Value));
+            */
         }
 
         private int GetColorFromSliders(Slider redSlider, Slider greenSlider, Slider blueSlider)
@@ -743,6 +751,8 @@ namespace HP_Gaming_Hub
 
         private void UpdateColorSlidersFromPreset(string preset)
         {
+            // UI elements removed - method kept for compatibility
+            /*
             switch (preset.ToLower())
             {
                 case "red":
@@ -770,24 +780,31 @@ namespace HP_Gaming_Hub
                     SetAllZoneSliders(255, 165, 0);
                     break;
             }
+            */
         }
 
         private void SetAllZoneSliders(int red, int green, int blue)
         {
+            // UI elements removed - method kept for compatibility
+            /*
             Zone1RedSlider.Value = red; Zone1GreenSlider.Value = green; Zone1BlueSlider.Value = blue;
             Zone2RedSlider.Value = red; Zone2GreenSlider.Value = green; Zone2BlueSlider.Value = blue;
             Zone3RedSlider.Value = red; Zone3GreenSlider.Value = green; Zone3BlueSlider.Value = blue;
             Zone4RedSlider.Value = red; Zone4GreenSlider.Value = green; Zone4BlueSlider.Value = blue;
             UpdateColorPreviews();
+            */
         }
 
         private void ResetColorSliders()
         {
+            // UI elements removed - method kept for compatibility
+            /*
             Zone1RedSlider.Value = 255; Zone1GreenSlider.Value = 0; Zone1BlueSlider.Value = 0;
             Zone2RedSlider.Value = 0; Zone2GreenSlider.Value = 255; Zone2BlueSlider.Value = 0;
             Zone3RedSlider.Value = 0; Zone3GreenSlider.Value = 0; Zone3BlueSlider.Value = 255;
             Zone4RedSlider.Value = 255; Zone4GreenSlider.Value = 255; Zone4BlueSlider.Value = 0;
             UpdateColorPreviews();
+            */
         }
 
         private async void RefreshFanDataButton_Click(object sender, RoutedEventArgs e)
@@ -999,409 +1016,169 @@ namespace HP_Gaming_Hub
         }
 
         // Settings Page Event Handlers
-        private async void StartWithWindowsToggle_Toggled(object sender, RoutedEventArgs e)
+        private void BackdropComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var success = await HandleServiceOperationAsync(
-                () => Task.FromResult(true), // Placeholder for actual implementation
-                "toggle start with Windows"
-            );
-            
-            if (success)
+            try
             {
-                if (SettingsInfoBar != null)
+                if (BackdropComboBox?.SelectedItem is ComboBoxItem selectedItem)
                 {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = $"Start with Windows {(StartWithWindowsToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
-
-        private async void MinimizeToTrayToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => Task.FromResult(true), // Placeholder for actual implementation
-                "toggle minimize to tray"
-            );
-            
-            if (success)
-            {
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = $"Minimize to tray {(MinimizeToTrayToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
-
-        private async void AutoRefreshToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => Task.FromResult(true), // Placeholder for actual implementation
-                "toggle auto-refresh"
-            );
-            
-            if (success)
-            {
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = $"Auto-refresh {(AutoRefreshToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
-
-        private void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (ThemeComboBox.SelectedItem is ComboBoxItem selectedItem)
-            {
-                var theme = selectedItem.Tag?.ToString();
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = $"Theme changed to {theme}. Restart required to apply changes.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Informational;
-                }
-            }
-        }
-
-        private void RefreshIntervalComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (RefreshIntervalComboBox.SelectedItem is ComboBoxItem selectedItem)
-            {
-                var interval = selectedItem.Tag?.ToString();
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = $"Refresh interval changed to {selectedItem.Content}.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
-
-        private async void BiosBacklightToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => _hardwareMonitorViewModel.SetKeyboardBacklightAsync(BiosBacklightToggle.IsOn),
-                "toggle keyboard backlight"
-            );
-            
-            if (success)
-            {
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = $"Keyboard backlight {(BiosBacklightToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
-
-        private async void BiosFanMaxToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => _hardwareMonitorViewModel.SetMaxFanAsync(BiosFanMaxToggle.IsOn),
-                "toggle maximum fan speed"
-            );
-            
-            if (success)
-            {
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = $"Maximum fan speed {(BiosFanMaxToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
-
-        private async void BiosOverclockToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => _hardwareMonitorViewModel.SetOverclockAsync(BiosOverclockToggle.IsOn),
-                "toggle overclocking support"
-            );
-            
-            if (success)
-            {
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = $"Overclocking support {(BiosOverclockToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
-
-        private async void BiosMemoryOverclockToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => _hardwareMonitorViewModel.SetMemoryOverclockAsync(BiosMemoryOverclockToggle.IsOn),
-                "toggle memory overclocking"
-            );
-            
-            if (success)
-            {
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = $"Memory overclocking {(BiosMemoryOverclockToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
-
-        private async void BiosUndervoltToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => _hardwareMonitorViewModel.SetUndervoltAsync(BiosUndervoltToggle.IsOn),
-                "toggle CPU undervolting"
-            );
-            
-            if (success)
-            {
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = $"CPU undervolting {(BiosUndervoltToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
-
-        private async void BiosFanModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (BiosFanModeComboBox.SelectedItem is ComboBoxItem selectedItem)
-            {
-                var mode = selectedItem.Tag?.ToString();
-                var success = await HandleServiceOperationAsync(
-                    () => _hardwareMonitorViewModel.SetFanModeAsync(mode),
-                    "set default fan mode"
-                );
-                
-                if (success)
-                {
+                    var backdrop = selectedItem.Tag?.ToString();
+                    
+                    // Apply the selected backdrop
+                    ApplyBackdropSettings(backdrop);
+                    
+                    // Show/hide wallpaper selection based on backdrop choice
+                    if (backdrop == "Image")
+                    {
+                        if (WallpaperPanel != null)
+                        {
+                            WallpaperPanel.Visibility = Visibility.Visible;
+                        }
+                        else
+                        {
+                            LogError("WallpaperPanel is null when trying to show it");
+                        }
+                    }
+                    else
+                    {
+                        if (WallpaperPanel != null)
+                        {
+                            WallpaperPanel.Visibility = Visibility.Collapsed;
+                        }
+                        else
+                        {
+                            LogError("WallpaperPanel is null when trying to hide it");
+                        }
+                    }
+                    
                     if (SettingsInfoBar != null)
                     {
                         SettingsInfoBar.IsOpen = true;
-                        SettingsInfoBar.Message = $"Default fan mode set to {selectedItem.Content} successfully.";
+                        SettingsInfoBar.Message = $"Backdrop changed to {selectedItem.Content}.";
                         SettingsInfoBar.Severity = InfoBarSeverity.Success;
                     }
                 }
             }
-        }
-
-        private async void ApplyBiosSettingsButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (SettingsInfoBar != null)
+            catch (Exception ex)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = "Applying BIOS settings... Please wait.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Informational;
-            }
-            
-            // Apply all BIOS settings
-            var tasks = new List<Task<bool>>
-            {
-                HandleServiceOperationAsync(() => _hardwareMonitorViewModel.SetKeyboardBacklightAsync(BiosBacklightToggle.IsOn), "keyboard backlight"),
-                HandleServiceOperationAsync(() => _hardwareMonitorViewModel.SetMaxFanAsync(BiosFanMaxToggle.IsOn), "maximum fan speed"),
-                HandleServiceOperationAsync(() => _hardwareMonitorViewModel.SetOverclockAsync(BiosOverclockToggle.IsOn), "overclocking support"),
-                HandleServiceOperationAsync(() => _hardwareMonitorViewModel.SetMemoryOverclockAsync(BiosMemoryOverclockToggle.IsOn), "memory overclocking"),
-                HandleServiceOperationAsync(() => _hardwareMonitorViewModel.SetUndervoltAsync(BiosUndervoltToggle.IsOn), "CPU undervolting")
-            };
-            
-            var results = await Task.WhenAll(tasks);
-            var successCount = results.Count(r => r);
-            
-            if (SettingsInfoBar != null)
-            {
-                if (successCount == results.Length)
-                {
-                    SettingsInfoBar.Message = "All BIOS settings applied successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-                else
-                {
-                    SettingsInfoBar.Message = $"{successCount}/{results.Length} BIOS settings applied successfully. Check error messages for details.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Warning;
-                }
-            }
-        }
-
-        private async void RestartOmenMonButton_Click(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => Task.FromResult(true), // Placeholder for actual service restart implementation
-                "restart OmenMon service"
-            );
-            
-            if (success)
-            {
+                LogError($"Error in BackdropComboBox_SelectionChanged: {ex.Message}");
                 if (SettingsInfoBar != null)
                 {
                     SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = "OmenMon service restarted successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                    SettingsInfoBar.Message = "An error occurred while changing backdrop settings.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Error;
                 }
             }
         }
-
-        private async void CheckOmenMonStatusButton_Click(object sender, RoutedEventArgs e)
+        
+        private void WallpaperBorder_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            var success = await HandleServiceOperationAsync(
-                () => _hardwareMonitorViewModel.CheckServiceStatusAsync(),
-                "check OmenMon service status"
-            );
-            
-            if (success)
+            // Handle wallpaper selection
+            if (sender is Border border && border.Tag is string wallpaperIndex)
             {
-                // if (SettingsConnectionStatusText != null)
-                //     SettingsConnectionStatusText.Text = "Connected"; // Badge removed
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = "OmenMon service is running and accessible.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-            else
-            {
-                // if (SettingsConnectionStatusText != null)
-                //     SettingsConnectionStatusText.Text = "Disconnected"; // Badge removed
+                // Apply selected wallpaper
+                ApplyWallpaperSettings(wallpaperIndex);
             }
         }
 
-        private async void ClearLogsButton_Click(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => Task.FromResult(true), // Placeholder for actual log clearing implementation
-                "clear application logs"
-            );
-            
-            if (success)
-            {
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = "Application logs cleared successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
+        private void ApplyWallpaperSettings(string wallpaperIndex)
+         {
+             try
+             {
+                 // Apply the selected wallpaper as window background
+                 var wallpaperPath = $"/Assets/wallpapers/{wallpaperIndex}.png";
+                 var imageSource = new BitmapImage(new Uri($"ms-appx://{wallpaperPath}"));
+                 
+                 // Create ImageBrush for the background
+                 var imageBrush = new ImageBrush
+                 {
+                     ImageSource = imageSource,
+                     Stretch = Stretch.UniformToFill
+                 };
+                 
+                 // Apply to the main grid background
+                 if (this.Content is Grid mainGrid)
+                 {
+                     mainGrid.Background = imageBrush;
+                 }
+                 
+                 LogInfo($"Wallpaper applied: {wallpaperPath}");
+                 
+                 if (SettingsInfoBar != null)
+                 {
+                     SettingsInfoBar.IsOpen = true;
+                     SettingsInfoBar.Message = $"Wallpaper changed to wallpaper {wallpaperIndex}.";
+                     SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                 }
+             }
+             catch (Exception ex)
+             {
+                 LogError($"Failed to apply wallpaper {wallpaperIndex}: {ex.Message}");
+                 if (SettingsInfoBar != null)
+                 {
+                     SettingsInfoBar.IsOpen = true;
+                     SettingsInfoBar.Message = $"Failed to apply wallpaper {wallpaperIndex}.";
+                     SettingsInfoBar.Severity = InfoBarSeverity.Error;
+                 }
+             }
+          }
 
-        private async void ExportSettingsButton_Click(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => Task.FromResult(true), // Placeholder for actual settings export implementation
-                "export settings"
-            );
-            
-            if (success)
-            {
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = "Settings exported successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
+         private void ApplyBackdropSettings(string backdropType)
+          {
+              try
+              {
+                  // Get the main grid once
+                  Grid? mainGrid = this.Content as Grid;
+                  
+                  switch (backdropType)
+                  {
+                      case "Mica":
+                          this.SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
+                          // Clear any custom background
+                          if (mainGrid != null)
+                          {
+                              mainGrid.Background = null;
+                          }
+                          break;
+                      case "Acrylic":
+                          this.SystemBackdrop = new Microsoft.UI.Xaml.Media.DesktopAcrylicBackdrop();
+                          // Clear any custom background
+                          if (mainGrid != null)
+                          {
+                              mainGrid.Background = null;
+                          }
+                          break;
+                      case "Image":
+                          // Remove system backdrop for image background
+                          this.SystemBackdrop = null;
+                          break;
+                      default:
+                          this.SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
+                          // Clear any custom background
+                          if (mainGrid != null)
+                          {
+                              mainGrid.Background = null;
+                          }
+                          break;
+                  }
+                  
+                  LogInfo($"Backdrop changed to: {backdropType}");
+              }
+              catch (Exception ex)
+              {
+                  LogError($"Failed to apply backdrop {backdropType}: {ex.Message}");
+              }
+           }
 
-        private async void ImportSettingsButton_Click(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => Task.FromResult(true), // Placeholder for actual settings import implementation
-                "import settings"
-            );
-            
-            if (success)
-            {
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = "Settings imported successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
+        // Old BIOS event handlers removed
 
-        private void DebugModeToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (SettingsInfoBar != null)
-            {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = $"Debug mode {(DebugModeToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
-            }
-        }
+        // All old BIOS event handlers removed
 
-        private async void RefreshSystemInfoButton_Click(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => _hardwareMonitorViewModel.RefreshSystemInfoAsync(),
-                "refresh system information"
-            );
-            
-            if (success)
-            {
-                UpdateSystemInfoUI();
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = "System information refreshed successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
+        // Old task management event handlers removed
 
-        private async void CheckUpdatesButton_Click(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => Task.FromResult(true), // Placeholder for actual update check implementation
-                "check for updates"
-            );
-            
-            if (success)
-            {
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = "No updates available. You are running the latest version.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Informational;
-                }
-            }
-        }
+        // All old task management and debug event handlers removed
 
-        private async void ViewLogsButton_Click(object sender, RoutedEventArgs e)
-        {
-            var success = await HandleServiceOperationAsync(
-                () => Task.FromResult(true), // Placeholder for actual log viewing implementation
-                "view application logs"
-            );
-            
-            if (success)
-            {
-                if (SettingsInfoBar != null)
-                {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = "Application logs opened successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
-                }
-            }
-        }
-
-        private void UpdateSystemInfoUI()
-        {
-            // Update system information display
-            if (OmenMonVersionText != null)
-                OmenMonVersionText.Text = _hardwareMonitorViewModel.OmenMonVersion ?? "Unknown";
-            if (SystemBornDateText != null)
-                SystemBornDateText.Text = _hardwareMonitorViewModel.SystemBornDate ?? "Unknown";
-            if (AdapterInfoText != null)
-                AdapterInfoText.Text = _hardwareMonitorViewModel.AdapterInfo ?? "Unknown";
-        }
+        // All old system info and about section event handlers removed
 
         // Console functionality
         private void ClearConsoleButton_Click(object sender, RoutedEventArgs e)
