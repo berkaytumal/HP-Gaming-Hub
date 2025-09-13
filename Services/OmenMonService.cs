@@ -27,6 +27,8 @@ namespace HP_Gaming_Hub.Services
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "OmenMon.exe"),
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OmenMon", "OmenMon.exe"),
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "OmenMon", "OmenMon.exe"),
+                // For testing/development - check for mock script
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "mock-omenmon.sh"),
                 "OmenMon.exe" // If in PATH
             };
 
