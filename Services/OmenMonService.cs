@@ -448,6 +448,64 @@ namespace HP_Gaming_Hub.Services
         }
 
         /// <summary>
+        /// Get temperatures using Windows API (LibreHardwareMonitor) only
+        /// </summary>
+        public async Task<TemperatureData> GetWindowsApiTemperaturesAsync()
+        {
+            Debug.WriteLine("[GetWindowsApiTemperaturesAsync] Attempting Windows API temperature retrieval");
+            
+            if (!_useWindowsApi || _windowsApiService == null || !_windowsApiService.IsAvailable())
+            {
+                Debug.WriteLine("[GetWindowsApiTemperaturesAsync] Windows API service not available");
+                return new TemperatureData();
+            }
+
+            try
+            {
+                var windowsApiData = await _windowsApiService.GetTemperaturesAsync();
+                Debug.WriteLine($"[GetWindowsApiTemperaturesAsync] Windows API result - CPU: {windowsApiData.CpuTemperature}°C, GPU: {windowsApiData.GpuTemperature}°C");
+                return windowsApiData;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[GetWindowsApiTemperaturesAsync] Windows API failed: {ex.Message}");
+                return new TemperatureData();
+            }
+        }
+
+        /// <summary>
+        /// Get temperatures using OmenMon only
+        /// </summary>
+        public async Task<TemperatureData> GetOmenMonTemperaturesAsync()
+        {
+            Debug.WriteLine("[GetOmenMonTemperaturesAsync] Using OmenMon for temperature retrieval");
+            var result = await ExecuteCommandAsync("-Bios");
+            
+            var tempData = new TemperatureData();
+            
+            if (result.Success)
+            {
+                Debug.WriteLine($"[GetOmenMonTemperaturesAsync] OmenMon BIOS command succeeded, parsing output");
+                tempData = ParseTemperatureData(result.Output);
+            }
+            else
+            {
+                Debug.WriteLine($"[GetOmenMonTemperaturesAsync] OmenMon BIOS command failed - Error: {result.ErrorMessage}");
+            }
+            
+            Debug.WriteLine($"[GetOmenMonTemperaturesAsync] Final temperatures - CPU: {tempData.CpuTemperature}°C, GPU: {tempData.GpuTemperature}°C");
+            return tempData;
+        }
+
+        /// <summary>
+        /// Check if Windows API temperature monitoring is available
+        /// </summary>
+        public bool IsWindowsApiAvailable()
+        {
+            return _useWindowsApi && _windowsApiService != null && _windowsApiService.IsAvailable();
+        }
+
+        /// <summary>
         /// Get fan information
         /// </summary>
         public async Task<FanData> GetFanDataAsync()
