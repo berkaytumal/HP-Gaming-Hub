@@ -231,18 +231,18 @@ namespace HP_Gaming_Hub.ViewModels
         }
         
         // Fan control properties
-        private int _fan1Level;
-        private int _fan2Level;
+        private int? _fan1Level;
+        private int? _fan2Level;
         private int _fan1MaxSpeed;
         private int _fan2MaxSpeed;
 
-        public int Fan1Level
+        public int? Fan1Level
         {
             get => _fan1Level;
             set => SetProperty(ref _fan1Level, value);
         }
 
-        public int Fan2Level
+        public int? Fan2Level
         {
             get => _fan2Level;
             set => SetProperty(ref _fan2Level, value);
@@ -415,9 +415,17 @@ namespace HP_Gaming_Hub.ViewModels
             _updateTimer.Stop();
         }
 
-        public async Task RefreshDataAsync()
+        public async Task<bool> RefreshDataAsync()
         {
-            await UpdateHardwareDataAsync();
+            try
+            {
+                await UpdateHardwareDataAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task SetFanSpeedAsync(int fan1, int fan2)
@@ -576,46 +584,126 @@ namespace HP_Gaming_Hub.ViewModels
             return result;
         }
 
+        public async Task<bool> SetKeyboardCustomColorsAsync(int[] colors)
+        {
+            if (colors == null || colors.Length != 4)
+            {
+                return false;
+            }
+
+            try
+            {
+                // Convert hex colors to RGB values
+                var zone1R = (colors[0] >> 16) & 0xFF;
+                var zone1G = (colors[0] >> 8) & 0xFF;
+                var zone1B = colors[0] & 0xFF;
+
+                var zone2R = (colors[1] >> 16) & 0xFF;
+                var zone2G = (colors[1] >> 8) & 0xFF;
+                var zone2B = colors[1] & 0xFF;
+
+                var zone3R = (colors[2] >> 16) & 0xFF;
+                var zone3G = (colors[2] >> 8) & 0xFF;
+                var zone3B = colors[2] & 0xFF;
+
+                var zone4R = (colors[3] >> 16) & 0xFF;
+                var zone4G = (colors[3] >> 8) & 0xFF;
+                var zone4B = colors[3] & 0xFF;
+
+                // Call the existing SetKeyboardZoneColorsAsync method
+                var result = await SetKeyboardZoneColorsAsync(
+                    zone1R, zone1G, zone1B,
+                    zone2R, zone2G, zone2B,
+                    zone3R, zone3G, zone3B,
+                    zone4R, zone4G, zone4B
+                );
+
+                return result;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> ResetKeyboardSettingsAsync()
+        {
+            try
+            {
+                // Reset keyboard colors and settings
+                var result = await ResetKeyboardColorsAsync();
+                if (result)
+                {
+                    // Reset additional keyboard settings
+                    KeyboardBacklightEnabled = true;
+                    KeyboardColorPreset = "Rainbow";
+                    KeyboardAnimation = "Static";
+                }
+                return result;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private async Task UpdateHardwareDataAsync()
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Starting hardware data update");
+                
                 // Update temperatures
+                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching temperature data");
                 var tempData = await _omenMonService.GetTemperaturesAsync();
                 CpuTemperature = tempData.CpuTemperature;
                 GpuTemperature = tempData.GpuTemperature;
+                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Temperature data - CPU: {CpuTemperature}°C, GPU: {GpuTemperature}°C");
 
                 // Update fan data
+                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching fan data");
                 var fanData = await _omenMonService.GetFanDataAsync();
                 Fan1Speed = fanData.Fan1Speed;
                 Fan2Speed = fanData.Fan2Speed;
+                Fan1Level = fanData.Fan1Level;
+                Fan2Level = fanData.Fan2Level;
                 FanMode = fanData.FanMode;
                 FanCount = fanData.FanCount;
+                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Fan data - Fan1: {Fan1Speed} RPM, Fan2: {Fan2Speed} RPM, Mode: {FanMode}");
 
                 // Update GPU data
+                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching GPU data");
                 var gpuData = await _omenMonService.GetGpuDataAsync();
                 GpuMode = gpuData.GpuMode;
                 GpuPreset = gpuData.GpuPreset;
+                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] GPU data - Mode: {GpuMode}, Preset: {GpuPreset}");
 
                 // Update keyboard data
+                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching keyboard data");
                 var kbdData = await _omenMonService.GetKeyboardDataAsync();
                 HasBacklight = kbdData.HasBacklight;
                 BacklightEnabled = kbdData.BacklightEnabled;
                 CurrentColor = kbdData.CurrentColor;
+                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Keyboard data - HasBacklight: {HasBacklight}, Enabled: {BacklightEnabled}");
 
                 // Update system data
+                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching system data");
                 var sysData = await _omenMonService.GetSystemDataAsync();
                 SystemInfo = sysData.SystemInfo;
                 HasOverclock = sysData.HasOverclock;
                 HasMemoryOverclock = sysData.HasMemoryOverclock;
                 HasUndervolt = sysData.HasUndervolt;
+                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] System data - Overclock: {HasOverclock}, MemOC: {HasMemoryOverclock}, Undervolt: {HasUndervolt}");
 
                 // Update status
                 IsConnected = true;
                 LastUpdateTime = DateTime.Now.ToString("HH:mm:ss");
+                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Hardware data update completed successfully at {LastUpdateTime}");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Error during hardware data update: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Stack trace: {ex.StackTrace}");
                 IsConnected = false;
                 LastUpdateTime = "Error";
             }
@@ -642,7 +730,7 @@ namespace HP_Gaming_Hub.ViewModels
             try
             {
                 var result = await _omenMonService.SetMaxFanAsync(enabled);
-                return result.IsSuccess;
+                return result;
             }
             catch
             {
@@ -655,7 +743,10 @@ namespace HP_Gaming_Hub.ViewModels
             try
             {
                 var result = await _omenMonService.SetOverclockAsync(enabled);
-                HasOverclock = enabled;
+                if (result.IsSuccess)
+                {
+                    HasOverclock = enabled;
+                }
                 return result.IsSuccess;
             }
             catch
@@ -669,7 +760,10 @@ namespace HP_Gaming_Hub.ViewModels
             try
             {
                 var result = await _omenMonService.SetMemoryOverclockAsync(enabled);
-                HasMemoryOverclock = enabled;
+                if (result.IsSuccess)
+                {
+                    HasMemoryOverclock = enabled;
+                }
                 return result.IsSuccess;
             }
             catch
@@ -683,7 +777,10 @@ namespace HP_Gaming_Hub.ViewModels
             try
             {
                 var result = await _omenMonService.SetUndervoltAsync(enabled);
-                HasUndervolt = enabled;
+                if (result.IsSuccess)
+                {
+                    HasUndervolt = enabled;
+                }
                 return result.IsSuccess;
             }
             catch
@@ -697,11 +794,11 @@ namespace HP_Gaming_Hub.ViewModels
             try
             {
                 var result = await _omenMonService.SetFanModeAsync(mode);
-                if (result.IsSuccess)
+                if (result)
                 {
                     FanMode = mode;
                 }
-                return result.IsSuccess;
+                return result;
             }
             catch
             {

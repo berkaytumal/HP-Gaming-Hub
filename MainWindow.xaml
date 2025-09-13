@@ -409,6 +409,7 @@
                              <StackPanel Orientation="Horizontal" Spacing="16">
                                  <Button x:Name="RefreshButton" Content="Refresh" Click="RefreshButton_Click"/>
                                  <ToggleButton x:Name="MonitoringToggle" Content="Auto Monitor" IsChecked="True" Click="MonitoringToggle_Click"/>
+                                 <Button x:Name="TestOmenMonButton" Content="Test OmenMon" Click="TestOmenMonButton_Click" Background="{ThemeResource AccentButtonBackground}" Foreground="{ThemeResource AccentButtonForeground}"/>
                                  <TextBlock x:Name="LastUpdateText" Text="Last Update: Never" VerticalAlignment="Center" Opacity="0.7"/>
                              </StackPanel>
                              

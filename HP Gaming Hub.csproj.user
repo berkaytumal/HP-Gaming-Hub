@@ -9,6 +9,10 @@
     <AppIconSource>C:\Users\berkaytumal\source\repos\HP Gaming Hub\Assets\icon.pdf</AppIconSource>
     <SplashScreenSource>C:\Users\berkaytumal\source\repos\HP Gaming Hub\Assets\icon.pdf</SplashScreenSource>
     <PackageLogoSource>C:\Users\berkaytumal\source\repos\HP Gaming Hub\Assets\icon.pdf</PackageLogoSource>
+    <ActiveDebugProfile>HP Gaming Hub (Unpackaged)</ActiveDebugProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <ItemGroup>
     <None Update="App.xaml">

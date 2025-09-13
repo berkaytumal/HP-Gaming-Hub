@@ -17,6 +17,7 @@ using Windows.Foundation.Collections;
 using HP_Gaming_Hub.ViewModels;
 using HP_Gaming_Hub.Services;
 using System.Diagnostics;
+using Windows.UI;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -211,10 +212,62 @@ namespace HP_Gaming_Hub
             }
         }
 
+        private async void TestOmenMonButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                TestOmenMonButton.IsEnabled = false;
+                TestOmenMonButton.Content = "Testing...";
+                ConnectionStatusText.Text = "Testing OmenMon...";
+                
+                var omenMonService = new HP_Gaming_Hub.Services.OmenMonService();
+                var testResult = await omenMonService.TestConnectivityAsync();
+                
+                if (testResult.Success)
+                {
+                    ConnectionStatusText.Text = "OmenMon Test: Success";
+                    if (SettingsInfoBar != null)
+                    {
+                        SettingsInfoBar.IsOpen = true;
+                        SettingsInfoBar.Message = $"OmenMon connectivity test successful!\n{testResult.Output}";
+                        SettingsInfoBar.Severity = Microsoft.UI.Xaml.Controls.InfoBarSeverity.Success;
+                    }
+                }
+                else
+                {
+                    ConnectionStatusText.Text = "OmenMon Test: Failed";
+                    if (SettingsInfoBar != null)
+                    {
+                        SettingsInfoBar.IsOpen = true;
+                        SettingsInfoBar.Message = $"OmenMon connectivity test failed: {testResult.ErrorMessage}\nError Type: {testResult.ErrorType}";
+                        SettingsInfoBar.Severity = Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error;
+                    }
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"[TestOmenMonButton_Click] Test completed - Success: {testResult.Success}");
+            }
+            catch (Exception ex)
+            {
+                ConnectionStatusText.Text = "Test Error";
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = $"Error during OmenMon test: {ex.Message}";
+                    SettingsInfoBar.Severity = Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error;
+                }
+                System.Diagnostics.Debug.WriteLine($"[TestOmenMonButton_Click] Exception: {ex.Message}");
+            }
+            finally
+            {
+                TestOmenMonButton.IsEnabled = true;
+                TestOmenMonButton.Content = "Test OmenMon";
+            }
+        }
+
         // Fan Control Event Handlers
         private void FanModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (FanModeComboBox.SelectedItem is ComboBoxItem selectedItem)
+            if (FanModeComboBox.SelectedItem is ComboBoxItem selectedItem && ManualFanControlPanel != null && FanControlInfoBar != null)
             {
                 string mode = selectedItem.Tag?.ToString() ?? "Default";
                 
@@ -293,17 +346,29 @@ namespace HP_Gaming_Hub
         {
             try
             {
-                FanConnectionStatusText.Text = "Resetting...";
+                if (FanConnectionStatusText != null)
+                    FanConnectionStatusText.Text = "Resetting...";
+                    
                 await _hardwareMonitorViewModel.SetFanModeAsync("Default");
-                FanModeComboBox.SelectedIndex = 0;
-                ManualFanControlPanel.Visibility = Visibility.Collapsed;
-                FanControlInfoBar.IsOpen = false;
-                FanConnectionStatusText.Text = "Connected";
+                
+                if (FanModeComboBox != null)
+                    FanModeComboBox.SelectedIndex = 0;
+                    
+                if (ManualFanControlPanel != null)
+                    ManualFanControlPanel.Visibility = Visibility.Collapsed;
+                    
+                if (FanControlInfoBar != null)
+                    FanControlInfoBar.IsOpen = false;
+                    
+                if (FanConnectionStatusText != null)
+                    FanConnectionStatusText.Text = "Connected";
+                    
                 UpdateFanUI();
             }
             catch (Exception ex)
             {
-                FanConnectionStatusText.Text = "Error";
+                if (FanConnectionStatusText != null)
+                    FanConnectionStatusText.Text = "Error";
             }
         }
 
@@ -325,7 +390,7 @@ namespace HP_Gaming_Hub
         // GPU Settings Event Handlers
         private async void GpuModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (GpuModeComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string mode)
+            if (GpuModeComboBox?.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string mode)
             {
                 try
                 {
@@ -334,16 +399,19 @@ namespace HP_Gaming_Hub
                 }
                 catch (Exception ex)
                 {
-                    GpuSettingsInfoBar.IsOpen = true;
-                    GpuSettingsInfoBar.Message = $"Failed to set GPU mode: {ex.Message}";
-                    GpuSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                    if (GpuSettingsInfoBar != null)
+                    {
+                        GpuSettingsInfoBar.IsOpen = true;
+                        GpuSettingsInfoBar.Message = $"Failed to set GPU mode: {ex.Message}";
+                        GpuSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                    }
                 }
             }
         }
 
         private async void GpuPresetComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (GpuPresetComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string preset)
+            if (GpuPresetComboBox?.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string preset)
             {
                 try
                 {
@@ -352,9 +420,12 @@ namespace HP_Gaming_Hub
                 }
                 catch (Exception ex)
                 {
-                    GpuSettingsInfoBar.IsOpen = true;
-                    GpuSettingsInfoBar.Message = $"Failed to set GPU preset: {ex.Message}";
-                    GpuSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                    if (GpuSettingsInfoBar != null)
+                    {
+                        GpuSettingsInfoBar.IsOpen = true;
+                        GpuSettingsInfoBar.Message = $"Failed to set GPU preset: {ex.Message}";
+                        GpuSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                    }
                 }
             }
         }
@@ -392,15 +463,21 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                GpuSettingsInfoBar.IsOpen = true;
-                GpuSettingsInfoBar.Message = $"XMP profile {(XmpToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                GpuSettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (GpuSettingsInfoBar != null)
+                {
+                    GpuSettingsInfoBar.IsOpen = true;
+                    GpuSettingsInfoBar.Message = $"XMP profile {(XmpToggle.IsOn ? "enabled" : "disabled")} successfully.";
+                    GpuSettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
             else
             {
-                GpuSettingsInfoBar.IsOpen = true;
-                GpuSettingsInfoBar.Message = "Failed to toggle XMP profile. Please check the error messages and try again.";
-                GpuSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                if (GpuSettingsInfoBar != null)
+                {
+                    GpuSettingsInfoBar.IsOpen = true;
+                    GpuSettingsInfoBar.Message = "Failed to toggle XMP profile. Please check the error messages and try again.";
+                    GpuSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                }
             }
         }
 
@@ -418,16 +495,22 @@ namespace HP_Gaming_Hub
             
             if (cpuPL1Success && gpuPLSuccess)
             {
-                GpuSettingsInfoBar.IsOpen = true;
-                GpuSettingsInfoBar.Message = "GPU settings applied successfully. Changes may require a system restart.";
-                GpuSettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (GpuSettingsInfoBar != null)
+                {
+                    GpuSettingsInfoBar.IsOpen = true;
+                    GpuSettingsInfoBar.Message = "GPU settings applied successfully. Changes may require a system restart.";
+                    GpuSettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
                 UpdateGpuUI();
             }
             else
             {
-                GpuSettingsInfoBar.IsOpen = true;
-                GpuSettingsInfoBar.Message = "Some GPU settings failed to apply. Please check the error messages and try again.";
-                GpuSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                if (GpuSettingsInfoBar != null)
+                {
+                    GpuSettingsInfoBar.IsOpen = true;
+                    GpuSettingsInfoBar.Message = "Some GPU settings failed to apply. Please check the error messages and try again.";
+                    GpuSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                }
             }
         }
 
@@ -437,27 +520,37 @@ namespace HP_Gaming_Hub
             {
                 await _hardwareMonitorViewModel.RefreshDataAsync();
                 UpdateGpuUI();
-                GpuSettingsInfoBar.IsOpen = true;
-                GpuSettingsInfoBar.Message = "GPU data refreshed successfully.";
-                GpuSettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (GpuSettingsInfoBar != null)
+                {
+                    GpuSettingsInfoBar.IsOpen = true;
+                    GpuSettingsInfoBar.Message = "GPU data refreshed successfully.";
+                    GpuSettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
             catch (Exception ex)
             {
-                GpuSettingsInfoBar.IsOpen = true;
-                GpuSettingsInfoBar.Message = $"Failed to refresh GPU data: {ex.Message}";
-                GpuSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                if (GpuSettingsInfoBar != null)
+                {
+                    GpuSettingsInfoBar.IsOpen = true;
+                    GpuSettingsInfoBar.Message = $"Failed to refresh GPU data: {ex.Message}";
+                    GpuSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                }
             }
         }
 
         private void UpdateGpuUI()
         {
             // Update GPU status display
-            CurrentGpuModeText.Text = _hardwareMonitorViewModel.GpuMode ?? "Unknown";
-            CurrentGpuPresetText.Text = _hardwareMonitorViewModel.GpuPreset ?? "Unknown";
-            CurrentGpuTempText.Text = $"{_hardwareMonitorViewModel.GpuTemperature}°C";
+            if (CurrentGpuModeText != null)
+                CurrentGpuModeText.Text = _hardwareMonitorViewModel.GpuMode ?? "Unknown";
+            if (CurrentGpuPresetText != null)
+                CurrentGpuPresetText.Text = _hardwareMonitorViewModel.GpuPreset ?? "Unknown";
+            if (CurrentGpuTempText != null)
+                CurrentGpuTempText.Text = $"{_hardwareMonitorViewModel.GpuTemperature}°C";
             
             // Update connection status
-            GpuConnectionStatusText.Text = _hardwareMonitorViewModel.IsConnected ? "Connected" : "Disconnected";
+            if (GpuConnectionStatusText != null)
+                GpuConnectionStatusText.Text = _hardwareMonitorViewModel.IsConnected ? "Connected" : "Disconnected";
         }
 
         // Keyboard Settings Event Handlers
@@ -466,22 +559,28 @@ namespace HP_Gaming_Hub
             try
             {
                 await _hardwareMonitorViewModel.SetKeyboardBacklightAsync(BacklightToggle.IsOn);
-                KeyboardSettingsInfoBar.IsOpen = true;
-                KeyboardSettingsInfoBar.Message = $"Keyboard backlight {(BacklightToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (KeyboardSettingsInfoBar != null)
+                {
+                    KeyboardSettingsInfoBar.IsOpen = true;
+                    KeyboardSettingsInfoBar.Message = $"Keyboard backlight {(BacklightToggle.IsOn ? "enabled" : "disabled")} successfully.";
+                    KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
                 UpdateKeyboardUI();
             }
             catch (Exception ex)
             {
-                KeyboardSettingsInfoBar.IsOpen = true;
-                KeyboardSettingsInfoBar.Message = $"Failed to toggle backlight: {ex.Message}";
-                KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                if (KeyboardSettingsInfoBar != null)
+                {
+                    KeyboardSettingsInfoBar.IsOpen = true;
+                    KeyboardSettingsInfoBar.Message = $"Failed to toggle backlight: {ex.Message}";
+                    KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                }
             }
         }
 
         private async void ColorPresetComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ColorPresetComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string preset)
+            if (ColorPresetComboBox?.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string preset)
             {
                 try
                 {
@@ -491,9 +590,12 @@ namespace HP_Gaming_Hub
                 }
                 catch (Exception ex)
                 {
-                    KeyboardSettingsInfoBar.IsOpen = true;
-                    KeyboardSettingsInfoBar.Message = $"Failed to set color preset: {ex.Message}";
-                    KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                    if (KeyboardSettingsInfoBar != null)
+                    {
+                        KeyboardSettingsInfoBar.IsOpen = true;
+                        KeyboardSettingsInfoBar.Message = $"Failed to set color preset: {ex.Message}";
+                        KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                    }
                 }
             }
         }
@@ -505,7 +607,7 @@ namespace HP_Gaming_Hub
 
         private async void AnimationComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (AnimationComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string animation)
+            if (AnimationComboBox?.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string animation)
             {
                 try
                 {
@@ -514,9 +616,12 @@ namespace HP_Gaming_Hub
                 }
                 catch (Exception ex)
                 {
-                    KeyboardSettingsInfoBar.IsOpen = true;
-                    KeyboardSettingsInfoBar.Message = $"Failed to set animation: {ex.Message}";
-                    KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                    if (KeyboardSettingsInfoBar != null)
+                    {
+                        KeyboardSettingsInfoBar.IsOpen = true;
+                        KeyboardSettingsInfoBar.Message = $"Failed to set animation: {ex.Message}";
+                        KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                    }
                 }
             }
         }
@@ -604,16 +709,22 @@ namespace HP_Gaming_Hub
         private void UpdateKeyboardUI()
         {
             // Update keyboard status display
-            KeyboardConnectionStatusText.Text = _hardwareMonitorViewModel.IsConnected ? "Connected" : "Disconnected";
-            BacklightToggle.IsOn = _hardwareMonitorViewModel.KeyboardBacklightEnabled;
+            if (KeyboardConnectionStatusText != null)
+                KeyboardConnectionStatusText.Text = _hardwareMonitorViewModel.IsConnected ? "Connected" : "Disconnected";
+            if (BacklightToggle != null)
+                BacklightToggle.IsOn = _hardwareMonitorViewModel.KeyboardBacklightEnabled;
         }
 
         private void UpdateColorPreviews()
         {
-            Zone1ColorPreview.Background = new SolidColorBrush(Color.FromArgb(255, (byte)Zone1RedSlider.Value, (byte)Zone1GreenSlider.Value, (byte)Zone1BlueSlider.Value));
-            Zone2ColorPreview.Background = new SolidColorBrush(Color.FromArgb(255, (byte)Zone2RedSlider.Value, (byte)Zone2GreenSlider.Value, (byte)Zone2BlueSlider.Value));
-            Zone3ColorPreview.Background = new SolidColorBrush(Color.FromArgb(255, (byte)Zone3RedSlider.Value, (byte)Zone3GreenSlider.Value, (byte)Zone3BlueSlider.Value));
-            Zone4ColorPreview.Background = new SolidColorBrush(Color.FromArgb(255, (byte)Zone4RedSlider.Value, (byte)Zone4GreenSlider.Value, (byte)Zone4BlueSlider.Value));
+            if (Zone1ColorPreview != null && Zone1RedSlider != null && Zone1GreenSlider != null && Zone1BlueSlider != null)
+                Zone1ColorPreview.Background = new SolidColorBrush(Color.FromArgb(255, (byte)Zone1RedSlider.Value, (byte)Zone1GreenSlider.Value, (byte)Zone1BlueSlider.Value));
+            if (Zone2ColorPreview != null && Zone2RedSlider != null && Zone2GreenSlider != null && Zone2BlueSlider != null)
+                Zone2ColorPreview.Background = new SolidColorBrush(Color.FromArgb(255, (byte)Zone2RedSlider.Value, (byte)Zone2GreenSlider.Value, (byte)Zone2BlueSlider.Value));
+            if (Zone3ColorPreview != null && Zone3RedSlider != null && Zone3GreenSlider != null && Zone3BlueSlider != null)
+                Zone3ColorPreview.Background = new SolidColorBrush(Color.FromArgb(255, (byte)Zone3RedSlider.Value, (byte)Zone3GreenSlider.Value, (byte)Zone3BlueSlider.Value));
+            if (Zone4ColorPreview != null && Zone4RedSlider != null && Zone4GreenSlider != null && Zone4BlueSlider != null)
+                Zone4ColorPreview.Background = new SolidColorBrush(Color.FromArgb(255, (byte)Zone4RedSlider.Value, (byte)Zone4GreenSlider.Value, (byte)Zone4BlueSlider.Value));
         }
 
         private int GetColorFromSliders(Slider redSlider, Slider greenSlider, Slider blueSlider)
@@ -707,16 +818,22 @@ namespace HP_Gaming_Hub
             var data = _hardwareMonitorViewModel;
             
             // Update current fan speeds
-            Fan1CurrentSpeedText.Text = data.Fan1Speed > 0 ? $"{data.Fan1Speed} RPM" : "-- RPM";
-            Fan2CurrentSpeedText.Text = data.Fan2Speed > 0 ? $"{data.Fan2Speed} RPM" : "-- RPM";
+            if (Fan1CurrentSpeedText != null)
+                Fan1CurrentSpeedText.Text = data.Fan1Speed > 0 ? $"{data.Fan1Speed} RPM" : "-- RPM";
+            if (Fan2CurrentSpeedText != null)
+                Fan2CurrentSpeedText.Text = data.Fan2Speed > 0 ? $"{data.Fan2Speed} RPM" : "-- RPM";
             
             // Update fan levels (assuming we can get this from the service)
-            Fan1LevelText.Text = data.Fan1Level?.ToString() ?? "--";
-            Fan2LevelText.Text = data.Fan2Level?.ToString() ?? "--";
+            if (Fan1LevelText != null)
+                Fan1LevelText.Text = data.Fan1Level?.ToString() ?? "--";
+            if (Fan2LevelText != null)
+                Fan2LevelText.Text = data.Fan2Level?.ToString() ?? "--";
             
             // Update max speeds (assuming we can get this from the service)
-            Fan1MaxSpeedText.Text = data.Fan1MaxSpeed > 0 ? $"{data.Fan1MaxSpeed} RPM" : "-- RPM";
-            Fan2MaxSpeedText.Text = data.Fan2MaxSpeed > 0 ? $"{data.Fan2MaxSpeed} RPM" : "-- RPM";
+            if (Fan1MaxSpeedText != null)
+                Fan1MaxSpeedText.Text = data.Fan1MaxSpeed > 0 ? $"{data.Fan1MaxSpeed} RPM" : "-- RPM";
+            if (Fan2MaxSpeedText != null)
+                Fan2MaxSpeedText.Text = data.Fan2MaxSpeed > 0 ? $"{data.Fan2MaxSpeed} RPM" : "-- RPM";
         }
 
         private void MainNavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
@@ -883,9 +1000,12 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = $"Start with Windows {(StartWithWindowsToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = $"Start with Windows {(StartWithWindowsToggle.IsOn ? "enabled" : "disabled")} successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
@@ -898,9 +1018,12 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = $"Minimize to tray {(MinimizeToTrayToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = $"Minimize to tray {(MinimizeToTrayToggle.IsOn ? "enabled" : "disabled")} successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
@@ -913,9 +1036,12 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = $"Auto-refresh {(AutoRefreshToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = $"Auto-refresh {(AutoRefreshToggle.IsOn ? "enabled" : "disabled")} successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
@@ -924,9 +1050,12 @@ namespace HP_Gaming_Hub
             if (ThemeComboBox.SelectedItem is ComboBoxItem selectedItem)
             {
                 var theme = selectedItem.Tag?.ToString();
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = $"Theme changed to {theme}. Restart required to apply changes.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Informational;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = $"Theme changed to {theme}. Restart required to apply changes.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Informational;
+                }
             }
         }
 
@@ -935,9 +1064,12 @@ namespace HP_Gaming_Hub
             if (RefreshIntervalComboBox.SelectedItem is ComboBoxItem selectedItem)
             {
                 var interval = selectedItem.Tag?.ToString();
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = $"Refresh interval changed to {selectedItem.Content}.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = $"Refresh interval changed to {selectedItem.Content}.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
@@ -950,9 +1082,12 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = $"Keyboard backlight {(BiosBacklightToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = $"Keyboard backlight {(BiosBacklightToggle.IsOn ? "enabled" : "disabled")} successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
@@ -965,9 +1100,12 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = $"Maximum fan speed {(BiosFanMaxToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = $"Maximum fan speed {(BiosFanMaxToggle.IsOn ? "enabled" : "disabled")} successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
@@ -980,9 +1118,12 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = $"Overclocking support {(BiosOverclockToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = $"Overclocking support {(BiosOverclockToggle.IsOn ? "enabled" : "disabled")} successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
@@ -995,9 +1136,12 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = $"Memory overclocking {(BiosMemoryOverclockToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = $"Memory overclocking {(BiosMemoryOverclockToggle.IsOn ? "enabled" : "disabled")} successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
@@ -1010,9 +1154,12 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = $"CPU undervolting {(BiosUndervoltToggle.IsOn ? "enabled" : "disabled")} successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = $"CPU undervolting {(BiosUndervoltToggle.IsOn ? "enabled" : "disabled")} successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
@@ -1028,18 +1175,24 @@ namespace HP_Gaming_Hub
                 
                 if (success)
                 {
-                    SettingsInfoBar.IsOpen = true;
-                    SettingsInfoBar.Message = $"Default fan mode set to {selectedItem.Content} successfully.";
-                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                    if (SettingsInfoBar != null)
+                    {
+                        SettingsInfoBar.IsOpen = true;
+                        SettingsInfoBar.Message = $"Default fan mode set to {selectedItem.Content} successfully.";
+                        SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                    }
                 }
             }
         }
 
         private async void ApplyBiosSettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            SettingsInfoBar.IsOpen = true;
-            SettingsInfoBar.Message = "Applying BIOS settings... Please wait.";
-            SettingsInfoBar.Severity = InfoBarSeverity.Informational;
+            if (SettingsInfoBar != null)
+            {
+                SettingsInfoBar.IsOpen = true;
+                SettingsInfoBar.Message = "Applying BIOS settings... Please wait.";
+                SettingsInfoBar.Severity = InfoBarSeverity.Informational;
+            }
             
             // Apply all BIOS settings
             var tasks = new List<Task<bool>>
@@ -1054,15 +1207,18 @@ namespace HP_Gaming_Hub
             var results = await Task.WhenAll(tasks);
             var successCount = results.Count(r => r);
             
-            if (successCount == results.Length)
+            if (SettingsInfoBar != null)
             {
-                SettingsInfoBar.Message = "All BIOS settings applied successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
-            }
-            else
-            {
-                SettingsInfoBar.Message = $"{successCount}/{results.Length} BIOS settings applied successfully. Check error messages for details.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Warning;
+                if (successCount == results.Length)
+                {
+                    SettingsInfoBar.Message = "All BIOS settings applied successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
+                else
+                {
+                    SettingsInfoBar.Message = $"{successCount}/{results.Length} BIOS settings applied successfully. Check error messages for details.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Warning;
+                }
             }
         }
 
@@ -1075,9 +1231,12 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = "OmenMon service restarted successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = "OmenMon service restarted successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
@@ -1090,14 +1249,19 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsConnectionStatusText.Text = "Connected";
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = "OmenMon service is running and accessible.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsConnectionStatusText != null)
+                    SettingsConnectionStatusText.Text = "Connected";
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = "OmenMon service is running and accessible.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
             else
             {
-                SettingsConnectionStatusText.Text = "Disconnected";
+                if (SettingsConnectionStatusText != null)
+                    SettingsConnectionStatusText.Text = "Disconnected";
             }
         }
 
@@ -1110,9 +1274,12 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = "Application logs cleared successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = "Application logs cleared successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
@@ -1125,9 +1292,12 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = "Settings exported successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = "Settings exported successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
@@ -1140,17 +1310,23 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = "Settings imported successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = "Settings imported successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
         private void DebugModeToggle_Toggled(object sender, RoutedEventArgs e)
         {
-            SettingsInfoBar.IsOpen = true;
-            SettingsInfoBar.Message = $"Debug mode {(DebugModeToggle.IsOn ? "enabled" : "disabled")} successfully.";
-            SettingsInfoBar.Severity = InfoBarSeverity.Success;
+            if (SettingsInfoBar != null)
+            {
+                SettingsInfoBar.IsOpen = true;
+                SettingsInfoBar.Message = $"Debug mode {(DebugModeToggle.IsOn ? "enabled" : "disabled")} successfully.";
+                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+            }
         }
 
         private async void RefreshSystemInfoButton_Click(object sender, RoutedEventArgs e)
@@ -1163,9 +1339,12 @@ namespace HP_Gaming_Hub
             if (success)
             {
                 UpdateSystemInfoUI();
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = "System information refreshed successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = "System information refreshed successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
@@ -1178,9 +1357,12 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = "No updates available. You are running the latest version.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Informational;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = "No updates available. You are running the latest version.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Informational;
+                }
             }
         }
 
@@ -1193,18 +1375,24 @@ namespace HP_Gaming_Hub
             
             if (success)
             {
-                SettingsInfoBar.IsOpen = true;
-                SettingsInfoBar.Message = "Application logs opened successfully.";
-                SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                if (SettingsInfoBar != null)
+                {
+                    SettingsInfoBar.IsOpen = true;
+                    SettingsInfoBar.Message = "Application logs opened successfully.";
+                    SettingsInfoBar.Severity = InfoBarSeverity.Success;
+                }
             }
         }
 
         private void UpdateSystemInfoUI()
         {
             // Update system information display
-            OmenMonVersionText.Text = _hardwareMonitorViewModel.OmenMonVersion ?? "Unknown";
-            SystemBornDateText.Text = _hardwareMonitorViewModel.SystemBornDate ?? "Unknown";
-            AdapterInfoText.Text = _hardwareMonitorViewModel.AdapterInfo ?? "Unknown";
+            if (OmenMonVersionText != null)
+                OmenMonVersionText.Text = _hardwareMonitorViewModel.OmenMonVersion ?? "Unknown";
+            if (SystemBornDateText != null)
+                SystemBornDateText.Text = _hardwareMonitorViewModel.SystemBornDate ?? "Unknown";
+            if (AdapterInfoText != null)
+                AdapterInfoText.Text = _hardwareMonitorViewModel.AdapterInfo ?? "Unknown";
         }
     }
 }

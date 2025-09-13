@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.ComponentModel.DataAnnotations;
+using Windows.Storage;
 
 namespace HP_Gaming_Hub.Services
 {
@@ -15,9 +17,17 @@ namespace HP_Gaming_Hub.Services
         private readonly string _omenMonPath;
         private const int CommandTimeoutMs = 10000; // 10 seconds timeout
 
-        public OmenMonService(string omenMonPath = "./OmenMon.exe")
+        public OmenMonService(string omenMonPath = null)
         {
-            _omenMonPath = omenMonPath;
+            if (string.IsNullOrEmpty(omenMonPath))
+            {
+                var localFolder = ApplicationData.Current.LocalFolder;
+                _omenMonPath = Path.Combine(localFolder.Path, "Dependencies", "OmenMon", "OmenMon.exe");
+            }
+            else
+            {
+                _omenMonPath = omenMonPath;
+            }
             ValidateConfiguration();
         }
 
@@ -32,8 +42,30 @@ namespace HP_Gaming_Hub.Services
             }
 
             // Log configuration
-            Debug.WriteLine($"OmenMonService initialized with path: {_omenMonPath}");
-            Debug.WriteLine($"Command timeout: {CommandTimeoutMs}ms");
+            Debug.WriteLine($"[ValidateConfiguration] OmenMonService initialized with path: {_omenMonPath}");
+            Debug.WriteLine($"[ValidateConfiguration] Command timeout: {CommandTimeoutMs}ms");
+            
+            // Check if OmenMon executable exists
+            var fullPath = Path.GetFullPath(_omenMonPath);
+            Debug.WriteLine($"[ValidateConfiguration] Full path: {fullPath}");
+            Debug.WriteLine($"[ValidateConfiguration] File exists: {File.Exists(fullPath)}");
+            
+            if (!File.Exists(fullPath))
+            {
+                Debug.WriteLine($"[ValidateConfiguration] WARNING: OmenMon executable not found at {fullPath}");
+                Debug.WriteLine($"[ValidateConfiguration] Current directory: {Directory.GetCurrentDirectory()}");
+                
+                // List files in current directory for debugging
+                try
+                {
+                    var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.exe");
+                    Debug.WriteLine($"[ValidateConfiguration] Available .exe files in current directory: {string.Join(", ", files.Select(Path.GetFileName))}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[ValidateConfiguration] Error listing files: {ex.Message}");
+                }
+            }
         }
 
         /// <summary>
@@ -43,13 +75,69 @@ namespace HP_Gaming_Hub.Services
         {
             try
             {
+                Debug.WriteLine("[IsServiceAvailableAsync] Testing OmenMon availability");
                 var result = await ExecuteCommandAsync("--version");
+                Debug.WriteLine($"[IsServiceAvailableAsync] Version check result - Success: {result.Success}, Output: {result.Output}");
                 return result.Success;
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.WriteLine($"[IsServiceAvailableAsync] Exception during availability check: {ex.Message}");
                 return false;
             }
+        }
+        
+        /// <summary>
+        /// Test OmenMon connectivity and basic functionality
+        /// </summary>
+        public async Task<OmenMonResult> TestConnectivityAsync()
+        {
+            Debug.WriteLine("[TestConnectivityAsync] Starting comprehensive OmenMon test");
+            
+            // Test 1: Check if executable exists
+            var fullPath = Path.GetFullPath(_omenMonPath);
+            if (!File.Exists(fullPath))
+            {
+                var errorMsg = $"OmenMon executable not found at: {fullPath}";
+                Debug.WriteLine($"[TestConnectivityAsync] {errorMsg}");
+                return new OmenMonResult
+                {
+                    Success = false,
+                    ErrorMessage = errorMsg,
+                    ErrorType = ErrorType.ProcessNotFound
+                };
+            }
+            
+            // Test 2: Try version command
+            Debug.WriteLine("[TestConnectivityAsync] Testing version command");
+            var versionResult = await ExecuteCommandAsync("--version");
+            if (!versionResult.Success)
+            {
+                Debug.WriteLine($"[TestConnectivityAsync] Version command failed: {versionResult.ErrorMessage}");
+                return versionResult;
+            }
+            
+            // Test 3: Try basic BIOS query
+            Debug.WriteLine("[TestConnectivityAsync] Testing basic BIOS query");
+            var biosResult = await ExecuteCommandAsync("-Bios");
+            Debug.WriteLine($"[TestConnectivityAsync] BIOS query result - Success: {biosResult.Success}");
+            
+            if (biosResult.Success)
+            {
+                Debug.WriteLine($"[TestConnectivityAsync] BIOS query output: {biosResult.Output}");
+            }
+            else
+            {
+                Debug.WriteLine($"[TestConnectivityAsync] BIOS query failed: {biosResult.ErrorMessage}");
+            }
+            
+            return new OmenMonResult
+            {
+                Success = true,
+                Output = $"Version: {versionResult.Output}\nBIOS Test: {(biosResult.Success ? "Success" : "Failed")}",
+                ErrorMessage = string.Empty,
+                ErrorType = ErrorType.None
+            };
         }
 
         /// <summary>
@@ -138,32 +226,24 @@ namespace HP_Gaming_Hub.Services
                     StandardOutputEncoding = Encoding.UTF8,
                     StandardErrorEncoding = Encoding.UTF8
                 };
-
+                
                 using var process = new Process { StartInfo = processInfo };
                 
                 var outputBuilder = new StringBuilder();
                 var errorBuilder = new StringBuilder();
-
+                
                 process.OutputDataReceived += (sender, e) => {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        outputBuilder.AppendLine(e.Data);
-                        Debug.WriteLine($"OmenMon Output: {e.Data}");
-                    }
+                    if (e.Data != null) outputBuilder.AppendLine(e.Data);
                 };
-
+                
                 process.ErrorDataReceived += (sender, e) => {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        errorBuilder.AppendLine(e.Data);
-                        Debug.WriteLine($"OmenMon Error: {e.Data}");
-                    }
+                    if (e.Data != null) errorBuilder.AppendLine(e.Data);
                 };
-
+                
                 process.Start();
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
-
+                
                 var completed = await Task.Run(() => process.WaitForExit(CommandTimeoutMs));
                 var endTime = DateTime.Now;
                 var duration = endTime - startTime;
@@ -192,23 +272,31 @@ namespace HP_Gaming_Hub.Services
 
                 var output = outputBuilder.ToString();
                 var error = errorBuilder.ToString();
-                var exitCode = process.ExitCode;
-                
-                Debug.WriteLine($"OmenMon completed with exit code: {exitCode}, duration: {duration.TotalMilliseconds}ms");
+                    
+                    Debug.WriteLine($"OmenMon Output: {output}");
+                    if (!string.IsNullOrEmpty(error))
+                    {
+                        Debug.WriteLine($"OmenMon Error: {error}");
+                    }
+                    
+                    var exitCode = process.ExitCode;
+                    
+                    Debug.WriteLine($"OmenMon completed with exit code: {exitCode}, duration: {duration.TotalMilliseconds}ms");
 
-                // Determine error type based on output and exit code
-                var errorType = DetermineErrorType(exitCode, error, output);
-                
-                return new OmenMonResult
-                {
-                    Success = exitCode == 0 && errorType == ErrorType.None,
-                    Output = output,
-                    ErrorMessage = exitCode != 0 ? error : string.Empty,
-                    ErrorType = errorType,
-                    ExitCode = exitCode,
-                    ExecutionTime = startTime,
-                    Duration = duration
-                };
+                    // Determine error type based on output and exit code
+                    var errorType = DetermineErrorType(exitCode, error, output);
+                    
+                    return new OmenMonResult
+                    {
+                        Success = exitCode == 0 && errorType == ErrorType.None,
+                        Output = output,
+                        ErrorMessage = exitCode != 0 ? error : string.Empty,
+                        ErrorType = errorType,
+                        ExitCode = exitCode,
+                        ExecutionTime = startTime,
+                        Duration = duration
+                    };
+
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -278,10 +366,16 @@ namespace HP_Gaming_Hub.Services
         /// </summary>
         public async Task<TemperatureData> GetTemperaturesAsync()
         {
+            Debug.WriteLine("[GetTemperaturesAsync] Starting temperature retrieval");
             var result = await ExecuteCommandAsync("-Bios Temp");
+            
             if (!result.Success)
+            {
+                Debug.WriteLine($"[GetTemperaturesAsync] Command failed - Error: {result.ErrorMessage}, Type: {result.ErrorType}, ExitCode: {result.ExitCode}");
                 return new TemperatureData();
-
+            }
+            
+            Debug.WriteLine($"[GetTemperaturesAsync] Command succeeded, parsing output");
             return ParseTemperatureData(result.Output);
         }
 
@@ -290,10 +384,16 @@ namespace HP_Gaming_Hub.Services
         /// </summary>
         public async Task<FanData> GetFanDataAsync()
         {
+            Debug.WriteLine("[GetFanDataAsync] Starting fan data retrieval");
             var result = await ExecuteCommandAsync("-Bios FanCount FanLevel FanMax FanMode");
+            
             if (!result.Success)
+            {
+                Debug.WriteLine($"[GetFanDataAsync] Command failed - Error: {result.ErrorMessage}, Type: {result.ErrorType}, ExitCode: {result.ExitCode}");
                 return new FanData();
-
+            }
+            
+            Debug.WriteLine($"[GetFanDataAsync] Command succeeded, parsing output");
             return ParseFanData(result.Output);
         }
 
@@ -674,24 +774,51 @@ namespace HP_Gaming_Hub.Services
         {
             var tempData = new TemperatureData();
             
+            Debug.WriteLine($"[ParseTemperatureData] Raw output: {output}");
+            
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                Debug.WriteLine("[ParseTemperatureData] Output is null or empty");
+                return tempData;
+            }
+            
             // Parse temperature values from output
             var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            Debug.WriteLine($"[ParseTemperatureData] Found {lines.Length} lines to parse");
+            
             foreach (var line in lines)
             {
+                Debug.WriteLine($"[ParseTemperatureData] Processing line: {line}");
+                
                 if (line.Contains("CPU") && line.Contains("°C"))
                 {
                     var match = Regex.Match(line, @"(\d+)°C");
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int temp))
+                    {
                         tempData.CpuTemperature = temp;
+                        Debug.WriteLine($"[ParseTemperatureData] Found CPU temperature: {temp}°C");
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"[ParseTemperatureData] Failed to parse CPU temperature from: {line}");
+                    }
                 }
                 else if (line.Contains("GPU") && line.Contains("°C"))
                 {
                     var match = Regex.Match(line, @"(\d+)°C");
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int temp))
+                    {
                         tempData.GpuTemperature = temp;
+                        Debug.WriteLine($"[ParseTemperatureData] Found GPU temperature: {temp}°C");
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"[ParseTemperatureData] Failed to parse GPU temperature from: {line}");
+                    }
                 }
             }
             
+            Debug.WriteLine($"[ParseTemperatureData] Final result - CPU: {tempData.CpuTemperature}°C, GPU: {tempData.GpuTemperature}°C");
             return tempData;
         }
 
@@ -699,15 +826,34 @@ namespace HP_Gaming_Hub.Services
         {
             var fanData = new FanData();
             
+            Debug.WriteLine($"[ParseFanData] Raw output: {output}");
+            
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                Debug.WriteLine("[ParseFanData] Output is null or empty");
+                return fanData;
+            }
+            
             // Parse fan data from output
             var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            Debug.WriteLine($"[ParseFanData] Found {lines.Length} lines to parse");
+            
             foreach (var line in lines)
             {
+                Debug.WriteLine($"[ParseFanData] Processing line: {line}");
+                
                 if (line.Contains("Fan Count:"))
                 {
                     var match = Regex.Match(line, @"Fan Count:\s*(\d+)");
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int count))
+                    {
                         fanData.FanCount = count;
+                        Debug.WriteLine($"[ParseFanData] Found fan count: {count}");
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"[ParseFanData] Failed to parse fan count from: {line}");
+                    }
                 }
                 else if (line.Contains("Fan Level:"))
                 {
@@ -715,19 +861,37 @@ namespace HP_Gaming_Hub.Services
                     if (match.Success)
                     {
                         if (int.TryParse(match.Groups[1].Value, out int fan1))
+                        {
                             fanData.Fan1Speed = fan1;
+                            Debug.WriteLine($"[ParseFanData] Found Fan1 speed: {fan1} RPM");
+                        }
                         if (int.TryParse(match.Groups[2].Value, out int fan2))
+                        {
                             fanData.Fan2Speed = fan2;
+                            Debug.WriteLine($"[ParseFanData] Found Fan2 speed: {fan2} RPM");
+                        }
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"[ParseFanData] Failed to parse fan levels from: {line}");
                     }
                 }
                 else if (line.Contains("Fan Mode:"))
                 {
                     var match = Regex.Match(line, @"Fan Mode:\s*(.+)");
                     if (match.Success)
+                    {
                         fanData.FanMode = match.Groups[1].Value.Trim();
+                        Debug.WriteLine($"[ParseFanData] Found fan mode: {fanData.FanMode}");
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"[ParseFanData] Failed to parse fan mode from: {line}");
+                    }
                 }
             }
             
+            Debug.WriteLine($"[ParseFanData] Final result - Count: {fanData.FanCount}, Fan1: {fanData.Fan1Speed} RPM, Fan2: {fanData.Fan2Speed} RPM, Mode: {fanData.FanMode}");
             return fanData;
         }
 
@@ -886,6 +1050,8 @@ namespace HP_Gaming_Hub.Services
         public int FanCount { get; set; }
         public int Fan1Speed { get; set; }
         public int Fan2Speed { get; set; }
+        public int? Fan1Level { get; set; }
+        public int? Fan2Level { get; set; }
         public string FanMode { get; set; } = string.Empty;
         public DateTime LastUpdated { get; set; } = DateTime.Now;
     }
