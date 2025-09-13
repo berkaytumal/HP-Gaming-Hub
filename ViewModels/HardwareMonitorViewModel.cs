@@ -14,6 +14,7 @@ namespace HP_Gaming_Hub.ViewModels
         private readonly OmenMonService _omenMonService;
         private readonly DispatcherQueueTimer _updateTimer;
         private bool _isMonitoring;
+        private bool _isUpdating; // Flag to prevent concurrent updates
 
         // Temperature properties
         private int _cpuTemperature;
@@ -649,6 +650,14 @@ namespace HP_Gaming_Hub.ViewModels
 
         private async Task UpdateHardwareDataAsync()
         {
+            // Prevent concurrent updates
+            if (_isUpdating)
+            {
+                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Update already in progress, skipping");
+                return;
+            }
+
+            _isUpdating = true;
             try
             {
                 System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Starting hardware data update");
@@ -706,6 +715,10 @@ namespace HP_Gaming_Hub.ViewModels
                 System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Stack trace: {ex.StackTrace}");
                 IsConnected = false;
                 LastUpdateTime = "Error";
+            }
+            finally
+            {
+                _isUpdating = false;
             }
         }
 

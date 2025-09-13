@@ -123,6 +123,8 @@ namespace HP_Gaming_Hub
             return Path.Combine(localFolder.Path, "Dependencies", "OmenMon", "OmenMon.xml");
         }
         
+        public bool HideCmdWindows => GetProcessConfigValue("HideCmdWindows", true);
+        
         private bool GetAppConfigValue(string key, bool defaultValue)
         {
             try
@@ -135,6 +137,30 @@ namespace HP_Gaming_Hub
                     
                     if (document.RootElement.TryGetProperty("AppConfiguration", out var appConfig) &&
                         appConfig.TryGetProperty(key, out var property))
+                    {
+                        return property.GetBoolean();
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore errors and return default
+            }
+            return defaultValue;
+        }
+        
+        private bool GetProcessConfigValue(string key, bool defaultValue)
+        {
+            try
+            {
+                var appSettingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+                if (File.Exists(appSettingsPath))
+                {
+                    var json = File.ReadAllText(appSettingsPath);
+                    using var document = JsonDocument.Parse(json);
+                    
+                    if (document.RootElement.TryGetProperty("ProcessSettings", out var processConfig) &&
+                        processConfig.TryGetProperty(key, out var property))
                     {
                         return property.GetBoolean();
                     }

@@ -222,7 +222,8 @@ namespace HP_Gaming_Hub.Services
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    CreateNoWindow = true,
+                    CreateNoWindow = AppSettings.Instance.HideCmdWindows,
+                    WindowStyle = AppSettings.Instance.HideCmdWindows ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal,
                     StandardOutputEncoding = Encoding.UTF8,
                     StandardErrorEncoding = Encoding.UTF8
                 };
