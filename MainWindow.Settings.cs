@@ -1,12 +1,20 @@
+using Microsoft.UI;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Diagnostics;
+using System.Linq;
+using System.Numerics;
+using Windows.Foundation;
 using Windows.UI;
+using Windows.UI.Composition;
 
 namespace HP_Gaming_Hub
 {
@@ -262,6 +270,12 @@ namespace HP_Gaming_Hub
                         {
                             Debug.WriteLine("[MainWindow] Showing wallpaper panel for Image backdrop");
                             WallpaperPanel.Visibility = Visibility.Visible;
+                            
+                            // Apply the default wallpaper immediately
+                            var defaultWallpaperIndex = AppSettings.Instance.SelectedWallpaperIndex;
+                            Debug.WriteLine($"[MainWindow] Applying default wallpaper index: {defaultWallpaperIndex}");
+                            UpdateWallpaperSelection(defaultWallpaperIndex);
+                            ApplyWallpaperSettings(defaultWallpaperIndex.ToString());
                         }
                         else
                         {
@@ -363,24 +377,84 @@ namespace HP_Gaming_Hub
          {
              try
              {
-                 // Apply the selected wallpaper as window background
+                 // Apply acrylic backdrop first
+                 this.SystemBackdrop = new Microsoft.UI.Xaml.Media.DesktopAcrylicBackdrop();
+                 
+                 // Apply the selected wallpaper using Composition API
                  var wallpaperPath = $"/Assets/wallpapers/{wallpaperIndex}.png";
-                 var imageSource = new BitmapImage(new Uri($"ms-appx://{wallpaperPath}"));
                  
-                 // Create ImageBrush for the background
-                 var imageBrush = new ImageBrush
-                 {
-                     ImageSource = imageSource,
-                     Stretch = Stretch.UniformToFill
-                 };
-                 
-                 // Apply to the main grid background
                  if (this.Content is Grid mainGrid)
                  {
-                     mainGrid.Background = imageBrush;
+                     // Remove any existing wallpaper borders
+                     var existingBorders = mainGrid.Children.OfType<Border>().Where(b => b.Name == "WallpaperBorder").ToList();
+                     foreach (var border in existingBorders)
+                     {
+                         mainGrid.Children.Remove(border);
+                     }
+                     
+                     // Create a container for the composition visual
+                     var wallpaperContainer = new Border
+                     {
+                         Name = "WallpaperBorder"
+                     };
+                     
+                     mainGrid.Background = null;
+                     mainGrid.Children.Insert(0, wallpaperContainer);
+                     
+                     // Set up composition visual with gradient mask
+                     wallpaperContainer.Loaded += (s, e) =>
+                     {
+                         var compositor = ElementCompositionPreview.GetElementVisual(wallpaperContainer).Compositor;
+                         
+                         // Create brush for the image
+                          var imageBrush = compositor.CreateSurfaceBrush(
+                               LoadedImageSurface.StartLoadFromUri(new Uri($"ms-appx://{wallpaperPath}"))
+                           );
+                           imageBrush.Stretch = Microsoft.UI.Composition.CompositionStretch.UniformToFill;
+                         
+                         // Create gradient mask (transparent -> opaque)
+                         var gradient = compositor.CreateLinearGradientBrush();
+                         gradient.StartPoint = new Vector2(0, 0);
+                         gradient.EndPoint = new Vector2(0, 1);
+                         
+                         var stop1 = compositor.CreateColorGradientStop();
+                         stop1.Offset = 0.5f;
+                         stop1.Color = Windows.UI.Color.FromArgb(8, 0, 0, 0); // fully transparent
+                         
+                         var stop2 = compositor.CreateColorGradientStop();
+                         stop2.Offset = 1f;
+                         stop2.Color = Colors.White; // solid
+                         
+                         gradient.ColorStops.Add(stop1);
+                         gradient.ColorStops.Add(stop2);
+                         
+                         // Mask brush
+                         var mask = compositor.CreateMaskBrush();
+                         mask.Source = imageBrush;
+                         mask.Mask = gradient;
+                         
+                         // SpriteVisual to display
+                         var sprite = compositor.CreateSpriteVisual();
+                         sprite.Brush = mask;
+                         sprite.Size = new Vector2(
+                             (float)mainGrid.ActualWidth,
+                             (float)mainGrid.ActualHeight
+                         );
+                         
+                         ElementCompositionPreview.SetElementChildVisual(wallpaperContainer, sprite);
+                         
+                         // Update size when grid size changes
+                         mainGrid.SizeChanged += (sender, args) =>
+                         {
+                             sprite.Size = new Vector2(
+                                 (float)args.NewSize.Width,
+                                 (float)args.NewSize.Height
+                             );
+                         };
+                     };
                  }
                  
-                 LogInfo($"Wallpaper applied: {wallpaperPath}");
+                 LogInfo($"Wallpaper applied with acrylic backdrop: {wallpaperPath}");
                  
                  // Wallpaper changed notification removed
              }
@@ -407,18 +481,28 @@ namespace HP_Gaming_Hub
                   {
                       case "Mica":
                           this.SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
-                          // Clear any custom background
+                          // Clear any custom background and wallpaper borders
                           if (mainGrid != null)
                           {
                               mainGrid.Background = null;
+                              var wallpaperBorders = mainGrid.Children.OfType<Border>().Where(b => b.Name == "WallpaperBorder").ToList();
+                              foreach (var border in wallpaperBorders)
+                              {
+                                  mainGrid.Children.Remove(border);
+                              }
                           }
                           break;
                       case "Acrylic":
                           this.SystemBackdrop = new Microsoft.UI.Xaml.Media.DesktopAcrylicBackdrop();
-                          // Clear any custom background
+                          // Clear any custom background and wallpaper borders
                           if (mainGrid != null)
                           {
                               mainGrid.Background = null;
+                              var wallpaperBorders = mainGrid.Children.OfType<Border>().Where(b => b.Name == "WallpaperBorder").ToList();
+                              foreach (var border in wallpaperBorders)
+                              {
+                                  mainGrid.Children.Remove(border);
+                              }
                           }
                           break;
                       case "Image":

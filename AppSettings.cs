@@ -272,6 +272,6 @@ namespace HP_Gaming_Hub
                 _backdropSelectedIndex = value;
             }
         }
-        public int SelectedWallpaperIndex { get; set; } = 0;
+        public int SelectedWallpaperIndex { get; set; } = 6;
     }
 }
