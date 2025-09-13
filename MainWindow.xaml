@@ -84,12 +84,44 @@
                       <ScrollViewer x:Name="FanPage" Visibility="Collapsed">
                          <StackPanel Spacing="24" Padding="32">
                              <TextBlock Text="Fan Control" Style="{StaticResource TitleTextBlockStyle}"/>
-                             <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." TextWrapping="Wrap"/>
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="Fan Speed Control" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <Slider Minimum="0" Maximum="100" Value="50" Header="CPU Fan Speed (%)"/>
-                                 <Slider Minimum="0" Maximum="100" Value="45" Header="GPU Fan Speed (%)"/>
+                             <TextBlock Text="Control your system's fan speeds using OmenMon fan programs or manual adjustment." TextWrapping="Wrap"/>
+                             
+                             <StackPanel Spacing="16" IsEnabled="{x:Bind ViewModel.IsFanControlEnabled, Mode=OneWay}">
+                                 <TextBlock Text="Fan Programs" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                 <ComboBox Header="Select Fan Program" 
+                                           ItemsSource="{x:Bind ViewModel.FanPrograms, Mode=OneWay}"
+                                           SelectedItem="{x:Bind ViewModel.SelectedFanProgram, Mode=TwoWay}"
+                                           PlaceholderText="Choose a fan program..."/>
+                                 
+                                 <TextBlock Text="Current Fan Status" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,24,0,0"/>
+                                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                                     <StackPanel Spacing="8">
+                                         <TextBlock>
+                                             <Run Text="Fan Count: "/>
+                                             <Run Text="{x:Bind ViewModel.FanInfo.FanCount, Mode=OneWay}"/>
+                                         </TextBlock>
+                                         <TextBlock>
+                                             <Run Text="Current Mode: "/>
+                                             <Run Text="{x:Bind ViewModel.FanInfo.FanMode, Mode=OneWay}"/>
+                                         </TextBlock>
+                                     </StackPanel>
+                                 </Border>
+                                 
+                                 <TextBlock Text="Manual Fan Speed Control" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,24,0,0"/>
+                                 <Slider Minimum="0" Maximum="255" 
+                                         Value="{x:Bind ViewModel.FanInfo.Fan1Speed, Mode=OneWay}"
+                                         Header="CPU Fan Speed"
+                                         ValueChanged="Fan1Slider_ValueChanged"/>
+                                 <Slider Minimum="0" Maximum="255" 
+                                         Value="{x:Bind ViewModel.FanInfo.Fan2Speed, Mode=OneWay}"
+                                         Header="GPU Fan Speed"
+                                         ValueChanged="Fan2Slider_ValueChanged"/>
+                                 
+                                 <Button Content="Apply Fan Settings" Click="ApplyFanSettings_Click" Margin="0,16,0,0"/>
                              </StackPanel>
+                             
+                             <TextBlock Text="Note: Manual fan control will override automatic programs. Use with caution to avoid overheating." 
+                                        TextWrapping="Wrap" FontStyle="Italic" Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
                          </StackPanel>
                      </ScrollViewer>
                      
@@ -97,14 +129,47 @@
                       <ScrollViewer x:Name="GraphicsPage" Visibility="Collapsed">
                          <StackPanel Spacing="24" Padding="32">
                              <TextBlock Text="Graphics Settings" Style="{StaticResource TitleTextBlockStyle}"/>
-                             <TextBlock Text="Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." TextWrapping="Wrap"/>
+                             <TextBlock Text="Configure your GPU settings and performance modes through OmenMon BIOS control." TextWrapping="Wrap"/>
+                             
                              <StackPanel Spacing="16">
-                                 <TextBlock Text="Performance Settings" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <ComboBox Header="Graphics Mode" SelectedIndex="1">
-                                     <ComboBoxItem Content="Power Saving"/>
-                                     <ComboBoxItem Content="Balanced"/>
-                                     <ComboBoxItem Content="Performance"/>
+                                 <TextBlock Text="GPU Mode Control" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                 <ComboBox Header="Graphics Mode" SelectedItem="{x:Bind ViewModel.SelectedGpuMode, Mode=TwoWay}">
+                                     <ComboBoxItem Content="Hybrid"/>
+                                     <ComboBoxItem Content="Discrete"/>
+                                     <ComboBoxItem Content="Optimus"/>
                                  </ComboBox>
+                                 
+                                 <ComboBox Header="Performance Preset" SelectedItem="{x:Bind ViewModel.SelectedGpuPreset, Mode=TwoWay}" Margin="0,16,0,0">
+                                     <ComboBoxItem Content="Minimum"/>
+                                     <ComboBoxItem Content="Medium"/>
+                                     <ComboBoxItem Content="Maximum"/>
+                                 </ComboBox>
+                                 
+                                 <TextBlock Text="Current GPU Status" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,24,0,0"/>
+                                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                                     <StackPanel Spacing="8">
+                                         <TextBlock>
+                                             <Run Text="Current Mode: "/>
+                                             <Run Text="{x:Bind ViewModel.GpuInfo.Mode, Mode=OneWay}"/>
+                                         </TextBlock>
+                                         <TextBlock>
+                                             <Run Text="Current Preset: "/>
+                                             <Run Text="{x:Bind ViewModel.GpuInfo.Preset, Mode=OneWay}"/>
+                                         </TextBlock>
+                                         <TextBlock>
+                                             <Run Text="Temperature: "/>
+                                             <Run Text="{x:Bind ViewModel.GpuInfo.Temperature, Mode=OneWay}"/>
+                                             <Run Text="°C"/>
+                                         </TextBlock>
+                                         <TextBlock>
+                                             <Run Text="Usage: "/>
+                                             <Run Text="{x:Bind ViewModel.GpuInfo.Usage, Mode=OneWay}"/>
+                                             <Run Text="%"/>
+                                         </TextBlock>
+                                     </StackPanel>
+                                 </Border>
+                                 
+                                 <Button Content="Refresh GPU Status" Click="RefreshGpuButton_Click" Margin="0,16,0,0"/>
                              </StackPanel>
                          </StackPanel>
                      </ScrollViewer>
@@ -113,20 +178,64 @@
                       <ScrollViewer x:Name="KeyboardPage" Visibility="Collapsed">
                          <StackPanel Spacing="24" Padding="32">
                              <TextBlock Text="Keyboard Settings" Style="{StaticResource TitleTextBlockStyle}"/>
-                             <TextBlock Text="Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo." TextWrapping="Wrap"/>
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="Backlight Settings" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <Slider Minimum="0" Maximum="100" Value="75" Header="Brightness (%)"/>
-                                 <ToggleSwitch Header="RGB Effects" IsOn="True"/>
+                             <TextBlock Text="Control your keyboard backlight and RGB effects through OmenMon hardware interface." TextWrapping="Wrap"/>
+                             
+                             <StackPanel Spacing="16" IsEnabled="{x:Bind ViewModel.KeyboardInfo.HasBacklight, Mode=OneWay}">
+                                 <TextBlock Text="Backlight Control" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                 <ToggleSwitch Header="Backlight" IsOn="{x:Bind ViewModel.IsBacklightEnabled, Mode=TwoWay}"/>
+                                 
+                                 <TextBlock Text="RGB Color Settings" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,24,0,0"/>
+                                 <ComboBox Header="Color Preset" SelectedItem="{x:Bind ViewModel.SelectedColor, Mode=TwoWay}">
+                                     <ComboBoxItem Content="Red" Tag="FF0000"/>
+                                     <ComboBoxItem Content="Green" Tag="00FF00"/>
+                                     <ComboBoxItem Content="Blue" Tag="0000FF"/>
+                                     <ComboBoxItem Content="Purple" Tag="800080"/>
+                                     <ComboBoxItem Content="Orange" Tag="FFA500"/>
+                                     <ComboBoxItem Content="White" Tag="FFFFFF"/>
+                                 </ComboBox>
+                                 
+                                 <TextBlock Text="Current Keyboard Status" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,24,0,0"/>
+                                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                                     <StackPanel Spacing="8">
+                                         <TextBlock>
+                                             <Run Text="Backlight Support: "/>
+                                             <Run Text="{x:Bind ViewModel.KeyboardInfo.HasBacklight, Mode=OneWay}"/>
+                                         </TextBlock>
+                                         <TextBlock>
+                                             <Run Text="Backlight Status: "/>
+                                             <Run Text="{x:Bind ViewModel.KeyboardInfo.BacklightEnabled, Mode=OneWay}"/>
+                                         </TextBlock>
+                                         <TextBlock>
+                                             <Run Text="Current Color: "/>
+                                             <Run Text="{x:Bind ViewModel.KeyboardInfo.CurrentColor, Mode=OneWay}"/>
+                                         </TextBlock>
+                                     </StackPanel>
+                                 </Border>
+                                 
+                                 <Button Content="Refresh Keyboard Status" Click="RefreshKeyboardButton_Click" Margin="0,16,0,0"/>
                              </StackPanel>
+                             
+                             <TextBlock Text="Note: RGB effects may not be available on all keyboard models." 
+                                        TextWrapping="Wrap" FontStyle="Italic" 
+                                        Visibility="{x:Bind ViewModel.KeyboardInfo.HasBacklight, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert, Mode=OneWay}"/>
                          </StackPanel>
                      </ScrollViewer>
                      
                      <!-- Monitor Page (Default) -->
                       <ScrollViewer x:Name="MonitorPage" Visibility="Visible">
                          <StackPanel Spacing="24" Padding="32">
-                             <TextBlock Text="System Monitor" Style="{StaticResource TitleTextBlockStyle}"/>
-                             <TextBlock Text="Monitor your system's performance including GPU and CPU temperatures, usage, and other vital statistics." TextWrapping="Wrap"/>
+                             <StackPanel Orientation="Horizontal" Spacing="16">
+                                 <TextBlock Text="System Monitor" Style="{StaticResource TitleTextBlockStyle}"/>
+                                 <Border Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}" 
+                                         CornerRadius="4" Padding="8,4"
+                                         Visibility="{x:Bind ViewModel.ConnectionStatus, Converter={StaticResource StringToVisibilityConverter}, Mode=OneWay}">
+                                     <TextBlock Text="{x:Bind ViewModel.ConnectionStatus, Mode=OneWay}" 
+                                                FontSize="12" FontWeight="SemiBold"/>
+                                 </Border>
+                             </StackPanel>
+                             
+                             <TextBlock Text="Real-time monitoring of your system's performance via OmenMon hardware monitoring." TextWrapping="Wrap"/>
+                             
                              <Grid>
                                  <Grid.ColumnDefinitions>
                                      <ColumnDefinition Width="*"/>
@@ -136,9 +245,20 @@
                                      <TextBlock Text="CPU Monitoring" Style="{StaticResource SubtitleTextBlockStyle}"/>
                                      <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
                                          <StackPanel Spacing="8">
-                                             <TextBlock Text="Temperature: 65°C" FontWeight="SemiBold"/>
-                                             <TextBlock Text="Usage: 45%" FontWeight="SemiBold"/>
-                                             <TextBlock Text="Clock Speed: 3.2 GHz"/>
+                                             <TextBlock FontWeight="SemiBold">
+                                                 <Run Text="Temperature: "/>
+                                                 <Run Text="{x:Bind ViewModel.SystemInfo.CpuTemperature, Mode=OneWay}"/>
+                                                 <Run Text="°C"/>
+                                             </TextBlock>
+                                             <TextBlock FontWeight="SemiBold">
+                                                 <Run Text="Usage: "/>
+                                                 <Run Text="{x:Bind ViewModel.SystemInfo.CpuUsage, Mode=OneWay}"/>
+                                                 <Run Text="%"/>
+                                             </TextBlock>
+                                             <TextBlock>
+                                                 <Run Text="Clock Speed: "/>
+                                                 <Run Text="{x:Bind ViewModel.SystemInfo.CpuClockSpeed, Mode=OneWay}"/>
+                                             </TextBlock>
                                          </StackPanel>
                                      </Border>
                                  </StackPanel>
@@ -146,13 +266,41 @@
                                      <TextBlock Text="GPU Monitoring" Style="{StaticResource SubtitleTextBlockStyle}"/>
                                      <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
                                          <StackPanel Spacing="8">
-                                             <TextBlock Text="Temperature: 72°C" FontWeight="SemiBold"/>
-                                             <TextBlock Text="Usage: 78%" FontWeight="SemiBold"/>
-                                             <TextBlock Text="Memory: 6.2/8 GB"/>
+                                             <TextBlock FontWeight="SemiBold">
+                                                 <Run Text="Temperature: "/>
+                                                 <Run Text="{x:Bind ViewModel.SystemInfo.GpuTemperature, Mode=OneWay}"/>
+                                                 <Run Text="°C"/>
+                                             </TextBlock>
+                                             <TextBlock FontWeight="SemiBold">
+                                                 <Run Text="Usage: "/>
+                                                 <Run Text="{x:Bind ViewModel.SystemInfo.GpuUsage, Mode=OneWay}"/>
+                                                 <Run Text="%"/>
+                                             </TextBlock>
+                                             <TextBlock>
+                                                 <Run Text="Memory: "/>
+                                                 <Run Text="{x:Bind ViewModel.GpuInfo.Memory, Mode=OneWay}"/>
+                                             </TextBlock>
                                          </StackPanel>
                                      </Border>
                                  </StackPanel>
                              </Grid>
+                             
+                             <StackPanel Spacing="16">
+                                 <TextBlock Text="System Information" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                                     <StackPanel Spacing="8">
+                                         <TextBlock>
+                                             <Run Text="Last Updated: "/>
+                                             <Run Text="{x:Bind ViewModel.SystemInfo.LastUpdated, Mode=OneWay}"/>
+                                         </TextBlock>
+                                         <TextBlock>
+                                             <Run Text="OmenMon Status: "/>
+                                             <Run Text="{x:Bind ViewModel.ConnectionStatus, Mode=OneWay}"/>
+                                         </TextBlock>
+                                         <Button Content="Refresh Data" Click="RefreshButton_Click" Margin="0,8,0,0"/>
+                                     </StackPanel>
+                                 </Border>
+                             </StackPanel>
                          </StackPanel>
                      </ScrollViewer>
                      
@@ -160,7 +308,8 @@
                       <ScrollViewer x:Name="SettingsPage" Visibility="Collapsed">
                          <StackPanel Spacing="24" Padding="32">
                              <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}"/>
-                             <TextBlock Text="Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt." TextWrapping="Wrap"/>
+                             <TextBlock Text="Configure HP Gaming Hub and OmenMon integration settings." TextWrapping="Wrap"/>
+                             
                              <StackPanel Spacing="16">
                                  <TextBlock Text="Application Settings" Style="{StaticResource SubtitleTextBlockStyle}"/>
                                  <ToggleSwitch Header="Start with Windows" IsOn="False"/>
@@ -170,6 +319,34 @@
                                      <ComboBoxItem Content="Light"/>
                                      <ComboBoxItem Content="Dark"/>
                                  </ComboBox>
+                                 
+                                 <TextBlock Text="OmenMon Integration" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,24,0,0"/>
+                                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                                     <StackPanel Spacing="8">
+                                         <TextBlock>
+                                             <Run Text="Connection Status: "/>
+                                             <Run Text="{x:Bind ViewModel.ConnectionStatus, Mode=OneWay}"/>
+                                         </TextBlock>
+                                         <TextBlock>
+                                             <Run Text="Monitoring Active: "/>
+                                             <Run Text="{x:Bind ViewModel.IsMonitoring, Mode=OneWay}"/>
+                                         </TextBlock>
+                                     </StackPanel>
+                                 </Border>
+                                 
+                                 <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,16,0,0">
+                                     <Button Content="Test OmenMon Connection" Click="TestConnectionButton_Click"/>
+                                     <Button Content="Refresh All Data" Click="RefreshAllButton_Click"/>
+                                 </StackPanel>
+                                 
+                                 <TextBlock Text="About" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,24,0,0"/>
+                                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                                     <StackPanel Spacing="8">
+                                         <TextBlock Text="HP Gaming Hub with OmenMon Integration" FontWeight="SemiBold"/>
+                                         <TextBlock Text="Provides hardware monitoring and control for HP Omen devices."/>
+                                         <TextBlock Text="Powered by OmenMon.exe CLI interface."/>
+                                     </StackPanel>
+                                 </Border>
                              </StackPanel>
                          </StackPanel>
                      </ScrollViewer>

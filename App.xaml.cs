@@ -15,6 +15,11 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using HP_Gaming_Hub.Services;
+using HP_Gaming_Hub.ViewModels;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -27,6 +32,9 @@ namespace HP_Gaming_Hub
     public partial class App : Application
     {
         private Window? _window;
+        private IHost? _host;
+
+        public static IServiceProvider Services => ((App)Current)._host?.Services ?? throw new InvalidOperationException("Services not initialized");
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -35,6 +43,21 @@ namespace HP_Gaming_Hub
         public App()
         {
             InitializeComponent();
+            InitializeServices();
+        }
+
+        private void InitializeServices()
+        {
+            var builder = Host.CreateApplicationBuilder();
+            
+            // Add configuration
+            builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            
+            // Register services
+            builder.Services.AddSingleton<OmenMonService>();
+            builder.Services.AddTransient<MainViewModel>();
+            
+            _host = builder.Build();
         }
 
         /// <summary>

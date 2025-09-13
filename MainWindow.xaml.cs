@@ -13,6 +13,8 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using HP_Gaming_Hub.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -25,13 +27,65 @@ namespace HP_Gaming_Hub
     public sealed partial class MainWindow : Window
     {
         private int _previousSelectedIndex = 3; // Default to Monitor page (index 3)
+        private MainViewModel _viewModel;
         
         public MainWindow()
         {
             this.InitializeComponent();
+            
+            // Get ViewModel from DI
+            _viewModel = App.Services.GetRequiredService<MainViewModel>();
+            this.DataContext = _viewModel;
+            
             // Extend content into title bar and set custom title bar
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
+        }
+
+        public MainViewModel ViewModel => _viewModel;
+
+        // Event handlers for UI interactions
+        private async void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.RefreshAllDataAsync();
+        }
+
+        private async void RefreshGpuButton_Click(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.RefreshGpuDataAsync();
+        }
+
+        private async void RefreshKeyboardButton_Click(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.RefreshKeyboardDataAsync();
+        }
+
+        private async void TestConnectionButton_Click(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.RefreshAllDataAsync();
+        }
+
+        private async void RefreshAllButton_Click(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.RefreshAllDataAsync();
+        }
+
+        private int _fan1Speed = 50;
+        private int _fan2Speed = 45;
+
+        private void Fan1Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            _fan1Speed = (int)e.NewValue;
+        }
+
+        private void Fan2Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            _fan2Speed = (int)e.NewValue;
+        }
+
+        private async void ApplyFanSettings_Click(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.SetFanSpeedsAsync(_fan1Speed, _fan2Speed);
         }
 
         private void MainNavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
