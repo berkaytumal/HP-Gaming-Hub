@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <linearGradient gradientUnits="userSpaceOnUse" x1="250" y1="0" x2="250" y2="500" id="gradient-0" gradientTransform="matrix(0.721882, -0.692016, 0.989949, 0.989949, -213.31311, 210.872025)">
+      <stop offset="0" style="stop-color: rgb(231, 89, 89);"/>
+      <stop offset="1" style="stop-color: rgb(229, 60, 60);"/>
+    </linearGradient>
+    <filter id="drop-shadow-filter-1" x="-500%" y="-500%" width="1000%" height="1000%" bx:preset="drop-shadow 1 0 10 10 0.5 rgba(0,0,0,0.3)">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+      <feOffset dx="0" dy="10"/>
+      <feComponentTransfer result="offsetblur">
+        <feFuncA id="spread-ctrl" type="linear" slope="1"/>
+      </feComponentTransfer>
+      <feFlood flood-color="rgba(0,0,0,0.3)"/>
+      <feComposite in2="offsetblur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g style="filter: none;" transform="matrix(0.707107, 0, 0, 0.707107, 73.223358, 73.223267)">
+    <g>
+      <rect style="fill: url(#gradient-0);" transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 249.999969, -103.553383)" x="0" y="0" width="500" height="500" rx="70.711" ry="70.711"/>
+    </g>
+  </g>
+  <linearGradient id="gradient-3" x1="18.731" x2="25.236" y1="7.57" y2="44.463" gradientUnits="userSpaceOnUse" gradientTransform="matrix(4.451209, 0, 0, 4.451209, 204.111206, 246.896942)">
+    <stop offset="0" stop-color="#2aa4f4"/>
+    <stop offset="1" stop-color="#007ad9"/>
+  </linearGradient>
+  <linearGradient id="gradient-4" x1="36.977" x2="39.035" y1="4.16" y2="15.828" gradientUnits="userSpaceOnUse" gradientTransform="matrix(4.451209, 0, 0, 4.451209, 204.111206, 246.896942)">
+    <stop offset="0" stop-color="#2aa4f4"/>
+    <stop offset="1" stop-color="#007ad9"/>
+  </linearGradient>
+  <g transform="matrix(1.4407, 0, 0, 1.4407, -113.210709, -181.310791)" style="filter: url(#drop-shadow-filter-1);">
+    <path d="M 307.842 282.248 L 319.398 313.847 C 324.735 328.438 336.232 339.936 350.823 345.273 L 382.422 356.828 C 387.902 358.831 387.902 366.576 382.422 368.579 L 350.823 380.135 C 336.232 385.472 324.735 396.969 319.398 411.56 L 307.842 443.159 C 305.839 448.639 298.094 448.639 296.091 443.159 L 284.536 411.56 C 279.199 396.969 267.701 385.472 253.11 380.135 L 221.511 368.579 C 216.032 366.576 216.032 358.831 221.511 356.828 L 253.11 345.273 C 267.701 339.936 279.199 328.438 284.536 313.847 L 296.091 282.248 C 298.09 276.769 305.839 276.769 307.842 282.248 Z" style="" fill="url(#gradient-3)"/>
+    <path d="M 376.907 267.354 L 379.68 276.475 C 380.922 280.552 384.114 283.748 388.196 284.99 L 397.316 287.763 C 400.895 288.854 400.895 293.919 397.316 295.01 L 388.196 297.783 C 384.118 299.025 380.922 302.216 379.68 306.298 L 376.907 315.419 C 375.817 318.997 370.751 318.997 369.661 315.419 L 366.888 306.298 C 365.646 302.221 362.454 299.025 358.373 297.783 L 349.252 295.01 C 345.673 293.919 345.673 288.854 349.252 287.763 L 358.373 284.99 C 362.45 283.748 365.646 280.557 366.888 276.475 L 369.661 267.354 C 370.751 263.776 375.817 263.776 376.907 267.354 Z" style="" fill="url(#gradient-4)"/>
+  </g>
+</svg>

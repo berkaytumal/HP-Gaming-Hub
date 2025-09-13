@@ -34,7 +34,148 @@
         
         <!-- Main Content Area -->
         <Grid Grid.Row="1">
-            
+            <NavigationView x:Name="MainNavigationView" 
+                           IsBackButtonVisible="Collapsed"
+                           IsSettingsVisible="False"
+                           OpenPaneLength="250"
+                           CompactModeThresholdWidth="768"
+                           ExpandedModeThresholdWidth="1008"
+                           SelectedItem="{x:Bind MonitorNavItem}"
+                           SelectionChanged="MainNavigationView_SelectionChanged">
+                
+                <NavigationView.MenuItems>
+                     <NavigationViewItem x:Name="FanNavItem" Content="Fan">
+                         <NavigationViewItem.Icon>
+                             <ImageIcon Source="Assets/fan-icon.png"/>
+                         </NavigationViewItem.Icon>
+                     </NavigationViewItem>
+                     
+                     <NavigationViewItem x:Name="GraphicsNavItem" Content="Graphics">
+                         <NavigationViewItem.Icon>
+                             <ImageIcon Source="Assets/graphics-icon.png"/>
+                         </NavigationViewItem.Icon>
+                     </NavigationViewItem>
+                     
+                     <NavigationViewItem x:Name="KeyboardNavItem" Content="Keyboard">
+                         <NavigationViewItem.Icon>
+                             <ImageIcon Source="Assets/keyboard-icon.png"/>
+                         </NavigationViewItem.Icon>
+                     </NavigationViewItem>
+                     
+                     <NavigationViewItem x:Name="MonitorNavItem" Content="Monitor">
+                         <NavigationViewItem.Icon>
+                             <ImageIcon Source="Assets/monitor-icon.png"/>
+                         </NavigationViewItem.Icon>
+                     </NavigationViewItem>
+                 </NavigationView.MenuItems>
+                 
+                 <NavigationView.FooterMenuItems>
+                     <NavigationViewItem x:Name="SettingsNavItem" Content="Settings">
+                         <NavigationViewItem.Icon>
+                             <ImageIcon Source="Assets/settings-icon.png"/>
+                         </NavigationViewItem.Icon>
+                     </NavigationViewItem>
+                 </NavigationView.FooterMenuItems>
+                
+                <!-- Main Content Area with Page Animation -->
+                  <Grid Margin="24">
+                     
+                     <!-- Fan Page -->
+                      <ScrollViewer x:Name="FanPage" Visibility="Collapsed">
+                         <StackPanel Spacing="24" Padding="32">
+                             <TextBlock Text="Fan Control" Style="{StaticResource TitleTextBlockStyle}"/>
+                             <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." TextWrapping="Wrap"/>
+                             <StackPanel Spacing="16">
+                                 <TextBlock Text="Fan Speed Control" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                 <Slider Minimum="0" Maximum="100" Value="50" Header="CPU Fan Speed (%)"/>
+                                 <Slider Minimum="0" Maximum="100" Value="45" Header="GPU Fan Speed (%)"/>
+                             </StackPanel>
+                         </StackPanel>
+                     </ScrollViewer>
+                     
+                     <!-- Graphics Page -->
+                      <ScrollViewer x:Name="GraphicsPage" Visibility="Collapsed">
+                         <StackPanel Spacing="24" Padding="32">
+                             <TextBlock Text="Graphics Settings" Style="{StaticResource TitleTextBlockStyle}"/>
+                             <TextBlock Text="Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." TextWrapping="Wrap"/>
+                             <StackPanel Spacing="16">
+                                 <TextBlock Text="Performance Settings" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                 <ComboBox Header="Graphics Mode" SelectedIndex="1">
+                                     <ComboBoxItem Content="Power Saving"/>
+                                     <ComboBoxItem Content="Balanced"/>
+                                     <ComboBoxItem Content="Performance"/>
+                                 </ComboBox>
+                             </StackPanel>
+                         </StackPanel>
+                     </ScrollViewer>
+                     
+                     <!-- Keyboard Page -->
+                      <ScrollViewer x:Name="KeyboardPage" Visibility="Collapsed">
+                         <StackPanel Spacing="24" Padding="32">
+                             <TextBlock Text="Keyboard Settings" Style="{StaticResource TitleTextBlockStyle}"/>
+                             <TextBlock Text="Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo." TextWrapping="Wrap"/>
+                             <StackPanel Spacing="16">
+                                 <TextBlock Text="Backlight Settings" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                 <Slider Minimum="0" Maximum="100" Value="75" Header="Brightness (%)"/>
+                                 <ToggleSwitch Header="RGB Effects" IsOn="True"/>
+                             </StackPanel>
+                         </StackPanel>
+                     </ScrollViewer>
+                     
+                     <!-- Monitor Page (Default) -->
+                      <ScrollViewer x:Name="MonitorPage" Visibility="Visible">
+                         <StackPanel Spacing="24" Padding="32">
+                             <TextBlock Text="System Monitor" Style="{StaticResource TitleTextBlockStyle}"/>
+                             <TextBlock Text="Monitor your system's performance including GPU and CPU temperatures, usage, and other vital statistics." TextWrapping="Wrap"/>
+                             <Grid>
+                                 <Grid.ColumnDefinitions>
+                                     <ColumnDefinition Width="*"/>
+                                     <ColumnDefinition Width="*"/>
+                                 </Grid.ColumnDefinitions>
+                                 <StackPanel Grid.Column="0" Spacing="16" Margin="0,0,12,0">
+                                     <TextBlock Text="CPU Monitoring" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                     <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                                         <StackPanel Spacing="8">
+                                             <TextBlock Text="Temperature: 65°C" FontWeight="SemiBold"/>
+                                             <TextBlock Text="Usage: 45%" FontWeight="SemiBold"/>
+                                             <TextBlock Text="Clock Speed: 3.2 GHz"/>
+                                         </StackPanel>
+                                     </Border>
+                                 </StackPanel>
+                                 <StackPanel Grid.Column="1" Spacing="16" Margin="12,0,0,0">
+                                     <TextBlock Text="GPU Monitoring" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                     <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                                         <StackPanel Spacing="8">
+                                             <TextBlock Text="Temperature: 72°C" FontWeight="SemiBold"/>
+                                             <TextBlock Text="Usage: 78%" FontWeight="SemiBold"/>
+                                             <TextBlock Text="Memory: 6.2/8 GB"/>
+                                         </StackPanel>
+                                     </Border>
+                                 </StackPanel>
+                             </Grid>
+                         </StackPanel>
+                     </ScrollViewer>
+                     
+                     <!-- Settings Page -->
+                      <ScrollViewer x:Name="SettingsPage" Visibility="Collapsed">
+                         <StackPanel Spacing="24" Padding="32">
+                             <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}"/>
+                             <TextBlock Text="Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt." TextWrapping="Wrap"/>
+                             <StackPanel Spacing="16">
+                                 <TextBlock Text="Application Settings" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                 <ToggleSwitch Header="Start with Windows" IsOn="False"/>
+                                 <ToggleSwitch Header="Minimize to System Tray" IsOn="True"/>
+                                 <ComboBox Header="Theme" SelectedIndex="0">
+                                     <ComboBoxItem Content="System Default"/>
+                                     <ComboBoxItem Content="Light"/>
+                                     <ComboBoxItem Content="Dark"/>
+                                 </ComboBox>
+                             </StackPanel>
+                         </StackPanel>
+                     </ScrollViewer>
+                 </Grid>
+                
+            </NavigationView>
         </Grid>
     </Grid>
 </Window>
