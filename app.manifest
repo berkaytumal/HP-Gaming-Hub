@@ -11,9 +11,9 @@
     </application>
   </compatibility>
   
-  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
     <security>
-      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+      <requestedPrivileges>
         <requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
       </requestedPrivileges>
     </security>
