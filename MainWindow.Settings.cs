@@ -12,6 +12,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Composition;
@@ -22,7 +23,7 @@ namespace HP_Gaming_Hub
     {
         // Navigation and Settings Event Handlers
         
-        private void MainNavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        private async void MainNavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
             // Find currently visible page
             FrameworkElement currentPage = null;
@@ -49,7 +50,7 @@ namespace HP_Gaming_Hub
             // Load preferences when navigating to settings page
             if (targetPage == SettingsPage)
             {
-                LoadSettingsPagePreferences();
+                await LoadSettingsPagePreferences();
             }
             
             // Determine animation direction based on index comparison
@@ -185,7 +186,7 @@ namespace HP_Gaming_Hub
         }
 
         // Settings Page Event Handlers
-        private void LoadSettingsPagePreferences()
+        private async Task LoadSettingsPagePreferences()
         {
             try
             {
@@ -213,10 +214,10 @@ namespace HP_Gaming_Hub
                         if (backdrop == "Image" && WallpaperPanel != null)
                         {
                             Debug.WriteLine($"[MainWindow] Image backdrop selected, showing wallpaper panel and applying wallpaper index {appSettings.SelectedWallpaperIndex}");
-                            WallpaperPanel.Visibility = Visibility.Visible;
+                            ShowWallpaperGalleryWithAnimation();
                             UpdateWallpaperSelection(appSettings.SelectedWallpaperIndex);
                             // Apply the saved wallpaper
-                            ApplyWallpaperSettings(appSettings.SelectedWallpaperIndex.ToString());
+                            await ApplyWallpaperSettings(appSettings.SelectedWallpaperIndex.ToString());
                         }
                         else if (WallpaperPanel != null)
                         {
@@ -244,7 +245,7 @@ namespace HP_Gaming_Hub
             }
         }
         
-        private void BackdropComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void BackdropComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
@@ -269,13 +270,13 @@ namespace HP_Gaming_Hub
                         if (WallpaperPanel != null)
                         {
                             Debug.WriteLine("[MainWindow] Showing wallpaper panel for Image backdrop");
-                            WallpaperPanel.Visibility = Visibility.Visible;
+                            ShowWallpaperGalleryWithAnimation();
                             
                             // Apply the default wallpaper immediately
                             var defaultWallpaperIndex = AppSettings.Instance.SelectedWallpaperIndex;
                             Debug.WriteLine($"[MainWindow] Applying default wallpaper index: {defaultWallpaperIndex}");
                             UpdateWallpaperSelection(defaultWallpaperIndex);
-                            ApplyWallpaperSettings(defaultWallpaperIndex.ToString());
+                            await ApplyWallpaperSettings(defaultWallpaperIndex.ToString());
                         }
                         else
                         {
@@ -287,7 +288,7 @@ namespace HP_Gaming_Hub
                         if (WallpaperPanel != null)
                         {
                             Debug.WriteLine("[MainWindow] Hiding wallpaper panel for non-Image backdrop");
-                            WallpaperPanel.Visibility = Visibility.Collapsed;
+                            HideWallpaperGalleryWithAnimation();
                         }
                         else
                         {
@@ -311,7 +312,7 @@ namespace HP_Gaming_Hub
             }
         }
         
-        private void WallpaperBorder_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void WallpaperBorder_Tapped(object sender, TappedRoutedEventArgs e)
         {
             // Handle wallpaper selection
             if (sender is Border border && border.Tag is string wallpaperIndex)
@@ -328,7 +329,7 @@ namespace HP_Gaming_Hub
                 
                 // Apply selected wallpaper
                 Debug.WriteLine($"[MainWindow] Applying wallpaper settings for index: {wallpaperIndex}");
-                ApplyWallpaperSettings(wallpaperIndex);
+                await ApplyWallpaperSettings(wallpaperIndex);
             }
         }
         
@@ -345,6 +346,8 @@ namespace HP_Gaming_Hub
                     {
                         border.BorderThickness = new Thickness(0);
                         border.BorderBrush = null;
+                        // Reset scale transform
+                        border.RenderTransform = new ScaleTransform { ScaleX = 1.0, ScaleY = 1.0 };
                     }
                 }
                 
@@ -373,7 +376,119 @@ namespace HP_Gaming_Hub
             }
         }
 
-        private void ApplyWallpaperSettings(string wallpaperIndex)
+        private void ShowWallpaperGalleryWithAnimation()
+        {
+            try
+            {
+                if (WallpaperPanel == null) return;
+
+                // Make panel visible but keep it transparent
+                WallpaperPanel.Visibility = Visibility.Visible;
+                WallpaperPanel.Opacity = 0;
+
+                // Animate panel fade-in
+                var panelFadeIn = new DoubleAnimation
+                {
+                    From = 0.0,
+                    To = 1.0,
+                    Duration = TimeSpan.FromMilliseconds(300),
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                };
+
+                var panelStoryboard = new Storyboard();
+                Storyboard.SetTarget(panelFadeIn, WallpaperPanel);
+                Storyboard.SetTargetProperty(panelFadeIn, "Opacity");
+                panelStoryboard.Children.Add(panelFadeIn);
+
+                // Start panel animation and then animate individual wallpapers
+                panelStoryboard.Completed += (s, e) => AnimateWallpaperThumbnails(true);
+                panelStoryboard.Begin();
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error showing wallpaper gallery: {ex.Message}");
+            }
+        }
+
+        private void HideWallpaperGalleryWithAnimation()
+        {
+            try
+            {
+                if (WallpaperPanel == null) return;
+
+                // Animate wallpapers out first, then panel
+                AnimateWallpaperThumbnails(false, () =>
+                {
+                    // Animate panel fade-out
+                    var panelFadeOut = new DoubleAnimation
+                    {
+                        From = 1.0,
+                        To = 0.0,
+                        Duration = TimeSpan.FromMilliseconds(200),
+                        EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn }
+                    };
+
+                    var panelStoryboard = new Storyboard();
+                    Storyboard.SetTarget(panelFadeOut, WallpaperPanel);
+                    Storyboard.SetTargetProperty(panelFadeOut, "Opacity");
+                    panelStoryboard.Children.Add(panelFadeOut);
+
+                    panelStoryboard.Completed += (s, e) =>
+                    {
+                        WallpaperPanel.Visibility = Visibility.Collapsed;
+                    };
+                    panelStoryboard.Begin();
+                });
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error hiding wallpaper gallery: {ex.Message}");
+            }
+        }
+
+        private void AnimateWallpaperThumbnails(bool fadeIn, Action onComplete = null)
+        {
+            try
+            {
+                var wallpaperBorders = new[] { Wallpaper0, Wallpaper1, Wallpaper2, Wallpaper3, Wallpaper4, Wallpaper6, Wallpaper7 };
+                var masterStoryboard = new Storyboard();
+                int delay = 0;
+
+                foreach (var border in wallpaperBorders)
+                {
+                    if (border == null) continue;
+
+                    // Opacity animation only
+                    var opacityAnimation = new DoubleAnimation
+                    {
+                        From = fadeIn ? 0.0 : 1.0,
+                        To = fadeIn ? 1.0 : 0.0,
+                        Duration = TimeSpan.FromMilliseconds(400),
+                        BeginTime = TimeSpan.FromMilliseconds(delay),
+                        EasingFunction = new QuadraticEase { EasingMode = fadeIn ? EasingMode.EaseOut : EasingMode.EaseIn }
+                    };
+
+                    Storyboard.SetTarget(opacityAnimation, border);
+                    Storyboard.SetTargetProperty(opacityAnimation, "Opacity");
+                    masterStoryboard.Children.Add(opacityAnimation);
+
+                    delay += 50; // Stagger each thumbnail by 50ms
+                }
+
+                if (onComplete != null)
+                {
+                    masterStoryboard.Completed += (s, e) => onComplete();
+                }
+
+                masterStoryboard.Begin();
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error animating wallpaper thumbnails: {ex.Message}");
+            }
+        }
+
+        private async Task ApplyWallpaperSettings(string wallpaperIndex)
          {
              try
              {
@@ -385,73 +500,52 @@ namespace HP_Gaming_Hub
                  
                  if (this.Content is Grid mainGrid)
                  {
-                     // Remove any existing wallpaper borders
+                     // Get existing wallpaper borders for animation
                      var existingBorders = mainGrid.Children.OfType<Border>().Where(b => b.Name == "WallpaperBorder").ToList();
-                     foreach (var border in existingBorders)
-                     {
-                         mainGrid.Children.Remove(border);
-                     }
                      
-                     // Create a container for the composition visual
+                     // Create a container for the new composition visual
                      var wallpaperContainer = new Border
                      {
-                         Name = "WallpaperBorder"
+                         Name = "WallpaperBorder",
+                         Opacity = 0 // Start invisible for fade-in animation
                      };
                      
                      mainGrid.Background = null;
                      mainGrid.Children.Insert(0, wallpaperContainer);
                      
-                     // Set up composition visual with gradient mask
-                     wallpaperContainer.Loaded += (s, e) =>
+                     // Animate out existing wallpapers if any
+                     if (existingBorders.Count > 0)
                      {
-                         var compositor = ElementCompositionPreview.GetElementVisual(wallpaperContainer).Compositor;
+                         var fadeOutStoryboard = new Storyboard();
                          
-                         // Create brush for the image
-                          var imageBrush = compositor.CreateSurfaceBrush(
-                               LoadedImageSurface.StartLoadFromUri(new Uri($"ms-appx://{wallpaperPath}"))
-                           );
-                           imageBrush.Stretch = Microsoft.UI.Composition.CompositionStretch.UniformToFill;
-                         
-                         // Create gradient mask (transparent -> opaque)
-                         var gradient = compositor.CreateLinearGradientBrush();
-                         gradient.StartPoint = new Vector2(0, 0);
-                         gradient.EndPoint = new Vector2(0, 1);
-                         
-                         var stop1 = compositor.CreateColorGradientStop();
-                         stop1.Offset = 0.5f;
-                         stop1.Color = Windows.UI.Color.FromArgb(8, 0, 0, 0); // fully transparent
-                         
-                         var stop2 = compositor.CreateColorGradientStop();
-                         stop2.Offset = 1f;
-                         stop2.Color = Colors.White; // solid
-                         
-                         gradient.ColorStops.Add(stop1);
-                         gradient.ColorStops.Add(stop2);
-                         
-                         // Mask brush
-                         var mask = compositor.CreateMaskBrush();
-                         mask.Source = imageBrush;
-                         mask.Mask = gradient;
-                         
-                         // SpriteVisual to display
-                         var sprite = compositor.CreateSpriteVisual();
-                         sprite.Brush = mask;
-                         sprite.Size = new Vector2(
-                             (float)mainGrid.ActualWidth,
-                             (float)mainGrid.ActualHeight
-                         );
-                         
-                         ElementCompositionPreview.SetElementChildVisual(wallpaperContainer, sprite);
-                         
-                         // Update size when grid size changes
-                         mainGrid.SizeChanged += (sender, args) =>
+                         foreach (var existingBorder in existingBorders)
                          {
-                             sprite.Size = new Vector2(
-                                 (float)args.NewSize.Width,
-                                 (float)args.NewSize.Height
-                             );
+                             var fadeOutAnimation = new DoubleAnimation
+                             {
+                                 From = 1.0,
+                                 To = 0.0,
+                                 Duration = new Duration(TimeSpan.FromMilliseconds(300))
+                             };
+                             
+                             Storyboard.SetTarget(fadeOutAnimation, existingBorder);
+                             Storyboard.SetTargetProperty(fadeOutAnimation, "Opacity");
+                             fadeOutStoryboard.Children.Add(fadeOutAnimation);
+                         }
+                         
+                         fadeOutStoryboard.Completed += (s, e) =>
+                         {
+                             // Remove old borders after fade out
+                             foreach (var border in existingBorders)
+                             {
+                                 mainGrid.Children.Remove(border);
+                             }
                          };
-                     };
+                         
+                         fadeOutStoryboard.Begin();
+                     }
+                     
+                     // Set up composition visual with gradient mask immediately
+                     await SetupWallpaperCompositionVisual(wallpaperContainer, wallpaperPath, mainGrid);
                  }
                  
                  LogInfo($"Wallpaper applied with acrylic backdrop: {wallpaperPath}");
@@ -469,6 +563,90 @@ namespace HP_Gaming_Hub
                  }
              }
           }
+
+         private async Task SetupWallpaperCompositionVisual(Border wallpaperContainer, string wallpaperPath, Grid mainGrid)
+         {
+             // Force layout update and wait a bit to ensure proper sizing
+             wallpaperContainer.UpdateLayout();
+             mainGrid.UpdateLayout();
+             await Task.Delay(50);
+             
+             var compositor = ElementCompositionPreview.GetElementVisual(wallpaperContainer).Compositor;
+             
+             // Create brush for the image
+             var imageBrush = compositor.CreateSurfaceBrush(
+                 LoadedImageSurface.StartLoadFromUri(new Uri($"ms-appx://{wallpaperPath}"))
+             );
+             imageBrush.Stretch = Microsoft.UI.Composition.CompositionStretch.UniformToFill;
+             
+             // Create gradient mask (transparent -> opaque)
+             var gradient = compositor.CreateLinearGradientBrush();
+             gradient.StartPoint = new Vector2(0, 0);
+             gradient.EndPoint = new Vector2(0, 1);
+             
+             var stop1 = compositor.CreateColorGradientStop();
+             stop1.Offset = 0.5f;
+             stop1.Color = Windows.UI.Color.FromArgb(8, 0, 0, 0); // fully transparent
+             
+             var stop2 = compositor.CreateColorGradientStop();
+             stop2.Offset = 1f;
+             stop2.Color = Colors.White; // solid
+             
+             gradient.ColorStops.Add(stop1);
+             gradient.ColorStops.Add(stop2);
+             
+             // Mask brush
+             var mask = compositor.CreateMaskBrush();
+             mask.Source = imageBrush;
+             mask.Mask = gradient;
+             
+             // SpriteVisual to display
+             var sprite = compositor.CreateSpriteVisual();
+             sprite.Brush = mask;
+             
+             // Ensure we have valid dimensions before setting size
+             var width = (float)mainGrid.ActualWidth;
+             var height = (float)mainGrid.ActualHeight;
+             
+             if (width > 0 && height > 0)
+             {
+                 sprite.Size = new Vector2(width, height);
+             }
+             else
+             {
+                 // Fallback to window bounds if ActualWidth/Height are still 0
+                 var bounds = this.AppWindow.Size;
+                 sprite.Size = new Vector2((float)bounds.Width, (float)bounds.Height);
+             }
+             
+             ElementCompositionPreview.SetElementChildVisual(wallpaperContainer, sprite);
+             
+             // Update size when grid size changes
+             mainGrid.SizeChanged += (sender, args) =>
+             {
+                 if (args.NewSize.Width > 0 && args.NewSize.Height > 0)
+                 {
+                     sprite.Size = new Vector2(
+                         (float)args.NewSize.Width,
+                         (float)args.NewSize.Height
+                     );
+                 }
+             };
+             
+             // Fade in the new wallpaper
+             var fadeInAnimation = new DoubleAnimation
+             {
+                 From = 0.0,
+                 To = 1.0,
+                 Duration = new Duration(TimeSpan.FromMilliseconds(400))
+             };
+             
+             var fadeInStoryboard = new Storyboard();
+             Storyboard.SetTarget(fadeInAnimation, wallpaperContainer);
+             Storyboard.SetTargetProperty(fadeInAnimation, "Opacity");
+             fadeInStoryboard.Children.Add(fadeInAnimation);
+             fadeInStoryboard.Begin();
+         }
 
          private void ApplyBackdropSettings(string backdropType)
           {

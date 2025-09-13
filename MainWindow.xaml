@@ -417,29 +417,29 @@
                                          </ComboBox>
                                          
                                          <!-- Wallpaper Selection Panel -->
-                                         <StackPanel x:Name="WallpaperPanel" Visibility="Collapsed" Spacing="12">
+                                         <StackPanel x:Name="WallpaperPanel" Visibility="Collapsed" Spacing="12" Opacity="0">
                                              <TextBlock Text="Select Wallpaper" FontWeight="SemiBold"/>
                                              <ScrollViewer HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled">
-                                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                                     <Border x:Name="Wallpaper0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="0">
+                                                 <StackPanel x:Name="WallpaperGallery" Orientation="Horizontal" Spacing="12">
+                                                     <Border x:Name="Wallpaper0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="0" Opacity="0">
                                                          <Image Source="/Assets/wallpapers/0.png" Stretch="UniformToFill"/>
                                                      </Border>
-                                                     <Border x:Name="Wallpaper1" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="1">
+                                                     <Border x:Name="Wallpaper1" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="1" Opacity="0">
                                                          <Image Source="/Assets/wallpapers/1.png" Stretch="UniformToFill"/>
                                                      </Border>
-                                                     <Border x:Name="Wallpaper2" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="2">
+                                                     <Border x:Name="Wallpaper2" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="2" Opacity="0">
                                                          <Image Source="/Assets/wallpapers/2.png" Stretch="UniformToFill"/>
                                                      </Border>
-                                                     <Border x:Name="Wallpaper3" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="3">
+                                                     <Border x:Name="Wallpaper3" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="3" Opacity="0">
                                                          <Image Source="/Assets/wallpapers/3.png" Stretch="UniformToFill"/>
                                                      </Border>
-                                                     <Border x:Name="Wallpaper4" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="4">
+                                                     <Border x:Name="Wallpaper4" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="4" Opacity="0">
                                                          <Image Source="/Assets/wallpapers/4.png" Stretch="UniformToFill"/>
                                                      </Border>
-                                                     <Border x:Name="Wallpaper6" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="6">
+                                                     <Border x:Name="Wallpaper6" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="6" Opacity="0">
                                                          <Image Source="/Assets/wallpapers/6.png" Stretch="UniformToFill"/>
                                                      </Border>
-                                                     <Border x:Name="Wallpaper7" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="7">
+                                                     <Border x:Name="Wallpaper7" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="7" Opacity="0">
                                                          <Image Source="/Assets/wallpapers/7.png" Stretch="UniformToFill"/>
                                                      </Border>
                                                  </StackPanel>

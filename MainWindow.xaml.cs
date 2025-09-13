@@ -46,9 +46,14 @@ namespace HP_Gaming_Hub
             
             // Load and apply saved settings on startup
             Debug.WriteLine("[MainWindow] Loading saved settings on startup");
-            LoadSettingsPagePreferences();
+            _ = InitializeAsync();
             
             InitializeMonitoring();
+        }
+
+        private async Task InitializeAsync()
+        {
+            await LoadSettingsPagePreferences();
         }
 
         // InitializeMonitoring method moved to MainWindow.Core.cs
