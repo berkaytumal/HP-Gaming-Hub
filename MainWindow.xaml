@@ -490,32 +490,30 @@
                      </ScrollViewer>
                      
                      <!-- Console Page -->
-                     <ScrollViewer x:Name="ConsolePage" Visibility="Collapsed">
-                         <StackPanel Spacing="24">
-                             <TextBlock Text="Console" Style="{StaticResource TitleTextBlockStyle}"/>
-                             <TextBlock Text="Real-time application logs and debug information from HP Gaming Hub and OmenMon service." TextWrapping="Wrap"/>
-                             
-                             <!-- Console Controls -->
-                             <StackPanel Orientation="Horizontal" Spacing="12">
-                                 <Button x:Name="ClearConsoleButton" Content="Clear" Click="ClearConsoleButton_Click"/>
-                                 <ToggleButton x:Name="AutoScrollToggle" Content="Auto-scroll" IsChecked="True"/>
-                                 <ComboBox x:Name="LogLevelFilter" Header="Filter" SelectedIndex="0">
-                                     <ComboBoxItem Content="All" Tag="All"/>
-                                     <ComboBoxItem Content="Debug" Tag="Debug"/>
-                                     <ComboBoxItem Content="Info" Tag="Info"/>
-                                     <ComboBoxItem Content="Warning" Tag="Warning"/>
-                                     <ComboBoxItem Content="Error" Tag="Error"/>
-                                 </ComboBox>
-                             </StackPanel>
-                             
-                             <!-- Console Output -->
-                             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16" MinHeight="400">
-                                 <ScrollViewer x:Name="ConsoleScrollViewer" ZoomMode="Disabled" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                                     <TextBlock x:Name="ConsoleOutput" FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Text="HP Gaming Hub Console - Ready\n"/>
-                                 </ScrollViewer>
-                             </Border>
-                         </StackPanel>
-                     </ScrollViewer>
+                     <Grid x:Name="ConsolePage" Visibility="Collapsed">
+                         <Grid.RowDefinitions>
+                             <RowDefinition Height="Auto"/>
+                             <RowDefinition Height="Auto"/>
+                             <RowDefinition Height="Auto"/>
+                             <RowDefinition Height="*"/>
+                         </Grid.RowDefinitions>
+                         
+                         <TextBlock Grid.Row="0" Text="Console" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,12"/>
+                         <TextBlock Grid.Row="1" Text="Real-time application logs and debug information from HP Gaming Hub and OmenMon service." TextWrapping="Wrap" Margin="0,0,0,24"/>
+                         
+                         <!-- Console Controls -->
+                          <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="12" Margin="0,0,0,24">
+                              <Button x:Name="ClearConsoleButton" Content="Clear" Click="ClearConsoleButton_Click"/>
+                              <ToggleButton x:Name="AutoScrollToggle" Content="Auto-scroll" IsChecked="True"/>
+                          </StackPanel>
+                         
+                         <!-- Console Output -->
+                         <Border Grid.Row="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                             <ScrollViewer x:Name="ConsoleScrollViewer" ZoomMode="Disabled" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                 <TextBlock x:Name="ConsoleOutput" FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Text="HP Gaming Hub Console - Ready\n"/>
+                             </ScrollViewer>
+                         </Border>
+                     </Grid>
                      
                      <!-- Settings Page -->
                       <ScrollViewer x:Name="SettingsPage" Visibility="Collapsed">
