@@ -181,11 +181,15 @@ namespace HP_Gaming_Hub
         {
             try
             {
+                Debug.WriteLine("[MainWindow] LoadSettingsPagePreferences called");
                 var appSettings = AppSettings.Instance;
+                
+                Debug.WriteLine($"[MainWindow] Retrieved settings - BackdropSelectedIndex: {appSettings.BackdropSelectedIndex}, SelectedWallpaperIndex: {appSettings.SelectedWallpaperIndex}");
                 
                 // Load backdrop selection without triggering events
                 if (BackdropComboBox != null)
                 {
+                    Debug.WriteLine($"[MainWindow] Setting BackdropComboBox.SelectedIndex to {appSettings.BackdropSelectedIndex}");
                     BackdropComboBox.SelectionChanged -= BackdropComboBox_SelectionChanged;
                     BackdropComboBox.SelectedIndex = appSettings.BackdropSelectedIndex;
                     BackdropComboBox.SelectionChanged += BackdropComboBox_SelectionChanged;
@@ -194,11 +198,13 @@ namespace HP_Gaming_Hub
                     if (BackdropComboBox.SelectedItem is ComboBoxItem selectedItem)
                     {
                         var backdrop = selectedItem.Tag?.ToString();
+                        Debug.WriteLine($"[MainWindow] Applying backdrop setting: {backdrop}");
                         ApplyBackdropSettings(backdrop);
                         
                         // Show wallpaper panel and apply wallpaper if Image backdrop is selected
                         if (backdrop == "Image" && WallpaperPanel != null)
                         {
+                            Debug.WriteLine($"[MainWindow] Image backdrop selected, showing wallpaper panel and applying wallpaper index {appSettings.SelectedWallpaperIndex}");
                             WallpaperPanel.Visibility = Visibility.Visible;
                             UpdateWallpaperSelection(appSettings.SelectedWallpaperIndex);
                             // Apply the saved wallpaper
@@ -206,15 +212,26 @@ namespace HP_Gaming_Hub
                         }
                         else if (WallpaperPanel != null)
                         {
+                            Debug.WriteLine("[MainWindow] Non-image backdrop selected, hiding wallpaper panel");
                             WallpaperPanel.Visibility = Visibility.Collapsed;
                         }
                     }
+                    else
+                    {
+                        Debug.WriteLine("[MainWindow] Warning: BackdropComboBox.SelectedItem is not a ComboBoxItem");
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine("[MainWindow] Warning: BackdropComboBox is null");
                 }
                 
                 LogInfo("Settings page preferences loaded");
+                Debug.WriteLine("[MainWindow] LoadSettingsPagePreferences completed successfully");
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[MainWindow] Error in LoadSettingsPagePreferences: {ex.Message}");
                 LogError($"Error loading settings page preferences: {ex.Message}");
             }
         }
@@ -223,14 +240,19 @@ namespace HP_Gaming_Hub
         {
             try
             {
+                Debug.WriteLine($"[MainWindow] BackdropComboBox_SelectionChanged triggered, SelectedIndex: {BackdropComboBox?.SelectedIndex}");
+                
                 if (BackdropComboBox?.SelectedItem is ComboBoxItem selectedItem)
                 {
                     var backdrop = selectedItem.Tag?.ToString();
+                    Debug.WriteLine($"[MainWindow] User selected backdrop: {backdrop}");
                     
                     // Save preference
+                    Debug.WriteLine($"[MainWindow] Saving BackdropSelectedIndex: {BackdropComboBox.SelectedIndex}");
                     AppSettings.Instance.BackdropSelectedIndex = BackdropComboBox.SelectedIndex;
                     
                     // Apply the selected backdrop
+                    Debug.WriteLine($"[MainWindow] Applying backdrop: {backdrop}");
                     ApplyBackdropSettings(backdrop);
                     
                     // Show/hide wallpaper selection based on backdrop choice
@@ -238,6 +260,7 @@ namespace HP_Gaming_Hub
                     {
                         if (WallpaperPanel != null)
                         {
+                            Debug.WriteLine("[MainWindow] Showing wallpaper panel for Image backdrop");
                             WallpaperPanel.Visibility = Visibility.Visible;
                         }
                         else
@@ -249,6 +272,7 @@ namespace HP_Gaming_Hub
                     {
                         if (WallpaperPanel != null)
                         {
+                            Debug.WriteLine("[MainWindow] Hiding wallpaper panel for non-Image backdrop");
                             WallpaperPanel.Visibility = Visibility.Collapsed;
                         }
                         else
@@ -262,6 +286,7 @@ namespace HP_Gaming_Hub
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[MainWindow] Error in BackdropComboBox_SelectionChanged: {ex.Message}");
                 LogError($"Error in BackdropComboBox_SelectionChanged: {ex.Message}");
                 if (SettingsInfoBar != null)
                 {
@@ -277,14 +302,18 @@ namespace HP_Gaming_Hub
             // Handle wallpaper selection
             if (sender is Border border && border.Tag is string wallpaperIndex)
             {
+                Debug.WriteLine($"[MainWindow] WallpaperBorder_Tapped - wallpaper index: {wallpaperIndex}");
+                
                 // Save preference
                 if (int.TryParse(wallpaperIndex, out int index))
                 {
+                    Debug.WriteLine($"[MainWindow] Saving SelectedWallpaperIndex: {index}");
                     AppSettings.Instance.SelectedWallpaperIndex = index;
                     UpdateWallpaperSelection(index);
                 }
                 
                 // Apply selected wallpaper
+                Debug.WriteLine($"[MainWindow] Applying wallpaper settings for index: {wallpaperIndex}");
                 ApplyWallpaperSettings(wallpaperIndex);
             }
         }

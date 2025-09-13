@@ -423,7 +423,7 @@
                                  <TextBlock Text="Backdrop" Style="{StaticResource SubtitleTextBlockStyle}"/>
                                  <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
                                      <StackPanel Spacing="16">
-                                         <ComboBox x:Name="BackdropComboBox" Header="Backdrop Type" SelectedIndex="0" SelectionChanged="BackdropComboBox_SelectionChanged">
+                                         <ComboBox x:Name="BackdropComboBox" Header="Backdrop Type" SelectionChanged="BackdropComboBox_SelectionChanged">
                                              <ComboBoxItem Content="Mica (Default)" Tag="Mica"/>
                                              <ComboBoxItem Content="Acrylic" Tag="Acrylic"/>
                                              <ComboBoxItem Content="Image" Tag="Image"/>

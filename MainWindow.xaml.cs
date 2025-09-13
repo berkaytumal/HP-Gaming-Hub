@@ -43,6 +43,11 @@ namespace HP_Gaming_Hub
             SetTitleBar(AppTitleBar);
             _hardwareMonitorViewModel = new HardwareMonitorViewModel();
             LogInfo("HP Gaming Hub started - Initializing monitoring...");
+            
+            // Load and apply saved settings on startup
+            Debug.WriteLine("[MainWindow] Loading saved settings on startup");
+            LoadSettingsPagePreferences();
+            
             InitializeMonitoring();
         }
 
