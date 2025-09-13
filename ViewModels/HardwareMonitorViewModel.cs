@@ -939,6 +939,7 @@ namespace HP_Gaming_Hub.ViewModels
         {
             StopMonitoring();
             _updateTimer?.Stop();
+            _omenMonService?.Dispose();
         }
         #endregion
     }

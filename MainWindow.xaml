@@ -502,16 +502,17 @@
                          <TextBlock Grid.Row="1" Text="Real-time application logs and debug information from HP Gaming Hub and OmenMon service." TextWrapping="Wrap" Margin="0,0,0,24"/>
                          
                          <!-- Console Controls -->
-                          <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="12" Margin="0,0,0,24">
-                              <Button x:Name="ClearConsoleButton" Content="Clear" Click="ClearConsoleButton_Click"/>
-                              <ToggleButton x:Name="AutoScrollToggle" Content="Auto-scroll" IsChecked="True"/>
-                          </StackPanel>
+                           <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="12" Margin="0,0,0,24">
+                               <Button x:Name="ClearConsoleButton" Content="Clear" Click="ClearConsoleButton_Click"/>
+                               <Button x:Name="CopyConsoleButton" Content="Copy" Click="CopyConsoleButton_Click"/>
+                               <ToggleButton x:Name="AutoScrollToggle" Content="Auto-scroll" IsChecked="True"/>
+                           </StackPanel>
                          
                          <!-- Console Output -->
                          <Border Grid.Row="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
                              <ScrollViewer x:Name="ConsoleScrollViewer" ZoomMode="Disabled" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                                 <TextBlock x:Name="ConsoleOutput" FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Text="HP Gaming Hub Console - Ready\n"/>
-                             </ScrollViewer>
+                                  <TextBlock x:Name="ConsoleOutput" FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Text="HP Gaming Hub Console - Ready\n" IsTextSelectionEnabled="True"/>
+                              </ScrollViewer>
                          </Border>
                      </Grid>
                      

@@ -1409,6 +1409,23 @@ namespace HP_Gaming_Hub
             ConsoleOutput.Text = "HP Gaming Hub Console - Ready\n";
         }
 
+        private void CopyConsoleButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
+                dataPackage.SetText(ConsoleOutput.Text);
+                Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
+                
+                // Optional: Show a brief confirmation
+                AppendToConsole("Console content copied to clipboard", "INFO");
+            }
+            catch (Exception ex)
+            {
+                AppendToConsole($"Failed to copy to clipboard: {ex.Message}", "ERROR");
+            }
+        }
+
         public void AppendToConsole(string message, string level = "INFO")
         {
             DispatcherQueue.TryEnqueue(() =>

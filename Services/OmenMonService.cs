@@ -12,10 +12,12 @@ using Windows.Storage;
 
 namespace HP_Gaming_Hub.Services
 {
-    public class OmenMonService
+    public class OmenMonService : IDisposable
     {
         private readonly string _omenMonPath;
         private const int CommandTimeoutMs = 10000; // 10 seconds timeout
+        private readonly WindowsApiTemperatureService _windowsApiService;
+        private bool _useWindowsApi = true; // Try Windows API first
 
         public OmenMonService(string omenMonPath = null)
         {
@@ -28,6 +30,19 @@ namespace HP_Gaming_Hub.Services
             {
                 _omenMonPath = omenMonPath;
             }
+            
+            // Initialize Windows API temperature service
+            try
+            {
+                _windowsApiService = new WindowsApiTemperatureService();
+                Debug.WriteLine("[OmenMonService] Windows API temperature service initialized");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[OmenMonService] Failed to initialize Windows API service: {ex.Message}");
+                _useWindowsApi = false;
+            }
+            
             ValidateConfiguration();
         }
 
@@ -385,16 +400,51 @@ namespace HP_Gaming_Hub.Services
         public async Task<TemperatureData> GetTemperaturesAsync()
         {
             Debug.WriteLine("[GetTemperaturesAsync] Starting temperature retrieval");
-            var result = await ExecuteCommandAsync("-Bios Temp");
             
-            if (!result.Success)
+            // Try Windows API first if available
+            if (_useWindowsApi && _windowsApiService != null && _windowsApiService.IsAvailable())
             {
-                Debug.WriteLine($"[GetTemperaturesAsync] Command failed - Error: {result.ErrorMessage}, Type: {result.ErrorType}, ExitCode: {result.ExitCode}");
-                return new TemperatureData();
+                try
+                {
+                    Debug.WriteLine("[GetTemperaturesAsync] Trying Windows API temperature monitoring");
+                    var windowsApiData = await _windowsApiService.GetTemperaturesAsync();
+                    
+                    // Check if we got valid temperature data
+                    if (windowsApiData.CpuTemperature > 0 || windowsApiData.GpuTemperature > 0)
+                    {
+                        Debug.WriteLine($"[GetTemperaturesAsync] Windows API succeeded - CPU: {windowsApiData.CpuTemperature}°C, GPU: {windowsApiData.GpuTemperature}°C");
+                        return windowsApiData;
+                    }
+                    else
+                    {
+                        Debug.WriteLine("[GetTemperaturesAsync] Windows API returned no valid temperature data, falling back to OmenMon");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[GetTemperaturesAsync] Windows API failed: {ex.Message}, falling back to OmenMon");
+                    _useWindowsApi = false; // Disable Windows API for future calls
+                }
             }
             
-            Debug.WriteLine($"[GetTemperaturesAsync] Command succeeded, parsing output");
-            return ParseTemperatureData(result.Output);
+            // Fall back to OmenMon
+            Debug.WriteLine("[GetTemperaturesAsync] Using OmenMon for temperature retrieval");
+            var result = await ExecuteCommandAsync("-Bios");
+            
+            var tempData = new TemperatureData();
+            
+            if (result.Success)
+            {
+                Debug.WriteLine($"[GetTemperaturesAsync] OmenMon BIOS command succeeded, parsing output");
+                tempData = ParseTemperatureData(result.Output);
+            }
+            else
+            {
+                Debug.WriteLine($"[GetTemperaturesAsync] OmenMon BIOS command failed - Error: {result.ErrorMessage}");
+            }
+            
+            Debug.WriteLine($"[GetTemperaturesAsync] Final temperatures - CPU: {tempData.CpuTemperature}°C, GPU: {tempData.GpuTemperature}°C");
+            return tempData;
         }
 
         /// <summary>
@@ -403,15 +453,15 @@ namespace HP_Gaming_Hub.Services
         public async Task<FanData> GetFanDataAsync()
         {
             Debug.WriteLine("[GetFanDataAsync] Starting fan data retrieval");
-            var result = await ExecuteCommandAsync("-Bios FanCount FanLevel FanMax FanMode");
+            var result = await ExecuteCommandAsync("-Bios");
             
             if (!result.Success)
             {
-                Debug.WriteLine($"[GetFanDataAsync] Command failed - Error: {result.ErrorMessage}, Type: {result.ErrorType}, ExitCode: {result.ExitCode}");
+                Debug.WriteLine($"[GetFanDataAsync] BIOS command failed - Error: {result.ErrorMessage}, Type: {result.ErrorType}, ExitCode: {result.ExitCode}");
                 return new FanData();
             }
             
-            Debug.WriteLine($"[GetFanDataAsync] Command succeeded, parsing output");
+            Debug.WriteLine($"[GetFanDataAsync] BIOS command succeeded, parsing output");
             return ParseFanData(result.Output);
         }
 
@@ -808,30 +858,31 @@ namespace HP_Gaming_Hub.Services
             {
                 Debug.WriteLine($"[ParseTemperatureData] Processing line: {line}");
                 
-                if (line.Contains("CPU") && line.Contains("°C"))
+                // Parse OmenMon temperature format: "- Temperature: 0x00 = 0b00000000 = 0 [°C]"
+                if (line.Contains("Temperature:") && line.Contains("[°C]"))
                 {
-                    var match = Regex.Match(line, @"(\d+)°C");
+                    // Extract the decimal value before [°C]
+                    var match = Regex.Match(line, @"=\s*(\d+)\s*\[°C\]");
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int temp))
                     {
+                        // For now, assume this is CPU temperature since OmenMon -Bios Temp returns CPU temp
+                        // We'll need separate calls for GPU temperature if available
                         tempData.CpuTemperature = temp;
                         Debug.WriteLine($"[ParseTemperatureData] Found CPU temperature: {temp}°C");
                     }
                     else
                     {
-                        Debug.WriteLine($"[ParseTemperatureData] Failed to parse CPU temperature from: {line}");
+                        Debug.WriteLine($"[ParseTemperatureData] Failed to parse temperature from: {line}");
                     }
                 }
-                else if (line.Contains("GPU") && line.Contains("°C"))
+                // Also check for GPU Peak Temperature if present
+                else if (line.Contains("GPU Peak Temperature") && line.Contains("[°C]"))
                 {
-                    var match = Regex.Match(line, @"(\d+)°C");
+                    var match = Regex.Match(line, @"=\s*(\d+)\s*\[°C\]");
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int temp))
                     {
                         tempData.GpuTemperature = temp;
                         Debug.WriteLine($"[ParseTemperatureData] Found GPU temperature: {temp}°C");
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"[ParseTemperatureData] Failed to parse GPU temperature from: {line}");
                     }
                 }
             }
@@ -860,9 +911,10 @@ namespace HP_Gaming_Hub.Services
             {
                 Debug.WriteLine($"[ParseFanData] Processing line: {line}");
                 
+                // Parse OmenMon fan count format: "- Fan Count: 0x02 = 0b00000010 = 2"
                 if (line.Contains("Fan Count:"))
                 {
-                    var match = Regex.Match(line, @"Fan Count:\s*(\d+)");
+                    var match = Regex.Match(line, @"=\s*(\d+)\s*$");
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int count))
                     {
                         fanData.FanCount = count;
@@ -873,43 +925,48 @@ namespace HP_Gaming_Hub.Services
                         Debug.WriteLine($"[ParseFanData] Failed to parse fan count from: {line}");
                     }
                 }
-                else if (line.Contains("Fan Level:"))
+                // Parse individual fan levels: "- Fan #1 Level: 0x1f = 0b00011111 = 31 [Cpu]"
+                else if (line.Contains("Fan #1 Level:"))
                 {
-                    var match = Regex.Match(line, @"Fan Level:\s*(\d+),\s*(\d+)");
-                    if (match.Success)
+                    var match = Regex.Match(line, @"=\s*(\d+)\s*\[");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int level))
                     {
-                        if (int.TryParse(match.Groups[1].Value, out int fan1))
-                        {
-                            fanData.Fan1Speed = fan1;
-                            Debug.WriteLine($"[ParseFanData] Found Fan1 speed: {fan1} RPM");
-                        }
-                        if (int.TryParse(match.Groups[2].Value, out int fan2))
-                        {
-                            fanData.Fan2Speed = fan2;
-                            Debug.WriteLine($"[ParseFanData] Found Fan2 speed: {fan2} RPM");
-                        }
+                        // Convert fan level (0-255) to approximate RPM
+                        // Typical conversion: RPM = (level / 255) * max_rpm
+                        // Assuming max RPM around 4000-5000 for gaming laptops
+                        fanData.Fan1Speed = (int)((level / 255.0) * 4500);
+                        fanData.Fan1Level = level;
+                        Debug.WriteLine($"[ParseFanData] Found Fan1 level: {level}, calculated speed: {fanData.Fan1Speed} RPM");
                     }
                     else
                     {
-                        Debug.WriteLine($"[ParseFanData] Failed to parse fan levels from: {line}");
+                        Debug.WriteLine($"[ParseFanData] Failed to parse Fan1 level from: {line}");
                     }
                 }
-                else if (line.Contains("Fan Mode:"))
+                else if (line.Contains("Fan #2 Level:"))
                 {
-                    var match = Regex.Match(line, @"Fan Mode:\s*(.+)");
-                    if (match.Success)
+                    var match = Regex.Match(line, @"=\s*(\d+)\s*\[");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int level))
                     {
-                        fanData.FanMode = match.Groups[1].Value.Trim();
-                        Debug.WriteLine($"[ParseFanData] Found fan mode: {fanData.FanMode}");
+                        // Convert fan level (0-255) to approximate RPM
+                        fanData.Fan2Speed = (int)((level / 255.0) * 4500);
+                        fanData.Fan2Level = level;
+                        Debug.WriteLine($"[ParseFanData] Found Fan2 level: {level}, calculated speed: {fanData.Fan2Speed} RPM");
                     }
                     else
                     {
-                        Debug.WriteLine($"[ParseFanData] Failed to parse fan mode from: {line}");
+                        Debug.WriteLine($"[ParseFanData] Failed to parse Fan2 level from: {line}");
                     }
+                }
+                // Parse maximum fan speed setting: "- Maximum Fan Speed: No"
+                else if (line.Contains("Maximum Fan Speed:"))
+                {
+                    var isMaxSpeed = line.Contains("Yes");
+                    Debug.WriteLine($"[ParseFanData] Maximum fan speed mode: {isMaxSpeed}");
                 }
             }
             
-            Debug.WriteLine($"[ParseFanData] Final result - Count: {fanData.FanCount}, Fan1: {fanData.Fan1Speed} RPM, Fan2: {fanData.Fan2Speed} RPM, Mode: {fanData.FanMode}");
+            Debug.WriteLine($"[ParseFanData] Final result - Count: {fanData.FanCount}, Fan1: {fanData.Fan1Speed} RPM (Level: {fanData.Fan1Level}), Fan2: {fanData.Fan2Speed} RPM (Level: {fanData.Fan2Level}), Mode: {fanData.FanMode}");
             return fanData;
         }
 
@@ -1019,6 +1076,71 @@ namespace HP_Gaming_Hub.Services
             }
             
             return fanTableData;
+        }
+
+        /// <summary>
+        /// Test both Windows API and OmenMon temperature monitoring methods
+        /// </summary>
+        public async Task<string> TestTemperatureMethodsAsync()
+        {
+            var results = new List<string>();
+            
+            // Test Windows API
+            if (_windowsApiService != null && _windowsApiService.IsAvailable())
+            {
+                try
+                {
+                    var windowsApiData = await _windowsApiService.GetTemperaturesAsync();
+                    results.Add($"Windows API - CPU: {windowsApiData.CpuTemperature}°C, GPU: {windowsApiData.GpuTemperature}°C");
+                    
+                    var hardwareInfo = await _windowsApiService.GetHardwareInfoAsync();
+                    results.Add($"Available Hardware:\n{hardwareInfo}");
+                }
+                catch (Exception ex)
+                {
+                    results.Add($"Windows API Error: {ex.Message}");
+                }
+            }
+            else
+            {
+                results.Add("Windows API: Not available");
+            }
+            
+            // Test OmenMon
+            try
+            {
+                var omenResult = await ExecuteCommandAsync("-Bios");
+                if (omenResult.Success)
+                {
+                    var omenData = ParseTemperatureData(omenResult.Output);
+                    results.Add($"OmenMon - CPU: {omenData.CpuTemperature}°C, GPU: {omenData.GpuTemperature}°C");
+                }
+                else
+                {
+                    results.Add($"OmenMon Error: {omenResult.ErrorMessage}");
+                }
+            }
+            catch (Exception ex)
+            {
+                results.Add($"OmenMon Exception: {ex.Message}");
+            }
+            
+            return string.Join(Environment.NewLine, results);
+        }
+
+        /// <summary>
+        /// Dispose of resources
+        /// </summary>
+        public void Dispose()
+        {
+            try
+            {
+                _windowsApiService?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[OmenMonService] Error during disposal: {ex.Message}");
+            }
         }
     }
 
