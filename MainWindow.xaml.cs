@@ -29,7 +29,7 @@ namespace HP_Gaming_Hub
         public MainWindow()
         {
             this.InitializeComponent();
-
+        }   
             // Extend content into title bar and set custom title bar
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
