@@ -14,6 +14,27 @@
     </Window.SystemBackdrop>
 
     <Grid>
-
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Custom Title Bar -->
+        <Grid x:Name="AppTitleBar" Grid.Row="0" Height="32">
+            <Image Source="Assets/Square44x44Logo.targetsize-24_altform-unplated.png" 
+                   HorizontalAlignment="Left" 
+                   Width="16" Height="16" 
+                   Margin="8,0"/> 
+            <TextBlock x:Name="AppTitleTextBlock" Text="HP Gaming Hub" 
+                       TextWrapping="NoWrap" 
+                       Style="{StaticResource CaptionTextBlockStyle}" 
+                       VerticalAlignment="Center" 
+                       Margin="28,0,0,0"/> 
+        </Grid>
+        
+        <!-- Main Content Area -->
+        <Grid Grid.Row="1">
+            
+        </Grid>
     </Grid>
 </Window>
