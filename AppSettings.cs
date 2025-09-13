@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using Windows.Storage;
+using Microsoft.Extensions.Configuration;
 
 namespace HP_Gaming_Hub
 {
@@ -45,7 +46,7 @@ namespace HP_Gaming_Hub
         
         public bool IsAppDevelopment
         {
-            get => _settings.IsAppDevelopment;
+            get => _settings.IsAppDevelopment || GetAppConfigValue("ForceWelcomeScreen", false);
             set
             {
                 _settings.IsAppDevelopment = value;
@@ -120,6 +121,30 @@ namespace HP_Gaming_Hub
         {
             var localFolder = ApplicationData.Current.LocalFolder;
             return Path.Combine(localFolder.Path, "OmenMon.xml");
+        }
+        
+        private bool GetAppConfigValue(string key, bool defaultValue)
+        {
+            try
+            {
+                var appSettingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+                if (File.Exists(appSettingsPath))
+                {
+                    var json = File.ReadAllText(appSettingsPath);
+                    using var document = JsonDocument.Parse(json);
+                    
+                    if (document.RootElement.TryGetProperty("AppConfiguration", out var appConfig) &&
+                        appConfig.TryGetProperty(key, out var property))
+                    {
+                        return property.GetBoolean();
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore errors and return default
+            }
+            return defaultValue;
         }
     }
     
