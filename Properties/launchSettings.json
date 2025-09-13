@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "HP Gaming Hub (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "HP Gaming Hub (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

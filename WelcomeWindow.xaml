@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window x:Class="HP_Gaming_Hub.WelcomeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="HP Gaming Hub Setup">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Main Content Area -->
+        <Border Grid.Row="0" Background="Transparent" Padding="40">
+            <Grid x:Name="ContentGrid">
+                
+                <!-- Page 1: Welcome -->
+                <StackPanel x:Name="Page1" Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Opacity="1">
+                    <StackPanel.RenderTransform>
+                        <TranslateTransform X="0" Y="0"/>
+                    </StackPanel.RenderTransform>
+                    <TextBlock Text="Welcome to HP Gaming Hub!" 
+                               FontSize="36" 
+                               FontWeight="Bold" 
+                               HorizontalAlignment="Center" 
+                               Margin="0,0,0,20"
+                               Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="An open source alternative to Omen Gaming Hub" 
+                               FontSize="18" 
+                               HorizontalAlignment="Center" 
+                               TextWrapping="Wrap"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <Image Source="Assets/Square150x150Logo.png" 
+                           Width="120" 
+                           Height="120" 
+                           Margin="0,40,0,0"/>
+                </StackPanel>
+                
+                <!-- Page 2: Features -->
+                <StackPanel x:Name="Page2" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Opacity="0">
+                    <StackPanel.RenderTransform>
+                        <TranslateTransform X="30" Y="0"/>
+                    </StackPanel.RenderTransform>
+                    <TextBlock Text="Here's what you can do!" 
+                               FontSize="32" 
+                               FontWeight="Bold" 
+                               HorizontalAlignment="Center" 
+                               Margin="0,0,0,30"
+                               Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." 
+                               FontSize="16" 
+                               HorizontalAlignment="Center" 
+                               TextWrapping="Wrap"
+                               MaxWidth="600"
+                               TextAlignment="Center"
+                               LineHeight="24"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+                
+                <!-- Page 3: Download Helper -->
+                <StackPanel x:Name="Page3" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Opacity="0">
+                    <StackPanel.RenderTransform>
+                        <TranslateTransform X="30" Y="0"/>
+                    </StackPanel.RenderTransform>
+                    <TextBlock Text="We need a helper first" 
+                               FontSize="32" 
+                               FontWeight="Bold" 
+                               HorizontalAlignment="Center" 
+                               Margin="0,0,0,20"
+                               Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="(Not optional)" 
+                               FontSize="14" 
+                               HorizontalAlignment="Center" 
+                               Margin="0,0,0,30"
+                               Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
+                    
+                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                            CornerRadius="8" 
+                            Padding="20" 
+                            MaxWidth="500">
+                        <StackPanel>
+                            <TextBlock Text="OmenMon Helper" 
+                                       FontSize="18" 
+                                       FontWeight="SemiBold" 
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="We'll download the latest OmenMon from GitHub and extract the necessary files (OmenMon.exe and OmenMon.xml)." 
+                                       TextWrapping="Wrap" 
+                                       Margin="0,0,0,20"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            
+                            <StackPanel x:Name="DownloadButtonPanel" HorizontalAlignment="Center">
+                                <Button x:Name="DownloadButton" 
+                                        Content="Download OmenMon" 
+                                        HorizontalAlignment="Center" 
+                                        Padding="20,10" 
+                                        Click="DownloadButton_Click"/>
+                                        
+                                <Button x:Name="RedownloadButton" 
+                                        Content="Re-download OmenMon" 
+                                        HorizontalAlignment="Center" 
+                                        Padding="20,10" 
+                                        Margin="0,10,0,0"
+                                        Visibility="Collapsed"
+                                        Click="DownloadButton_Click"/>
+                            </StackPanel>
+                            
+                            <ProgressBar x:Name="DownloadProgress" 
+                                         Visibility="Collapsed" 
+                                         Margin="0,20,0,0" 
+                                         Height="4"/>
+                            
+                            <TextBlock x:Name="DownloadStatus" 
+                                       Text="" 
+                                       HorizontalAlignment="Center" 
+                                       Margin="0,10,0,0" 
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+                
+                <!-- Page 4: Ready to Start -->
+                <StackPanel x:Name="Page4" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Opacity="0">
+                    <StackPanel.RenderTransform>
+                        <TranslateTransform X="30" Y="0"/>
+                    </StackPanel.RenderTransform>
+                    <TextBlock Text="Let's start!" 
+                               FontSize="36" 
+                               FontWeight="Bold" 
+                               HorizontalAlignment="Center" 
+                               Margin="0,0,0,30"
+                               Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="Setup is complete. You're ready to use HP Gaming Hub!" 
+                               FontSize="18" 
+                               HorizontalAlignment="Center" 
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,40"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <Button x:Name="LaunchButton" 
+                            Content="Launch HP Gaming Hub" 
+                            HorizontalAlignment="Center" 
+                            Padding="30,15" 
+                            FontSize="16"
+                            Click="LaunchButton_Click"/>
+                </StackPanel>
+                
+            </Grid>
+        </Border>
+        
+        <!-- Navigation Bar -->
+        <Border Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <Button x:Name="PreviousButton" 
+                        Grid.Column="0" 
+                        Content="Previous" 
+                        Padding="20,8" 
+                        IsEnabled="False"
+                        Click="PreviousButton_Click"/>
+                
+                <!-- Page Indicator -->
+                <StackPanel Grid.Column="1" 
+                            Orientation="Horizontal" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center">
+                    <Ellipse x:Name="Dot1" Width="12" Height="12" Fill="{ThemeResource AccentFillColorDefaultBrush}" Margin="4"/>
+                    <Ellipse x:Name="Dot2" Width="12" Height="12" Fill="{ThemeResource ControlFillColorDisabledBrush}" Margin="4"/>
+                    <Ellipse x:Name="Dot3" Width="12" Height="12" Fill="{ThemeResource ControlFillColorDisabledBrush}" Margin="4"/>
+                    <Ellipse x:Name="Dot4" Width="12" Height="12" Fill="{ThemeResource ControlFillColorDisabledBrush}" Margin="4"/>
+                </StackPanel>
+                
+                <Button x:Name="NextButton" 
+                        Grid.Column="2" 
+                        Content="Next" 
+                        Padding="20,8" 
+                        Click="NextButton_Click"/>
+            </Grid>
+        </Border>
+        
+    </Grid>
+</Window>
