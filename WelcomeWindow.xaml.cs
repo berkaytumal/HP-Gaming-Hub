@@ -57,7 +57,7 @@ namespace HP_Gaming_Hub
             }
 
             // Update page visibility with animations
-            await AnimatePageTransition();
+            await AnimatePageTransition(); // Default forward direction
 
             // Update page indicators
             UpdatePageIndicators();
@@ -75,7 +75,7 @@ namespace HP_Gaming_Hub
             }
         }
 
-        private async Task AnimatePageTransition()
+        private async Task AnimatePageTransition(bool isForward = true)
         {
             var pages = new[] { Page1, Page2, Page3, Page4 };
             
@@ -85,7 +85,7 @@ namespace HP_Gaming_Hub
             {
                 if (pages[i].Visibility == Visibility.Visible && (i + 1) != currentPage)
                 {
-                    var fadeOutStoryboard = CreateFadeOutStoryboard();
+                    var fadeOutStoryboard = CreateFadeOutStoryboard(isForward);
                     Storyboard.SetTarget(fadeOutStoryboard, pages[i]);
                     fadeOutTasks.Add(AnimateAsync(fadeOutStoryboard));
                 }
@@ -106,12 +106,12 @@ namespace HP_Gaming_Hub
             var currentPageElement = pages[currentPage - 1];
             currentPageElement.Visibility = Visibility.Visible;
             
-            var fadeInStoryboard = CreateFadeInStoryboard();
+            var fadeInStoryboard = CreateFadeInStoryboard(isForward);
             Storyboard.SetTarget(fadeInStoryboard, currentPageElement);
             await AnimateAsync(fadeInStoryboard);
         }
         
-        private Storyboard CreateFadeInStoryboard()
+        private Storyboard CreateFadeInStoryboard(bool isForward = true)
         {
             var storyboard = new Storyboard();
             
@@ -126,7 +126,7 @@ namespace HP_Gaming_Hub
             
             var translateAnimation = new DoubleAnimation
             {
-                From = 30,
+                From = isForward ? 30 : -30,
                 To = 0,
                 Duration = TimeSpan.FromMilliseconds(300),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
@@ -139,7 +139,7 @@ namespace HP_Gaming_Hub
             return storyboard;
         }
         
-        private Storyboard CreateFadeOutStoryboard()
+        private Storyboard CreateFadeOutStoryboard(bool isForward = true)
         {
             var storyboard = new Storyboard();
             
@@ -155,7 +155,7 @@ namespace HP_Gaming_Hub
             var translateAnimation = new DoubleAnimation
             {
                 From = 0,
-                To = -30,
+                To = isForward ? -30 : 30,
                 Duration = TimeSpan.FromMilliseconds(200),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
             };
@@ -198,6 +198,8 @@ namespace HP_Gaming_Hub
                 {
                     UpdateNavigationState();
                 }
+                
+                await AnimatePageTransition(false); // Reverse animation for Previous
             }
         }
 
@@ -216,6 +218,8 @@ namespace HP_Gaming_Hub
                 {
                     UpdateNavigationState();
                 }
+                
+                await AnimatePageTransition(true); // Forward animation for Next
             }
         }
 

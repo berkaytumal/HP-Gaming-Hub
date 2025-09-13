@@ -181,6 +181,7 @@
                         Grid.Column="2" 
                         Content="Next" 
                         Padding="20,8" 
+                        Style="{StaticResource AccentButtonStyle}"
                         Click="NextButton_Click"/>
             </Grid>
         </Border>
