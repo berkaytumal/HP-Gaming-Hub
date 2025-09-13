@@ -26,8 +26,40 @@ namespace HP_Gaming_Hub
         {
             this.InitializeComponent();
             
+            // Configure window properties
+            this.Title = "HP Gaming Hub Setup";
+            
+            // Set window size (1:1 aspect ratio, square)
+            var appWindow = this.AppWindow;
+            appWindow.Resize(new Windows.Graphics.SizeInt32(600, 600));
+            
+            // Make window non-resizable and configure presenter
+            if (appWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter presenter)
+            {
+                presenter.IsResizable = false;
+                presenter.IsMaximizable = false;
+                presenter.IsMinimizable = false;
+            }
+            
+            // Center window on screen
+            var displayArea = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(appWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Primary);
+            var centerX = (displayArea.WorkArea.Width - 600) / 2;
+            var centerY = (displayArea.WorkArea.Height - 600) / 2;
+            appWindow.Move(new Windows.Graphics.PointInt32(centerX, centerY));
+            
             // Set Mica material backdrop
             this.SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
+            
+            // Make title bar button background transparent
+            appWindow.TitleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+            
+            // Extend Mica into client area
+            appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+            appWindow.TitleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+            appWindow.TitleBar.ButtonInactiveBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+            
+            // Set drag rectangles to make entire window draggable
+            appWindow.TitleBar.SetDragRectangles([new(0, 0, 600, 600)]);
             
             httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("User-Agent", "HP-Gaming-Hub/1.0");
@@ -45,13 +77,18 @@ namespace HP_Gaming_Hub
             if (currentPage == 3)
             {
                 NextButton.IsEnabled = isOmenMonDownloaded;
+                NextButton.Content = "Next";
+                NextButton.Visibility = Visibility.Visible;
             }
             else if (currentPage == 4)
             {
-                NextButton.Visibility = Visibility.Collapsed;
+                NextButton.Content = "Launch";
+                NextButton.IsEnabled = true;
+                NextButton.Visibility = Visibility.Visible;
             }
             else
             {
+                NextButton.Content = "Next";
                 NextButton.IsEnabled = true;
                 NextButton.Visibility = Visibility.Visible;
             }
@@ -205,6 +242,13 @@ namespace HP_Gaming_Hub
 
         private async void NextButton_Click(object sender, RoutedEventArgs e)
         {
+            if (currentPage == 4)
+            {
+                // Launch the main application
+                LaunchButton_Click(sender, e);
+                return;
+            }
+            
             if (currentPage < totalPages)
             {
                 currentPage++;
@@ -394,6 +438,27 @@ namespace HP_Gaming_Hub
             {
                 throw new Exception($"Failed to extract files: {ex.Message}");
             }
+        }
+
+        private void Grid_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            // Drag rectangles are set during window initialization
+        }
+
+        private void Grid_PointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            // Not needed for system drag move
+        }
+
+        private void Grid_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            // Not needed for system drag move
+        }
+
+        private void Grid_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+        {
+            // Prevent default double-click maximization behavior
+            e.Handled = true;
         }
 
         private void LaunchButton_Click(object sender, RoutedEventArgs e)

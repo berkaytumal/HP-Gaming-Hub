@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Window x:Class="HP_Gaming_Hub.WelcomeWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="HP Gaming Hub Setup">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.SystemBackdrop>
+        <MicaBackdrop Kind="Base"/>
+    </Window.SystemBackdrop>
     
-    <Grid>
+    <Grid PointerPressed="Grid_PointerPressed" PointerMoved="Grid_PointerMoved" PointerReleased="Grid_PointerReleased" DoubleTapped="Grid_DoubleTapped">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
         <!-- Main Content Area -->
-        <Border Grid.Row="0" Background="Transparent" Padding="40">
-            <Grid x:Name="ContentGrid">
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Border Background="Transparent" Padding="40">
+                <Grid x:Name="ContentGrid">
                 
                 <!-- Page 1: Welcome -->
                 <StackPanel x:Name="Page1" Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -23,8 +26,9 @@
                     <TextBlock Text="Welcome to HP Gaming Hub!" 
                                FontSize="36" 
                                FontWeight="Bold" 
-                               HorizontalAlignment="Center" 
+                               HorizontalAlignment="Left" 
                                Margin="0,0,0,20"
+                               TextWrapping="Wrap"
                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                     <TextBlock Text="An open source alternative to Omen Gaming Hub" 
                                FontSize="18" 
@@ -48,6 +52,7 @@
                                FontWeight="Bold" 
                                HorizontalAlignment="Center" 
                                Margin="0,0,0,30"
+                               TextWrapping="Wrap"
                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                     <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." 
                                FontSize="16" 
@@ -70,6 +75,7 @@
                                FontWeight="Bold" 
                                HorizontalAlignment="Center" 
                                Margin="0,0,0,20"
+                               TextWrapping="Wrap"
                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                     <TextBlock Text="(Not optional)" 
                                FontSize="14" 
@@ -132,6 +138,7 @@
                                FontWeight="Bold" 
                                HorizontalAlignment="Center" 
                                Margin="0,0,0,30"
+                               TextWrapping="Wrap"
                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                     <TextBlock Text="Setup is complete. You're ready to use HP Gaming Hub!" 
                                FontSize="18" 
@@ -139,16 +146,12 @@
                                TextWrapping="Wrap"
                                Margin="0,0,0,40"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                    <Button x:Name="LaunchButton" 
-                            Content="Launch HP Gaming Hub" 
-                            HorizontalAlignment="Center" 
-                            Padding="30,15" 
-                            FontSize="16"
-                            Click="LaunchButton_Click"/>
+
                 </StackPanel>
                 
-            </Grid>
-        </Border>
+                </Grid>
+            </Border>
+        </ScrollViewer>
         
         <!-- Navigation Bar -->
         <Border Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="20">
