@@ -31,19 +31,6 @@
                        VerticalAlignment="Center" 
                        Margin="28,0,0,0"/> 
             
-            <!-- Custom Title Bar Button -->
-            <Button x:Name="CustomTitleBarButton" 
-                    Content="⚙" 
-                    HorizontalAlignment="Right" 
-                    VerticalAlignment="Center" 
-                    Width="32" 
-                    Height="32" 
-                    Margin="0,0,138,0" 
-                    Background="Transparent" 
-                    BorderThickness="0" 
-                    FontSize="14" 
-                    ToolTipService.ToolTip="Quick Settings" 
-                    Click="CustomTitleBarButton_Click"/>
         </Grid>
         
         <!-- Main Content Area -->

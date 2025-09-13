@@ -465,15 +465,5 @@ namespace HP_Gaming_Hub
                 LogError($"Failed to copy to clipboard: {ex.Message}");
             }
         }
-
-        private async void CustomTitleBarButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Quick settings action - navigate to settings page
-            if (MainNavigationView != null && SettingsNavItem != null)
-            {
-                MainNavigationView.SelectedItem = SettingsNavItem;
-                LogInfo("Quick Settings button clicked - navigated to Settings page");
-            }
-        }
     }
 }
