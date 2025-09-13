@@ -88,7 +88,7 @@
                      
                      <!-- Fan Page -->
                       <ScrollViewer x:Name="FanPage" Visibility="Collapsed">
-                         <StackPanel Spacing="24" Padding="32">
+                         <StackPanel Spacing="24">
                              <TextBlock Text="Fan Control" Style="{StaticResource TitleTextBlockStyle}"/>
                              <TextBlock Text="Control your system's cooling performance with manual fan speed adjustment and intelligent fan profiles powered by OmenMon." TextWrapping="Wrap"/>
                              
@@ -184,7 +184,7 @@
                      
                      <!-- Graphics Page -->
                       <ScrollViewer x:Name="GraphicsPage" Visibility="Collapsed">
-                         <StackPanel Spacing="24" Padding="32">
+                         <StackPanel Spacing="24">
                              <TextBlock Text="Graphics Settings" Style="{StaticResource TitleTextBlockStyle}"/>
                              <TextBlock Text="Configure GPU performance settings, switch between graphics modes, and monitor GPU status using OmenMon integration." TextWrapping="Wrap"/>
                              
@@ -274,7 +274,7 @@
                      
                      <!-- Keyboard Page -->
                       <ScrollViewer x:Name="KeyboardPage" Visibility="Collapsed">
-                         <StackPanel Spacing="24" Padding="32">
+                         <StackPanel Spacing="24">
                              <TextBlock Text="Keyboard Settings" Style="{StaticResource TitleTextBlockStyle}"/>
                              <TextBlock Text="Configure keyboard backlight settings, RGB colors, and animations using OmenMon integration. Customize your gaming experience with personalized lighting effects." TextWrapping="Wrap"/>
                              
@@ -387,7 +387,7 @@
                      
                      <!-- Monitor Page (Default) -->
                       <ScrollViewer x:Name="MonitorPage" Visibility="Visible">
-                         <StackPanel Spacing="24" Padding="32">
+                         <StackPanel Spacing="24">
                              <TextBlock Text="System Monitor" Style="{StaticResource TitleTextBlockStyle}"/>
                              <TextBlock Text="Real-time hardware monitoring powered by OmenMon utility. Monitor temperatures, fan speeds, and system performance." TextWrapping="Wrap"/>
                              
@@ -491,7 +491,7 @@
                      
                      <!-- Console Page -->
                      <ScrollViewer x:Name="ConsolePage" Visibility="Collapsed">
-                         <StackPanel Spacing="24" Padding="32">
+                         <StackPanel Spacing="24">
                              <TextBlock Text="Console" Style="{StaticResource TitleTextBlockStyle}"/>
                              <TextBlock Text="Real-time application logs and debug information from HP Gaming Hub and OmenMon service." TextWrapping="Wrap"/>
                              
@@ -519,7 +519,7 @@
                      
                      <!-- Settings Page -->
                       <ScrollViewer x:Name="SettingsPage" Visibility="Collapsed">
-                         <StackPanel Spacing="24" Padding="32">
+                         <StackPanel Spacing="24">
                              <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}"/>
                              <TextBlock Text="Configure application settings, BIOS options, and system management preferences." TextWrapping="Wrap"/>
                              
