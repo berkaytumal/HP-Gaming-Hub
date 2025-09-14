@@ -80,6 +80,12 @@ Contributions are welcome! Please feel free to submit issues, feature requests, 
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## Contact
+
+For any inquiries or feedback, feel free to reach out!
+
+<a href="https://www.buymeacoffee.com/berkaytumal" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 ## Disclaimer
 
 This software directly controls hardware components. Use at your own risk. Always monitor temperatures and ensure proper cooling when using custom fan curves or overclocking features.
