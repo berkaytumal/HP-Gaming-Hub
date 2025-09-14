@@ -12,12 +12,10 @@ namespace HP_Gaming_Hub.ViewModels
     public class HardwareMonitorViewModel : INotifyPropertyChanged
     {
         private readonly OmenMonService _omenMonService;
-        private readonly DispatcherQueueTimer _libreTimer; // Timer for LibreHardwareMonitor (2 seconds)
-        private readonly DispatcherQueueTimer _omenTimer; // Timer for OmenMon (10 seconds)
+        private readonly DispatcherQueueTimer _omenTimer; // Timer for OmenMon (5 seconds)
         private bool _isMonitoring;
         private bool _isUpdating; // Flag to prevent concurrent updates
         private DateTime _lastOmenUpdate = DateTime.MinValue;
-        private DateTime _lastLibreUpdate = DateTime.MinValue;
 
         // Temperature properties
         private int _cpuTemperature;
@@ -54,17 +52,12 @@ namespace HP_Gaming_Hub.ViewModels
         {
             _omenMonService = new OmenMonService();
             
-            // Setup timers for different polling intervals
+            // Setup timer for unified OmenMon polling
             var dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
             
-            // LibreHardwareMonitor timer - 2 seconds
-            _libreTimer = dispatcherQueue.CreateTimer();
-            _libreTimer.Interval = TimeSpan.FromSeconds(2);
-            _libreTimer.Tick += async (s, e) => await UpdateLibreTemperatureAsync();
-            
-            // OmenMon timer - 10 seconds
+            // OmenMon timer - 5 seconds for all hardware monitoring
             _omenTimer = dispatcherQueue.CreateTimer();
-            _omenTimer.Interval = TimeSpan.FromSeconds(10);
+            _omenTimer.Interval = TimeSpan.FromSeconds(5);
             _omenTimer.Tick += async (s, e) => await UpdateOmenDataAsync();
         }
 
@@ -414,8 +407,7 @@ namespace HP_Gaming_Hub.ViewModels
             if (_isMonitoring) return;
 
             IsMonitoring = true;
-            await UpdateHardwareDataAsync(); // Initial update
-            _libreTimer.Start();
+            await UpdateOmenDataAsync(); // Initial update
             _omenTimer.Start();
         }
 
@@ -424,7 +416,6 @@ namespace HP_Gaming_Hub.ViewModels
             if (!_isMonitoring) return;
 
             IsMonitoring = false;
-            _libreTimer.Stop();
             _omenTimer.Stop();
         }
 
@@ -660,46 +651,10 @@ namespace HP_Gaming_Hub.ViewModels
             }
         }
 
-        /// <summary>
-        /// Update temperature data using LibreHardwareMonitor (Windows API) - called every 2 seconds
-        /// </summary>
-        private async Task UpdateLibreTemperatureAsync()
-        {
-            if (_isUpdating) return;
 
-            try
-            {
-                _isUpdating = true;
-                System.Diagnostics.Debug.WriteLine("[UpdateLibreTemperatureAsync] Attempting LibreHardwareMonitor temperature update");
-                
-                // Try to get temperature data using Windows API only
-                if (_omenMonService != null && _omenMonService.IsWindowsApiAvailable())
-                {
-                    var tempData = await _omenMonService.GetWindowsApiTemperaturesAsync();
-                    
-                    // Only update if we got valid data from Windows API
-                    if (tempData != null && (tempData.CpuTemperature > 0 || tempData.GpuTemperature > 0))
-                    {
-                        CpuTemperature = tempData.CpuTemperature;
-                        GpuTemperature = tempData.GpuTemperature;
-                        _lastLibreUpdate = DateTime.Now;
-                        LastUpdateTime = DateTime.Now.ToString("HH:mm:ss");
-                        System.Diagnostics.Debug.WriteLine($"[UpdateLibreTemperatureAsync] Updated temperatures - CPU: {CpuTemperature}°C, GPU: {GpuTemperature}°C");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[UpdateLibreTemperatureAsync] Error: {ex.Message}");
-            }
-            finally
-            {
-                _isUpdating = false;
-            }
-        }
 
         /// <summary>
-        /// Update all hardware data using OmenMon - called every 10 seconds
+        /// Update all hardware data using unified OmenMon command - called every 5 seconds
         /// </summary>
         private async Task UpdateOmenDataAsync()
         {
@@ -708,50 +663,49 @@ namespace HP_Gaming_Hub.ViewModels
             try
             {
                 _isUpdating = true;
-                System.Diagnostics.Debug.WriteLine("[UpdateOmenDataAsync] Starting OmenMon hardware data update");
+                System.Diagnostics.Debug.WriteLine("[UpdateOmenDataAsync] Starting unified OmenMon hardware data update");
                 
-                // Update temperatures using OmenMon - only if we get valid data
-                var tempData = await _omenMonService.GetOmenMonTemperaturesAsync();
+                // Get all hardware data in one unified call
+                var (tempData, fanData, gpuData, keyboardData) = await _omenMonService.GetUnifiedHardwareDataAsync();
+                
+                // Update temperatures - only if we get valid data
                 if (tempData != null && (tempData.CpuTemperature > 0 || tempData.GpuTemperature > 0))
                 {
                     CpuTemperature = tempData.CpuTemperature;
                     GpuTemperature = tempData.GpuTemperature;
-                    System.Diagnostics.Debug.WriteLine($"[UpdateOmenDataAsync] Updated temperatures from OmenMon - CPU: {CpuTemperature}°C, GPU: {GpuTemperature}°C");
+                    System.Diagnostics.Debug.WriteLine($"[UpdateOmenDataAsync] Updated temperatures from unified call - CPU: {CpuTemperature}°C, GPU: {GpuTemperature}°C");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("[UpdateOmenDataAsync] OmenMon returned no valid temperature data, keeping existing values");
+                    System.Diagnostics.Debug.WriteLine("[UpdateOmenDataAsync] Unified call returned no valid temperature data, keeping existing values");
                 }
                 _lastOmenUpdate = DateTime.Now;
                 
                 // Update fan data
-                var fanData = await _omenMonService.GetFanDataAsync();
                 Fan1Speed = fanData.Fan1Speed;
                 Fan2Speed = fanData.Fan2Speed;
                 FanCount = fanData.FanCount;
                 FanMode = fanData.FanMode;
                 
                 // Update GPU data
-                var gpuData = await _omenMonService.GetGpuDataAsync();
                 GpuMode = gpuData.GpuMode;
                 GpuPreset = gpuData.GpuPreset;
                 
-                // Update system data
+                // Update keyboard data
+                HasBacklight = keyboardData.HasBacklight;
+                BacklightEnabled = keyboardData.BacklightEnabled;
+                
+                // Update system data (still need separate call for this)
                 var systemData = await _omenMonService.GetSystemDataAsync();
                 HasOverclock = systemData.HasOverclock;
                 HasMemoryOverclock = systemData.HasMemoryOverclock;
                 HasUndervolt = systemData.HasUndervolt;
                 
-                // Update keyboard data
-                var keyboardData = await _omenMonService.GetKeyboardDataAsync();
-                HasBacklight = keyboardData.HasBacklight;
-                BacklightEnabled = keyboardData.BacklightEnabled;
-                
                 LastUpdateTime = DateTime.Now.ToString("HH:mm:ss");
                 IsConnected = true;
                 ConnectionStatus = "Connected";
                 
-                System.Diagnostics.Debug.WriteLine($"[UpdateOmenDataAsync] OmenMon update completed - CPU: {CpuTemperature}°C, GPU: {GpuTemperature}°C, Fan1: {Fan1Speed}RPM");
+                System.Diagnostics.Debug.WriteLine($"[UpdateOmenDataAsync] Unified OmenMon update completed - CPU: {CpuTemperature}°C, GPU: {GpuTemperature}°C, Fan1: {Fan1Speed}RPM");
             }
             catch (Exception ex)
             {
@@ -1063,7 +1017,6 @@ namespace HP_Gaming_Hub.ViewModels
         public void Dispose()
         {
             StopMonitoring();
-            _libreTimer?.Stop();
             _omenTimer?.Stop();
             _omenMonService?.Dispose();
         }

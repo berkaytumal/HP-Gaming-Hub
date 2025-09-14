@@ -16,8 +16,7 @@ namespace HP_Gaming_Hub.Services
     {
         private readonly string _omenMonPath;
         private const int CommandTimeoutMs = 10000; // 10 seconds timeout
-        private readonly WindowsApiTemperatureService _windowsApiService;
-        private bool _useWindowsApi = true; // Try Windows API first
+        private bool _useWindowsApi = false; // Disabled Windows API, using only OmenMon
 
         public OmenMonService(string omenMonPath = null)
         {
@@ -31,17 +30,8 @@ namespace HP_Gaming_Hub.Services
                 _omenMonPath = omenMonPath;
             }
             
-            // Initialize Windows API temperature service
-            try
-            {
-                _windowsApiService = new WindowsApiTemperatureService();
-                Debug.WriteLine("[OmenMonService] Windows API temperature service initialized");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[OmenMonService] Failed to initialize Windows API service: {ex.Message}");
-                _useWindowsApi = false;
-            }
+            // Windows API temperature service disabled - using only OmenMon
+            Debug.WriteLine("[OmenMonService] Using OmenMon only for temperature monitoring");
             
             ValidateConfiguration();
         }
@@ -235,11 +225,13 @@ namespace HP_Gaming_Hub.Services
                 {
                     FileName = _omenMonPath,
                     Arguments = arguments,
+                    //FileName = "cmd.exe",
+                    //Arguments = $"/q /c start \"\" /b \"{_omenMonPath}\" {arguments}",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    CreateNoWindow = AppSettings.Instance.HideCmdWindows,
-                    WindowStyle = AppSettings.Instance.HideCmdWindows ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
                     StandardOutputEncoding = Encoding.UTF8,
                     StandardErrorEncoding = Encoding.UTF8
                 };
@@ -399,48 +391,21 @@ namespace HP_Gaming_Hub.Services
         /// </summary>
         public async Task<TemperatureData> GetTemperaturesAsync()
         {
-            Debug.WriteLine("[GetTemperaturesAsync] Starting temperature retrieval");
+            Debug.WriteLine("[GetTemperaturesAsync] Starting temperature retrieval using OmenMon EC command");
             
-            // Try Windows API first if available
-            if (_useWindowsApi && _windowsApiService != null && _windowsApiService.IsAvailable())
-            {
-                try
-                {
-                    Debug.WriteLine("[GetTemperaturesAsync] Trying Windows API temperature monitoring");
-                    var windowsApiData = await _windowsApiService.GetTemperaturesAsync();
-                    
-                    // Check if we got valid temperature data
-                    if (windowsApiData.CpuTemperature > 0 || windowsApiData.GpuTemperature > 0)
-                    {
-                        Debug.WriteLine($"[GetTemperaturesAsync] Windows API succeeded - CPU: {windowsApiData.CpuTemperature}°C, GPU: {windowsApiData.GpuTemperature}°C");
-                        return windowsApiData;
-                    }
-                    else
-                    {
-                        Debug.WriteLine("[GetTemperaturesAsync] Windows API returned no valid temperature data, falling back to OmenMon");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"[GetTemperaturesAsync] Windows API failed: {ex.Message}, falling back to OmenMon");
-                    _useWindowsApi = false; // Disable Windows API for future calls
-                }
-            }
-            
-            // Fall back to OmenMon
-            Debug.WriteLine("[GetTemperaturesAsync] Using OmenMon for temperature retrieval");
-            var result = await ExecuteCommandAsync("-Bios");
+            // Use OmenMon EC command for temperature retrieval
+            var result = await ExecuteCommandAsync("-Ec CPUT GPTM");
             
             var tempData = new TemperatureData();
             
             if (result.Success)
             {
-                Debug.WriteLine($"[GetTemperaturesAsync] OmenMon BIOS command succeeded, parsing output");
-                tempData = ParseTemperatureData(result.Output);
+                Debug.WriteLine($"[GetTemperaturesAsync] OmenMon EC command succeeded, parsing output");
+                tempData = ParseEcTemperatureData(result.Output);
             }
             else
             {
-                Debug.WriteLine($"[GetTemperaturesAsync] OmenMon BIOS command failed - Error: {result.ErrorMessage}");
+                Debug.WriteLine($"[GetTemperaturesAsync] OmenMon EC command failed - Error: {result.ErrorMessage}");
             }
             
             Debug.WriteLine($"[GetTemperaturesAsync] Final temperatures - CPU: {tempData.CpuTemperature}°C, GPU: {tempData.GpuTemperature}°C");
@@ -450,59 +415,61 @@ namespace HP_Gaming_Hub.Services
         /// <summary>
         /// Get temperatures using Windows API (LibreHardwareMonitor) only
         /// </summary>
-        public async Task<TemperatureData> GetWindowsApiTemperaturesAsync()
+        /// <summary>
+        /// Get all hardware data using unified OmenMon commands
+        /// </summary>
+        public async Task<(TemperatureData temperatures, FanData fanData, GpuData gpuData, KeyboardData keyboardData)> GetUnifiedHardwareDataAsync()
         {
-            Debug.WriteLine("[GetWindowsApiTemperaturesAsync] Attempting Windows API temperature retrieval");
+            Debug.WriteLine("[GetUnifiedHardwareDataAsync] Starting unified hardware data retrieval");
             
-            if (!_useWindowsApi || _windowsApiService == null || !_windowsApiService.IsAvailable())
+            // Get temperatures using EC command
+            var tempResult = await ExecuteCommandAsync("-Ec CPUT GPTM");
+            var tempData = new TemperatureData();
+            if (tempResult.Success)
             {
-                Debug.WriteLine("[GetWindowsApiTemperaturesAsync] Windows API service not available");
-                return new TemperatureData();
+                tempData = ParseEcTemperatureData(tempResult.Output);
             }
-
-            try
+            
+            // Get fan data using existing BIOS command
+            var fanResult = await ExecuteCommandAsync("-Bios");
+            var fanData = new FanData();
+            if (fanResult.Success)
             {
-                var windowsApiData = await _windowsApiService.GetTemperaturesAsync();
-                Debug.WriteLine($"[GetWindowsApiTemperaturesAsync] Windows API result - CPU: {windowsApiData.CpuTemperature}°C, GPU: {windowsApiData.GpuTemperature}°C");
-                return windowsApiData;
+                fanData = ParseFanData(fanResult.Output);
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[GetWindowsApiTemperaturesAsync] Windows API failed: {ex.Message}");
-                return new TemperatureData();
-            }
+            
+            // Get GPU data
+            var gpuData = await GetGpuDataAsync();
+            
+            // Get keyboard data
+            var keyboardData = await GetKeyboardDataAsync();
+            
+            Debug.WriteLine($"[GetUnifiedHardwareDataAsync] Unified data retrieval complete - CPU: {tempData.CpuTemperature}°C, GPU: {tempData.GpuTemperature}°C, Fan1: {fanData.Fan1Speed}RPM, Fan2: {fanData.Fan2Speed}RPM");
+            return (tempData, fanData, gpuData, keyboardData);
         }
 
         /// <summary>
-        /// Get temperatures using OmenMon only
+        /// Get temperatures using OmenMon EC command
         /// </summary>
         public async Task<TemperatureData> GetOmenMonTemperaturesAsync()
         {
-            Debug.WriteLine("[GetOmenMonTemperaturesAsync] Using OmenMon for temperature retrieval");
-            var result = await ExecuteCommandAsync("-Bios");
+            Debug.WriteLine("[GetOmenMonTemperaturesAsync] Using OmenMon EC command for temperature retrieval");
+            var result = await ExecuteCommandAsync("-Ec CPUT GPTM");
             
             var tempData = new TemperatureData();
             
             if (result.Success)
             {
-                Debug.WriteLine($"[GetOmenMonTemperaturesAsync] OmenMon BIOS command succeeded, parsing output");
-                tempData = ParseTemperatureData(result.Output);
+                Debug.WriteLine($"[GetOmenMonTemperaturesAsync] OmenMon EC command succeeded, parsing output");
+                tempData = ParseEcTemperatureData(result.Output);
             }
             else
             {
-                Debug.WriteLine($"[GetOmenMonTemperaturesAsync] OmenMon BIOS command failed - Error: {result.ErrorMessage}");
+                Debug.WriteLine($"[GetOmenMonTemperaturesAsync] OmenMon EC command failed - Error: {result.ErrorMessage}");
             }
             
             Debug.WriteLine($"[GetOmenMonTemperaturesAsync] Final temperatures - CPU: {tempData.CpuTemperature}°C, GPU: {tempData.GpuTemperature}°C");
             return tempData;
-        }
-
-        /// <summary>
-        /// Check if Windows API temperature monitoring is available
-        /// </summary>
-        public bool IsWindowsApiAvailable()
-        {
-            return _useWindowsApi && _windowsApiService != null && _windowsApiService.IsAvailable();
         }
 
         /// <summary>
@@ -979,6 +946,54 @@ namespace HP_Gaming_Hub.Services
             return tempData;
         }
 
+        /// <summary>
+        /// Parse temperature data from OmenMon EC output
+        /// </summary>
+        private TemperatureData ParseEcTemperatureData(string output)
+        {
+            var tempData = new TemperatureData();
+            
+            if (string.IsNullOrEmpty(output))
+            {
+                Debug.WriteLine("[ParseEcTemperatureData] Output is null or empty");
+                return tempData;
+            }
+
+            Debug.WriteLine($"[ParseEcTemperatureData] Parsing EC output: {output}");
+            
+            var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            
+            foreach (var line in lines)
+            {
+                var trimmedLine = line.Trim();
+                Debug.WriteLine($"[ParseEcTemperatureData] Processing line: {trimmedLine}");
+                
+                // Look for CPUT (CPU Temperature) - format: "- Register 0x57 Byte: 0x2c = 0b00101100 = 44 [CPUT]"
+                if (trimmedLine.Contains("[CPUT]"))
+                {
+                    var match = Regex.Match(trimmedLine, @"=\s*(\d+)\s*\[CPUT\]");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int temp))
+                    {
+                        tempData.CpuTemperature = temp;
+                        Debug.WriteLine($"[ParseEcTemperatureData] Found CPU temperature: {temp}°C");
+                    }
+                }
+                // Look for GPTM (GPU Temperature) - format: "- Register 0xb7 Byte: 0x2f = 0b00101111 = 47 [GPTM]"
+                else if (trimmedLine.Contains("[GPTM]"))
+                {
+                    var match = Regex.Match(trimmedLine, @"=\s*(\d+)\s*\[GPTM\]");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int temp))
+                    {
+                        tempData.GpuTemperature = temp;
+                        Debug.WriteLine($"[ParseEcTemperatureData] Found GPU temperature: {temp}°C");
+                    }
+                }
+            }
+            
+            Debug.WriteLine($"[ParseEcTemperatureData] Final result - CPU: {tempData.CpuTemperature}°C, GPU: {tempData.GpuTemperature}°C");
+            return tempData;
+        }
+
         private FanData ParseFanData(string output)
         {
             var fanData = new FanData();
@@ -1167,41 +1182,20 @@ namespace HP_Gaming_Hub.Services
         }
 
         /// <summary>
-        /// Test both Windows API and OmenMon temperature monitoring methods
+        /// Test OmenMon temperature monitoring method
         /// </summary>
         public async Task<string> TestTemperatureMethodsAsync()
         {
             var results = new List<string>();
             
-            // Test Windows API
-            if (_windowsApiService != null && _windowsApiService.IsAvailable())
-            {
-                try
-                {
-                    var windowsApiData = await _windowsApiService.GetTemperaturesAsync();
-                    results.Add($"Windows API - CPU: {windowsApiData.CpuTemperature}°C, GPU: {windowsApiData.GpuTemperature}°C");
-                    
-                    var hardwareInfo = await _windowsApiService.GetHardwareInfoAsync();
-                    results.Add($"Available Hardware:\n{hardwareInfo}");
-                }
-                catch (Exception ex)
-                {
-                    results.Add($"Windows API Error: {ex.Message}");
-                }
-            }
-            else
-            {
-                results.Add("Windows API: Not available");
-            }
-            
-            // Test OmenMon
+            // Test OmenMon EC command
             try
             {
-                var omenResult = await ExecuteCommandAsync("-Bios");
+                var omenResult = await ExecuteCommandAsync("-Ec CPUT GPTM");
                 if (omenResult.Success)
                 {
-                    var omenData = ParseTemperatureData(omenResult.Output);
-                    results.Add($"OmenMon - CPU: {omenData.CpuTemperature}°C, GPU: {omenData.GpuTemperature}°C");
+                    var omenData = ParseEcTemperatureData(omenResult.Output);
+                    results.Add($"OmenMon EC - CPU: {omenData.CpuTemperature}°C, GPU: {omenData.GpuTemperature}°C");
                 }
                 else
                 {
@@ -1221,14 +1215,7 @@ namespace HP_Gaming_Hub.Services
         /// </summary>
         public void Dispose()
         {
-            try
-            {
-                _windowsApiService?.Dispose();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[OmenMonService] Error during disposal: {ex.Message}");
-            }
+            // No resources to dispose currently
         }
     }
 
