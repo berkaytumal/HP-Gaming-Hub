@@ -12,10 +12,11 @@ namespace HP_Gaming_Hub.ViewModels
     public class HardwareMonitorViewModel : INotifyPropertyChanged
     {
         private readonly OmenMonService _omenMonService;
-        private readonly DispatcherQueueTimer _omenTimer; // Timer for OmenMon (5 seconds)
+        private readonly DispatcherQueueTimer _omenTimer; // Timer for OmenMon (dynamic intervals)
         private bool _isMonitoring;
         private bool _isUpdating; // Flag to prevent concurrent updates
         private DateTime _lastOmenUpdate = DateTime.MinValue;
+        private bool _isWindowFocused = true; // Track window focus for dynamic intervals
 
         // Temperature properties
         private int _cpuTemperature;
@@ -55,9 +56,9 @@ namespace HP_Gaming_Hub.ViewModels
             // Setup timer for unified OmenMon polling
             var dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
             
-            // OmenMon timer - 5 seconds for all hardware monitoring
+            // OmenMon timer - dynamic intervals based on window focus (2s focused, 10s unfocused)
             _omenTimer = dispatcherQueue.CreateTimer();
-            _omenTimer.Interval = TimeSpan.FromSeconds(5);
+            _omenTimer.Interval = TimeSpan.FromSeconds(2); // Start with focused interval
             _omenTimer.Tick += async (s, e) => await UpdateOmenDataAsync();
         }
 
@@ -407,8 +408,25 @@ namespace HP_Gaming_Hub.ViewModels
             if (_isMonitoring) return;
 
             IsMonitoring = true;
+            UpdateTimerInterval(); // Set initial interval based on focus
             await UpdateOmenDataAsync(); // Initial update
             _omenTimer.Start();
+        }
+        
+        public void OnWindowFocusChanged(bool isFocused)
+        {
+            _isWindowFocused = isFocused;
+            UpdateTimerInterval();
+            System.Diagnostics.Debug.WriteLine($"[HardwareMonitorViewModel] Window focus changed to {isFocused}, timer interval updated to {_omenTimer.Interval.TotalSeconds}s");
+        }
+        
+        private void UpdateTimerInterval()
+        {
+            var newInterval = _isWindowFocused ? TimeSpan.FromSeconds(2) : TimeSpan.FromSeconds(10);
+            if (_omenTimer.Interval != newInterval)
+            {
+                _omenTimer.Interval = newInterval;
+            }
         }
 
         public void StopMonitoring()

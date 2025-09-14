@@ -51,14 +51,13 @@ namespace HP_Gaming_Hub
                 await _hardwareMonitorViewModel.RefreshDataAsync();
                 // ConnectionStatusText.Text = "Connected"; // Badge removed
                 LogInfo("Successfully connected to OmenMon service");
-                UpdateMonitoringUI();
                 
-                // Start auto monitoring if enabled
-                if (MonitoringToggle.IsChecked == true)
-                {
-                    LogInfo("Starting automatic monitoring...");
-                    await _hardwareMonitorViewModel.StartMonitoringAsync();
-                }
+                // Start automatic monitoring with dynamic intervals
+                await _hardwareMonitorViewModel.StartMonitoringAsync();
+                LogInfo("Automatic monitoring started with dynamic intervals (2s focused, 10s unfocused)");
+                
+                UpdateMonitoringUI();
+
             }
             catch (Exception ex)
             {

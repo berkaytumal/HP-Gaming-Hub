@@ -174,18 +174,6 @@ namespace HP_Gaming_Hub
             }
         }
 
-        private async void FanMonitoringToggle_Click(object sender, RoutedEventArgs e)
-        {
-            if (FanMonitoringToggle.IsChecked == true)
-            {
-                await _hardwareMonitorViewModel.StartMonitoringAsync();
-                // FanConnectionStatusText.Text = "Monitoring"; // Badge removed
-            }
-            else
-            {
-                _hardwareMonitorViewModel.StopMonitoring();
-                // FanConnectionStatusText.Text = "Connected"; // Badge removed
-            }
-        }
+
     }
 }

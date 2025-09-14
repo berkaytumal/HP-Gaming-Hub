@@ -33,6 +33,9 @@ namespace HP_Gaming_Hub
         private int _previousSelectedIndex = 3; // Default to Monitor page (index 3)
         private HardwareMonitorViewModel _hardwareMonitorViewModel;
         public static MainWindow Instance { get; private set; }
+        private bool _isWindowFocused = true; // Track window focus state
+        
+        public bool IsWindowFocused => _isWindowFocused;
         
         public MainWindow()
         {
@@ -44,11 +47,28 @@ namespace HP_Gaming_Hub
             _hardwareMonitorViewModel = new HardwareMonitorViewModel();
             LogInfo("HP Gaming Hub started - Initializing monitoring...");
             
+            // Add window focus event handlers
+            this.Activated += MainWindow_Activated;
+            this.Closed += MainWindow_Closed;
+            
             // Load and apply saved settings on startup
             Debug.WriteLine("[MainWindow] Loading saved settings on startup");
             _ = InitializeAsync();
             
             InitializeMonitoring();
+        }
+        
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs e)
+        {
+            _isWindowFocused = e.WindowActivationState != WindowActivationState.Deactivated;
+            Debug.WriteLine($"[MainWindow] Window focus changed: {_isWindowFocused}");
+            _hardwareMonitorViewModel?.OnWindowFocusChanged(_isWindowFocused);
+        }
+        
+        private void MainWindow_Closed(object sender, WindowEventArgs e)
+        {
+            _hardwareMonitorViewModel?.StopMonitoring();
+            _hardwareMonitorViewModel?.Dispose();
         }
 
         private async Task InitializeAsync()
