@@ -235,14 +235,14 @@ namespace HP_Gaming_Hub
         {
             try
             {   
-                if (ConsoleOutput != null)
+                if (LogsOutput != null)
                 {
-                    ConsoleOutput.Text += $"[{DateTime.Now:HH:mm:ss}] {message}\n";
+                    LogsOutput.Text += $"[{DateTime.Now:HH:mm:ss}] {message}\n";
                     
                     // Auto-scroll to bottom
-                    if (ConsoleScrollViewer != null)
+                    if (LogsScrollViewer != null)
                     {
-                        ConsoleScrollViewer.ScrollToVerticalOffset(ConsoleScrollViewer.ScrollableHeight);
+                        LogsScrollViewer.ScrollToVerticalOffset(LogsScrollViewer.ScrollableHeight);
                     }
                 }
             }

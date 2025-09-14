@@ -31,7 +31,7 @@ namespace HP_Gaming_Hub
             else if (GraphicsPage.Visibility == Visibility.Visible) currentPage = GraphicsPage;
             else if (KeyboardPage.Visibility == Visibility.Visible) currentPage = KeyboardPage;
             else if (MonitorPage.Visibility == Visibility.Visible) currentPage = MonitorPage;
-            else if (ConsolePage.Visibility == Visibility.Visible) currentPage = ConsolePage;
+            else if (LogsPage.Visibility == Visibility.Visible) currentPage = LogsPage;
             else if (SettingsPage.Visibility == Visibility.Visible) currentPage = SettingsPage;
 
             // Determine target page and index
@@ -41,7 +41,7 @@ namespace HP_Gaming_Hub
             else if (args.SelectedItem == GraphicsNavItem) { targetPage = GraphicsPage; currentSelectedIndex = 1; }
             else if (args.SelectedItem == KeyboardNavItem) { targetPage = KeyboardPage; currentSelectedIndex = 2; }
             else if (args.SelectedItem == MonitorNavItem) { targetPage = MonitorPage; currentSelectedIndex = 3; }
-            else if (args.SelectedItem == ConsoleNavItem) { targetPage = ConsolePage; currentSelectedIndex = 4; }
+            else if (args.SelectedItem == LogsNavItem) { targetPage = LogsPage; currentSelectedIndex = 4; }
             else if (args.SelectedItem == SettingsNavItem) { targetPage = SettingsPage; currentSelectedIndex = 5; }
 
             // If same page is selected, do nothing
@@ -706,17 +706,17 @@ namespace HP_Gaming_Hub
            }
 
         // Console functionality
-        private void ClearConsoleButton_Click(object sender, RoutedEventArgs e)
+        private void ClearLogsButton_Click(object sender, RoutedEventArgs e)
         {
-            ConsoleOutput.Text = "HP Gaming Hub Console - Ready\n";
+            LogsOutput.Text = "HP Gaming Hub Console - Ready\n";
         }
 
-        private void CopyConsoleButton_Click(object sender, RoutedEventArgs e)
+        private void CopyLogsButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
-                dataPackage.SetText(ConsoleOutput.Text);
+                dataPackage.SetText(LogsOutput.Text);
                 Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
                 
                 // Optional: Show a brief confirmation

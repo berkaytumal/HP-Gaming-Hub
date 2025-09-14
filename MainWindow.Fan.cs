@@ -30,29 +30,34 @@ namespace HP_Gaming_Hub
         private void UpdateFanModeButtonSelection(Button selectedButton)
         {
             // Reset all buttons to default style
+            var defaultBackground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["ControlFillColorDefaultBrush"];
+            var defaultForeground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
+            
             if (QuietModeButton != null)
             {
-                QuietModeButton.BorderBrush = null;
-                QuietModeButton.BorderThickness = new Microsoft.UI.Xaml.Thickness(1);
+                QuietModeButton.Background = defaultBackground;
+                QuietModeButton.Foreground = defaultForeground;
             }
             if (AutoModeButton != null)
             {
-                AutoModeButton.BorderBrush = null;
-                AutoModeButton.BorderThickness = new Microsoft.UI.Xaml.Thickness(1);
+                AutoModeButton.Background = defaultBackground;
+                AutoModeButton.Foreground = defaultForeground;
             }
             if (MaxModeButton != null)
             {
-                MaxModeButton.BorderBrush = null;
-                MaxModeButton.BorderThickness = new Microsoft.UI.Xaml.Thickness(1);
+                MaxModeButton.Background = defaultBackground;
+                MaxModeButton.Foreground = defaultForeground;
             }
                 
-            // Set selected button border to accent color
+            // Set selected button background to accent color and text to black
             if (selectedButton != null)
             {
-                selectedButton.BorderBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentFillColorDefaultBrush"];
-                selectedButton.BorderThickness = new Microsoft.UI.Xaml.Thickness(2);
+                selectedButton.Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentFillColorDefaultBrush"];
+                //selectedButton.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Black);
             }
         }
+        
+
 
         private async Task ApplyFanModeAsync(string mode)
         {
