@@ -545,14 +545,44 @@ namespace HP_Gaming_Hub.Services
         public async Task<bool> SetFanModeAsync(string fanMode)
         {
             // Validate fan mode
-            var allowedModes = new[] { "auto", "manual", "performance", "quiet" };
+            var allowedModes = new[] { "Quiet", "Default", "Auto", "Performance" };
             if (!ValidateStringParameter(fanMode, allowedModes, "fanMode"))
             {
                 return false;
             }
 
-            var result = await ExecuteCommandAsync($"-Bios FanMode={fanMode}");
-            return result.Success;
+            bool success = true;
+            
+            switch (fanMode.ToLower())
+            {
+                case "quiet":
+                    // Quiet mode: LegacyQuiet + FanMax=false
+                    var quietResult1 = await ExecuteCommandAsync("-Bios FanMode=LegacyQuiet");
+                    var quietResult2 = await ExecuteCommandAsync("-Bios FanMax=false");
+                    success = quietResult1.Success && quietResult2.Success;
+                    break;
+                    
+                case "default":
+                case "auto":
+                    // Default/Auto mode: LegacyDefault + FanMax=false
+                    var defaultResult1 = await ExecuteCommandAsync("-Bios FanMode=LegacyDefault");
+                    var defaultResult2 = await ExecuteCommandAsync("-Bios FanMax=false");
+                    success = defaultResult1.Success && defaultResult2.Success;
+                    break;
+                    
+                case "performance":
+                    // Maximum mode: Performance + FanMax=true
+                    var perfResult1 = await ExecuteCommandAsync("-Bios FanMode=Performance");
+                    var perfResult2 = await ExecuteCommandAsync("-Bios FanMax=true");
+                    success = perfResult1.Success && perfResult2.Success;
+                    break;
+                    
+                default:
+                    success = false;
+                    break;
+            }
+            
+            return success;
         }
 
         /// <summary>
