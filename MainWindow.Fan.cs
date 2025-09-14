@@ -30,30 +30,25 @@ namespace HP_Gaming_Hub
         private void UpdateFanModeButtonSelection(Button selectedButton)
         {
             // Reset all buttons to default style
-            var defaultBackground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["ControlFillColorDefaultBrush"];
-            var defaultForeground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
+            var defaultStyle = (Style)Application.Current.Resources["DefaultButtonStyle"];
             
             if (QuietModeButton != null)
             {
-                QuietModeButton.Background = defaultBackground;
-                QuietModeButton.Foreground = defaultForeground;
+                QuietModeButton.Style = defaultStyle;
             }
             if (AutoModeButton != null)
             {
-                AutoModeButton.Background = defaultBackground;
-                AutoModeButton.Foreground = defaultForeground;
+                AutoModeButton.Style = defaultStyle;
             }
             if (MaxModeButton != null)
             {
-                MaxModeButton.Background = defaultBackground;
-                MaxModeButton.Foreground = defaultForeground;
+                MaxModeButton.Style = defaultStyle;
             }
                 
-            // Set selected button background to accent color and text to black
+            // Set selected button to accent style
             if (selectedButton != null)
             {
-                selectedButton.Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentFillColorDefaultBrush"];
-                //selectedButton.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Black);
+                selectedButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
             }
         }
         
