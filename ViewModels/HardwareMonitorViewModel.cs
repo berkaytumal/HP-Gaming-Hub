@@ -420,6 +420,27 @@ namespace HP_Gaming_Hub.ViewModels
             System.Diagnostics.Debug.WriteLine($"[HardwareMonitorViewModel] Window focus changed to {isFocused}, timer interval updated to {_omenTimer.Interval.TotalSeconds}s");
         }
         
+        public void OnAutoRefreshChanged(bool isEnabled)
+        {
+            if (isEnabled)
+            {
+                if (!_isMonitoring)
+                {
+                    _ = StartMonitoringAsync();
+                }
+            }
+            else
+            {
+                StopMonitoring();
+            }
+        }
+        
+        public void OnRefreshIntervalChanged(int focusedInterval, int blurredInterval)
+        {
+            // Update the intervals and refresh timer if monitoring is active
+            UpdateTimerInterval();
+        }
+        
         private void UpdateTimerInterval()
         {
             var newInterval = _isWindowFocused ? TimeSpan.FromSeconds(2) : TimeSpan.FromSeconds(10);

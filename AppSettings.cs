@@ -85,6 +85,51 @@ namespace HP_Gaming_Hub
             }
         }
         
+        // Monitor Settings Properties
+        public bool AutoStartMonitoring
+        {
+            get => _settings.SettingsPage.AutoStartMonitoring;
+            set
+            {
+                Debug.WriteLine($"[AppSettings] Setting AutoStartMonitoring from {_settings.SettingsPage.AutoStartMonitoring} to {value}");
+                _settings.SettingsPage.AutoStartMonitoring = value;
+                SaveSettings();
+            }
+        }
+        
+        public bool AutoRefresh
+        {
+            get => _settings.SettingsPage.AutoRefresh;
+            set
+            {
+                Debug.WriteLine($"[AppSettings] Setting AutoRefresh from {_settings.SettingsPage.AutoRefresh} to {value}");
+                _settings.SettingsPage.AutoRefresh = value;
+                SaveSettings();
+            }
+        }
+        
+        public int FocusedRefreshInterval
+        {
+            get => _settings.SettingsPage.FocusedRefreshInterval;
+            set
+            {
+                Debug.WriteLine($"[AppSettings] Setting FocusedRefreshInterval from {_settings.SettingsPage.FocusedRefreshInterval} to {value}");
+                _settings.SettingsPage.FocusedRefreshInterval = value;
+                SaveSettings();
+            }
+        }
+        
+        public int BlurredRefreshInterval
+        {
+            get => _settings.SettingsPage.BlurredRefreshInterval;
+            set
+            {
+                Debug.WriteLine($"[AppSettings] Setting BlurredRefreshInterval from {_settings.SettingsPage.BlurredRefreshInterval} to {value}");
+                _settings.SettingsPage.BlurredRefreshInterval = value;
+                SaveSettings();
+            }
+        }
+        
         private void LoadSettings()
         {
             try
@@ -273,5 +318,11 @@ namespace HP_Gaming_Hub
             }
         }
         public int SelectedWallpaperIndex { get; set; } = 6;
+        
+        // Monitor Settings
+        public bool AutoStartMonitoring { get; set; } = true;
+        public bool AutoRefresh { get; set; } = true;
+        public int FocusedRefreshInterval { get; set; } = 2;
+        public int BlurredRefreshInterval { get; set; } = 10;
     }
 }

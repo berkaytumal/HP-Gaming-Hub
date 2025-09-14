@@ -195,6 +195,41 @@ namespace HP_Gaming_Hub
                 
                 Debug.WriteLine($"[MainWindow] Retrieved settings - BackdropSelectedIndex: {appSettings.BackdropSelectedIndex}, SelectedWallpaperIndex: {appSettings.SelectedWallpaperIndex}");
                 
+                // Load monitor settings without triggering events
+                if (AutoStartMonitoringToggle != null)
+                {
+                    AutoStartMonitoringToggle.Toggled -= AutoStartMonitoringToggle_Toggled;
+                    AutoStartMonitoringToggle.IsOn = appSettings.AutoStartMonitoring;
+                    AutoStartMonitoringToggle.Toggled += AutoStartMonitoringToggle_Toggled;
+                }
+                
+                if (AutoRefreshToggle != null)
+                {
+                    AutoRefreshToggle.Toggled -= AutoRefreshToggle_Toggled;
+                    AutoRefreshToggle.IsOn = appSettings.AutoRefresh;
+                    AutoRefreshToggle.Toggled += AutoRefreshToggle_Toggled;
+                }
+                
+                if (FocusedIntervalSlider != null && FocusedIntervalNumberBox != null)
+                {
+                    FocusedIntervalSlider.ValueChanged -= FocusedIntervalSlider_ValueChanged;
+                    FocusedIntervalNumberBox.ValueChanged -= FocusedIntervalNumberBox_ValueChanged;
+                    FocusedIntervalSlider.Value = appSettings.FocusedRefreshInterval;
+                    FocusedIntervalNumberBox.Value = appSettings.FocusedRefreshInterval;
+                    FocusedIntervalSlider.ValueChanged += FocusedIntervalSlider_ValueChanged;
+                    FocusedIntervalNumberBox.ValueChanged += FocusedIntervalNumberBox_ValueChanged;
+                }
+                
+                if (BlurredIntervalSlider != null && BlurredIntervalNumberBox != null)
+                {
+                    BlurredIntervalSlider.ValueChanged -= BlurredIntervalSlider_ValueChanged;
+                    BlurredIntervalNumberBox.ValueChanged -= BlurredIntervalNumberBox_ValueChanged;
+                    BlurredIntervalSlider.Value = appSettings.BlurredRefreshInterval;
+                    BlurredIntervalNumberBox.Value = appSettings.BlurredRefreshInterval;
+                    BlurredIntervalSlider.ValueChanged += BlurredIntervalSlider_ValueChanged;
+                    BlurredIntervalNumberBox.ValueChanged += BlurredIntervalNumberBox_ValueChanged;
+                }
+                
                 // Load backdrop selection without triggering events
                 if (BackdropComboBox != null)
                 {
@@ -725,6 +760,157 @@ namespace HP_Gaming_Hub
             catch (Exception ex)
             {
                 LogError($"Failed to copy to clipboard: {ex.Message}");
+            }
+        }
+        
+        // Monitor Settings Event Handlers
+        private void AutoStartMonitoringToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is ToggleSwitch toggle)
+                {
+                    AppSettings.Instance.AutoStartMonitoring = toggle.IsOn;
+                    LogInfo($"Auto start monitoring {(toggle.IsOn ? "enabled" : "disabled")}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error updating auto start monitoring setting: {ex.Message}");
+            }
+        }
+        
+        private void AutoRefreshToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is ToggleSwitch toggle)
+                {
+                    AppSettings.Instance.AutoRefresh = toggle.IsOn;
+                    LogInfo($"Auto refresh {(toggle.IsOn ? "enabled" : "disabled")}");
+                    
+                    // Update the hardware monitor view model
+                    if (_hardwareMonitorViewModel != null)
+                    {
+                        _hardwareMonitorViewModel.OnAutoRefreshChanged(toggle.IsOn);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error updating auto refresh setting: {ex.Message}");
+            }
+        }
+        
+        private void FocusedIntervalSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            try
+            {
+                if (sender is Slider slider && FocusedIntervalNumberBox != null)
+                {
+                    var value = (int)slider.Value;
+                    FocusedIntervalNumberBox.ValueChanged -= FocusedIntervalNumberBox_ValueChanged;
+                    FocusedIntervalNumberBox.Value = value;
+                    FocusedIntervalNumberBox.ValueChanged += FocusedIntervalNumberBox_ValueChanged;
+                    
+                    AppSettings.Instance.FocusedRefreshInterval = value;
+                    
+                    // Update the hardware monitor view model
+                    if (_hardwareMonitorViewModel != null)
+                    {
+                        _hardwareMonitorViewModel.OnRefreshIntervalChanged(value, AppSettings.Instance.BlurredRefreshInterval);
+                    }
+                    
+                    LogInfo($"Focused refresh interval set to {value} seconds");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error updating focused refresh interval: {ex.Message}");
+            }
+        }
+        
+        private void FocusedIntervalNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+        {
+            try
+            {
+                if (FocusedIntervalSlider != null && !double.IsNaN(sender.Value))
+                {
+                    var value = (int)sender.Value;
+                    FocusedIntervalSlider.ValueChanged -= FocusedIntervalSlider_ValueChanged;
+                    FocusedIntervalSlider.Value = value;
+                    FocusedIntervalSlider.ValueChanged += FocusedIntervalSlider_ValueChanged;
+                    
+                    AppSettings.Instance.FocusedRefreshInterval = value;
+                    
+                    // Update the hardware monitor view model
+                    if (_hardwareMonitorViewModel != null)
+                    {
+                        _hardwareMonitorViewModel.OnRefreshIntervalChanged(value, AppSettings.Instance.BlurredRefreshInterval);
+                    }
+                    
+                    LogInfo($"Focused refresh interval set to {value} seconds");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error updating focused refresh interval: {ex.Message}");
+            }
+        }
+        
+        private void BlurredIntervalSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            try
+            {
+                if (sender is Slider slider && BlurredIntervalNumberBox != null)
+                {
+                    var value = (int)slider.Value;
+                    BlurredIntervalNumberBox.ValueChanged -= BlurredIntervalNumberBox_ValueChanged;
+                    BlurredIntervalNumberBox.Value = value;
+                    BlurredIntervalNumberBox.ValueChanged += BlurredIntervalNumberBox_ValueChanged;
+                    
+                    AppSettings.Instance.BlurredRefreshInterval = value;
+                    
+                    // Update the hardware monitor view model
+                    if (_hardwareMonitorViewModel != null)
+                    {
+                        _hardwareMonitorViewModel.OnRefreshIntervalChanged(AppSettings.Instance.FocusedRefreshInterval, value);
+                    }
+                    
+                    LogInfo($"Blurred refresh interval set to {value} seconds");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error updating blurred refresh interval: {ex.Message}");
+            }
+        }
+        
+        private void BlurredIntervalNumberBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+        {
+            try
+            {
+                if (BlurredIntervalSlider != null && !double.IsNaN(sender.Value))
+                {
+                    var value = (int)sender.Value;
+                    BlurredIntervalSlider.ValueChanged -= BlurredIntervalSlider_ValueChanged;
+                    BlurredIntervalSlider.Value = value;
+                    BlurredIntervalSlider.ValueChanged += BlurredIntervalSlider_ValueChanged;
+                    
+                    AppSettings.Instance.BlurredRefreshInterval = value;
+                    
+                    // Update the hardware monitor view model
+                    if (_hardwareMonitorViewModel != null)
+                    {
+                        _hardwareMonitorViewModel.OnRefreshIntervalChanged(AppSettings.Instance.FocusedRefreshInterval, value);
+                    }
+                    
+                    LogInfo($"Blurred refresh interval set to {value} seconds");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error updating blurred refresh interval: {ex.Message}");
             }
         }
     }

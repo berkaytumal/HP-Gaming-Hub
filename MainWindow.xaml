@@ -420,51 +420,88 @@
                          <StackPanel Spacing="24">
                              <TextBlock Text="Settings" Style="{StaticResource TitleTextBlockStyle}"/>
                              <TextBlock Text="Customize your application appearance with backdrop effects and wallpapers." TextWrapping="Wrap"/>
-                             
-                             <!-- Backdrop Settings -->
+
+                            <!-- Backdrop Settings -->
+                            <StackPanel Spacing="16">
+                                <TextBlock Text="Backdrop" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                                    <StackPanel Spacing="16">
+                                        <ComboBox x:Name="BackdropComboBox" Header="Backdrop Type" SelectionChanged="BackdropComboBox_SelectionChanged">
+                                            <ComboBoxItem Content="Mica (Default)" Tag="Mica"/>
+                                            <ComboBoxItem Content="Acrylic" Tag="Acrylic"/>
+                                            <ComboBoxItem Content="Image" Tag="Image"/>
+                                        </ComboBox>
+
+                                        <!-- Wallpaper Selection Panel -->
+                                        <StackPanel x:Name="WallpaperPanel" Visibility="Collapsed" Spacing="12" Opacity="0">
+                                            <TextBlock Text="Select Wallpaper" FontWeight="SemiBold"/>
+                                            <ScrollViewer HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled">
+                                                <StackPanel x:Name="WallpaperGallery" Orientation="Horizontal" Spacing="12">
+                                                    <Border x:Name="Wallpaper0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="0" Opacity="0">
+                                                        <Image Source="/Assets/wallpapers/0.png" Stretch="UniformToFill"/>
+                                                    </Border>
+                                                    <Border x:Name="Wallpaper1" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="1" Opacity="0">
+                                                        <Image Source="/Assets/wallpapers/1.png" Stretch="UniformToFill"/>
+                                                    </Border>
+                                                    <Border x:Name="Wallpaper2" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="2" Opacity="0">
+                                                        <Image Source="/Assets/wallpapers/2.png" Stretch="UniformToFill"/>
+                                                    </Border>
+                                                    <Border x:Name="Wallpaper3" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="3" Opacity="0">
+                                                        <Image Source="/Assets/wallpapers/3.png" Stretch="UniformToFill"/>
+                                                    </Border>
+                                                    <Border x:Name="Wallpaper4" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="4" Opacity="0">
+                                                        <Image Source="/Assets/wallpapers/4.png" Stretch="UniformToFill"/>
+                                                    </Border>
+                                                    <Border x:Name="Wallpaper6" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="6" Opacity="0">
+                                                        <Image Source="/Assets/wallpapers/6.png" Stretch="UniformToFill"/>
+                                                    </Border>
+                                                    <Border x:Name="Wallpaper7" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="7" Opacity="0">
+                                                        <Image Source="/Assets/wallpapers/7.png" Stretch="UniformToFill"/>
+                                                    </Border>
+                                                </StackPanel>
+                                            </ScrollViewer>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Monitor Settings -->
                              <StackPanel Spacing="16">
-                                 <TextBlock Text="Backdrop" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                 <TextBlock Text="Monitor" Style="{StaticResource SubtitleTextBlockStyle}"/>
                                  <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
                                      <StackPanel Spacing="16">
-                                         <ComboBox x:Name="BackdropComboBox" Header="Backdrop Type" SelectionChanged="BackdropComboBox_SelectionChanged">
-                                             <ComboBoxItem Content="Mica (Default)" Tag="Mica"/>
-                                             <ComboBoxItem Content="Acrylic" Tag="Acrylic"/>
-                                             <ComboBoxItem Content="Image" Tag="Image"/>
-                                         </ComboBox>
+                                         <ToggleSwitch x:Name="AutoStartMonitoringToggle" Header="Auto Start Monitoring" OnContent="On" OffContent="Off" Toggled="AutoStartMonitoringToggle_Toggled"/>
+                                         <ToggleSwitch x:Name="AutoRefreshToggle" Header="Auto Refresh" OnContent="On" OffContent="Off" Toggled="AutoRefreshToggle_Toggled"/>
                                          
-                                         <!-- Wallpaper Selection Panel -->
-                                         <StackPanel x:Name="WallpaperPanel" Visibility="Collapsed" Spacing="12" Opacity="0">
-                                             <TextBlock Text="Select Wallpaper" FontWeight="SemiBold"/>
-                                             <ScrollViewer HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled">
-                                                 <StackPanel x:Name="WallpaperGallery" Orientation="Horizontal" Spacing="12">
-                                                     <Border x:Name="Wallpaper0" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="0" Opacity="0">
-                                                         <Image Source="/Assets/wallpapers/0.png" Stretch="UniformToFill"/>
-                                                     </Border>
-                                                     <Border x:Name="Wallpaper1" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="1" Opacity="0">
-                                                         <Image Source="/Assets/wallpapers/1.png" Stretch="UniformToFill"/>
-                                                     </Border>
-                                                     <Border x:Name="Wallpaper2" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="2" Opacity="0">
-                                                         <Image Source="/Assets/wallpapers/2.png" Stretch="UniformToFill"/>
-                                                     </Border>
-                                                     <Border x:Name="Wallpaper3" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="3" Opacity="0">
-                                                         <Image Source="/Assets/wallpapers/3.png" Stretch="UniformToFill"/>
-                                                     </Border>
-                                                     <Border x:Name="Wallpaper4" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="4" Opacity="0">
-                                                         <Image Source="/Assets/wallpapers/4.png" Stretch="UniformToFill"/>
-                                                     </Border>
-                                                     <Border x:Name="Wallpaper6" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="6" Opacity="0">
-                                                         <Image Source="/Assets/wallpapers/6.png" Stretch="UniformToFill"/>
-                                                     </Border>
-                                                     <Border x:Name="Wallpaper7" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8" Width="120" Height="80" Tapped="WallpaperBorder_Tapped" Tag="7" Opacity="0">
-                                                         <Image Source="/Assets/wallpapers/7.png" Stretch="UniformToFill"/>
-                                                     </Border>
-                                                 </StackPanel>
-                                             </ScrollViewer>
+                                         <StackPanel Spacing="12">
+                                             <TextBlock Text="Focused Refresh Interval" FontWeight="SemiBold"/>
+                                             <Grid>
+                                                 <Grid.ColumnDefinitions>
+                                                     <ColumnDefinition Width="*"/>
+                                                     <ColumnDefinition Width="80"/>
+                                                 </Grid.ColumnDefinitions>
+                                                 <Slider x:Name="FocusedIntervalSlider" Grid.Column="0" Minimum="1" Maximum="10" Value="2" StepFrequency="1" ValueChanged="FocusedIntervalSlider_ValueChanged"/>
+                                                 <NumberBox x:Name="FocusedIntervalNumberBox" Grid.Column="1" Margin="8,0,0,0" Minimum="1" Maximum="10" Value="2" ValueChanged="FocusedIntervalNumberBox_ValueChanged"/>
+                                             </Grid>
+                                             <TextBlock Text="seconds" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12"/>
+                                         </StackPanel>
+                                         
+                                         <StackPanel Spacing="12">
+                                             <TextBlock Text="Blurred Refresh Interval" FontWeight="SemiBold"/>
+                                             <Grid>
+                                                 <Grid.ColumnDefinitions>
+                                                     <ColumnDefinition Width="*"/>
+                                                     <ColumnDefinition Width="80"/>
+                                                 </Grid.ColumnDefinitions>
+                                                 <Slider x:Name="BlurredIntervalSlider" Grid.Column="0" Minimum="5" Maximum="60" Value="10" StepFrequency="5" ValueChanged="BlurredIntervalSlider_ValueChanged"/>
+                                                 <NumberBox x:Name="BlurredIntervalNumberBox" Grid.Column="1" Margin="8,0,0,0" Minimum="5" Maximum="60" Value="10" ValueChanged="BlurredIntervalNumberBox_ValueChanged"/>
+                                             </Grid>
+                                             <TextBlock Text="seconds" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12"/>
                                          </StackPanel>
                                      </StackPanel>
                                  </Border>
                              </StackPanel>
-                             
+                   
                              <InfoBar x:Name="SettingsInfoBar" IsOpen="False" Severity="Informational" Title="Settings" Message="Backdrop settings have been applied successfully."/>
                          </StackPanel>
                      </ScrollViewer>
