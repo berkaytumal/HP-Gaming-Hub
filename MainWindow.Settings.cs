@@ -206,7 +206,8 @@ namespace HP_Gaming_Hub
                 if (AutoRefreshToggle != null)
                 {
                     AutoRefreshToggle.Toggled -= AutoRefreshToggle_Toggled;
-                    AutoRefreshToggle.IsOn = appSettings.AutoRefresh;
+                    // AutoRefresh is runtime-only, enable it when AutoStartMonitoring is on
+                    AutoRefreshToggle.IsOn = appSettings.AutoStartMonitoring;
                     AutoRefreshToggle.Toggled += AutoRefreshToggle_Toggled;
                 }
                 
@@ -841,8 +842,8 @@ namespace HP_Gaming_Hub
             {
                 if (sender is ToggleSwitch toggle)
                 {
-                    AppSettings.Instance.AutoRefresh = toggle.IsOn;
-                    LogInfo($"Auto refresh {(toggle.IsOn ? "enabled" : "disabled")}");
+                    // AutoRefresh is now runtime-only, not saved to preferences
+                    LogInfo($"Auto refresh {(toggle.IsOn ? "enabled" : "disabled")} (runtime only)");
                     
                     // Update the hardware monitor view model
                     if (_hardwareMonitorViewModel != null)

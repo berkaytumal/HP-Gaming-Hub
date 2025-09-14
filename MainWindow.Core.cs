@@ -53,7 +53,7 @@ namespace HP_Gaming_Hub
                 LogInfo("Successfully connected to OmenMon service");
                 
                 // Start monitoring based on user preference
-                if (AppSettings.Instance.AutoStartMonitoring && AppSettings.Instance.AutoRefresh)
+                if (AppSettings.Instance.AutoStartMonitoring)
                 {
                     await _hardwareMonitorViewModel.StartMonitoringAsync();
                     LogInfo("Automatic monitoring started based on user preferences");

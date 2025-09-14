@@ -97,16 +97,8 @@ namespace HP_Gaming_Hub
             }
         }
         
-        public bool AutoRefresh
-        {
-            get => _settings.SettingsPage.AutoRefresh;
-            set
-            {
-                Debug.WriteLine($"[AppSettings] Setting AutoRefresh from {_settings.SettingsPage.AutoRefresh} to {value}");
-                _settings.SettingsPage.AutoRefresh = value;
-                SaveSettings();
-            }
-        }
+        // AutoRefresh is now a runtime-only setting, not persisted to preferences
+        // It gets enabled automatically when AutoStartMonitoring is true
         
         public int FocusedRefreshInterval
         {
@@ -321,7 +313,7 @@ namespace HP_Gaming_Hub
         
         // Monitor Settings
         public bool AutoStartMonitoring { get; set; } = true;
-        public bool AutoRefresh { get; set; } = true;
+        // AutoRefresh removed - now runtime-only setting
         public int FocusedRefreshInterval { get; set; } = 2;
         public int BlurredRefreshInterval { get; set; } = 10;
     }
