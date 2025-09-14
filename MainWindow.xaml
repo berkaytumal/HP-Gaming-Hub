@@ -100,7 +100,7 @@
                                       <!-- Quiet Mode Button -->
                                       <Button x:Name="QuietModeButton" Click="FanModeButton_Click" Tag="Quiet" CornerRadius="8,0,0,8" Padding="16,10" MinHeight="44" HorizontalContentAlignment="Left">
                                           <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                              <ImageIcon Source="Assets\icons\Mute.png" Width="16" Height="16" VerticalAlignment="Center"/>
+                                              <BitmapIcon ShowAsMonochrome="True" UriSource="Assets\icons\Mute.png" Width="16" Height="16" VerticalAlignment="Center"/>
                                               <TextBlock Text="Quiet"/>
                                           </StackPanel>
                                       </Button>
@@ -108,7 +108,7 @@
                                       <!-- Auto Mode Button -->
                                       <Button x:Name="AutoModeButton" Click="FanModeButton_Click" Tag="Default" CornerRadius="0" Padding="16,10" MinHeight="44" HorizontalContentAlignment="Left">
                                           <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                              <ImageIcon Source="Assets\icons\AI.png" Width="16" Height="16" VerticalAlignment="Center"/>
+                                              <BitmapIcon ShowAsMonochrome="True" UriSource="Assets\icons\AI.png" Width="16" Height="16" VerticalAlignment="Center"/>
                                               <TextBlock Text="Auto"/>
                                           </StackPanel>
                                       </Button>
@@ -116,7 +116,7 @@
                                       <!-- Max Mode Button -->
                                       <Button x:Name="MaxModeButton" Click="FanModeButton_Click" Tag="Performance" CornerRadius="0,8,8,0" Padding="16,10" MinHeight="44" HorizontalContentAlignment="Left">
                                           <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                              <ImageIcon Source="Assets\icons\Speedometer2.png" Width="16" Height="16" VerticalAlignment="Center"/>
+                                              <BitmapIcon ShowAsMonochrome="True" UriSource="Assets\icons\Speedometer2.png" Width="16" Height="16" VerticalAlignment="Center"/>
                                               <TextBlock Text="Max" VerticalAlignment="Center"/>
                                           </StackPanel>
                                       </Button>
