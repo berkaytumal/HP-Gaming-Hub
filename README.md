@@ -1,7 +1,7 @@
 <div align="center">
   <img src="Assets/icon.svg" alt="Fluent Gaming Hub" width="128" height="128">
   
-  # Fluent Gaming Hub (for Omen/Victus PCs)
+  # HP Gaming Hub
   
   A comprehensive Windows application for controlling HP gaming laptop hardware features including fan control, GPU performance, keyboard lighting, and system monitoring.
   
