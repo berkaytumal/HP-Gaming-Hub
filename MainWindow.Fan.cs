@@ -9,26 +9,48 @@ namespace HP_Gaming_Hub
     public partial class MainWindow
     {
         // Fan Control Event Handlers
-        private void FanModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void FanModeButton_Click(object sender, RoutedEventArgs e)
         {
-            if (FanModeComboBox.SelectedItem is ComboBoxItem selectedItem && ManualFanControlPanel != null && FanControlInfoBar != null)
+            if (sender is Button clickedButton && clickedButton.Tag is string mode)
             {
-                string mode = selectedItem.Tag?.ToString() ?? "Default";
+                // Update button selection visual state
+                UpdateFanModeButtonSelection(clickedButton);
                 
-                // Show/hide manual controls based on selection
-                if (mode == "Manual")
-                {
-                    ManualFanControlPanel.Visibility = Visibility.Visible;
-                    FanControlInfoBar.IsOpen = true;
-                }
-                else
-                {
+                // Hide manual controls since we removed Manual mode
+                if (ManualFanControlPanel != null)
                     ManualFanControlPanel.Visibility = Visibility.Collapsed;
+                if (FanControlInfoBar != null)
                     FanControlInfoBar.IsOpen = false;
                     
-                    // Apply the selected fan mode
-                    _ = ApplyFanModeAsync(mode);
-                }
+                // Apply the selected fan mode
+                _ = ApplyFanModeAsync(mode);
+            }
+        }
+        
+        private void UpdateFanModeButtonSelection(Button selectedButton)
+        {
+            // Reset all buttons to default style
+            if (QuietModeButton != null)
+            {
+                QuietModeButton.BorderBrush = null;
+                QuietModeButton.BorderThickness = new Microsoft.UI.Xaml.Thickness(1);
+            }
+            if (AutoModeButton != null)
+            {
+                AutoModeButton.BorderBrush = null;
+                AutoModeButton.BorderThickness = new Microsoft.UI.Xaml.Thickness(1);
+            }
+            if (MaxModeButton != null)
+            {
+                MaxModeButton.BorderBrush = null;
+                MaxModeButton.BorderThickness = new Microsoft.UI.Xaml.Thickness(1);
+            }
+                
+            // Set selected button border to accent color
+            if (selectedButton != null)
+            {
+                selectedButton.BorderBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["AccentFillColorDefaultBrush"];
+                selectedButton.BorderThickness = new Microsoft.UI.Xaml.Thickness(2);
             }
         }
 
@@ -95,8 +117,9 @@ namespace HP_Gaming_Hub
                     
                 await _hardwareMonitorViewModel.SetFanModeAsync("Default");
                 
-                if (FanModeComboBox != null)
-                    FanModeComboBox.SelectedIndex = 0;
+                // Reset to Auto mode (Default)
+                if (AutoModeButton != null)
+                    UpdateFanModeButtonSelection(AutoModeButton);
                     
                 if (ManualFanControlPanel != null)
                     ManualFanControlPanel.Visibility = Visibility.Collapsed;

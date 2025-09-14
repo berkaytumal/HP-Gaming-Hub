@@ -96,12 +96,40 @@
                              <!-- Fan Mode Selection -->
                              <StackPanel Spacing="16">
                                  <TextBlock Text="Fan Mode" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <ComboBox x:Name="FanModeComboBox" Header="Select Fan Mode" SelectedIndex="0" SelectionChanged="FanModeComboBox_SelectionChanged">
-                                     <ComboBoxItem Content="Default" Tag="Default"/>
-                                     <ComboBoxItem Content="Performance" Tag="Performance"/>
-                                     <ComboBoxItem Content="Cool" Tag="Cool"/>
-                                     <ComboBoxItem Content="Manual" Tag="Manual"/>
-                                 </ComboBox>
+                                 <Grid>
+                                     <Grid.ColumnDefinitions>
+                                         <ColumnDefinition Width="*"/>
+                                         <ColumnDefinition Width="*"/>
+                                         <ColumnDefinition Width="*"/>
+                                     </Grid.ColumnDefinitions>
+                                     
+                                     <!-- Quiet Mode Button -->
+                                     <Button x:Name="QuietModeButton" Grid.Column="0" Padding="16" MinHeight="80" Click="FanModeButton_Click" Tag="Cool" CornerRadius="8,0,0,8">
+                                         <StackPanel Spacing="8">
+                                             <FontIcon Glyph="&#xE7ED;" FontSize="24"/>
+                                             <TextBlock Text="Quiet" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                             <TextBlock Text="Silent operation" FontSize="12" Opacity="0.7" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                                         </StackPanel>
+                                     </Button>
+                                     
+                                     <!-- Auto Mode Button -->
+                                     <Button x:Name="AutoModeButton" Grid.Column="1" Padding="16" MinHeight="80" Click="FanModeButton_Click" Tag="Default" CornerRadius="0">
+                                         <StackPanel Spacing="8">
+                                             <FontIcon Glyph="&#xE945;" FontSize="24"/>
+                                             <TextBlock Text="Auto" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                             <TextBlock Text="Balanced cooling" FontSize="12" Opacity="0.7" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                                         </StackPanel>
+                                     </Button>
+                                     
+                                     <!-- Max Mode Button -->
+                                     <Button x:Name="MaxModeButton" Grid.Column="2" Padding="16" MinHeight="80" Click="FanModeButton_Click" Tag="Performance" CornerRadius="0,8,8,0">
+                                         <StackPanel Spacing="8">
+                                             <FontIcon Glyph="&#xE7C8;" FontSize="24"/>
+                                             <TextBlock Text="Max" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                             <TextBlock Text="Maximum cooling" FontSize="12" Opacity="0.7" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                                         </StackPanel>
+                                     </Button>
+                                 </Grid>
                              </StackPanel>
                              
                              <!-- Current Fan Status -->
