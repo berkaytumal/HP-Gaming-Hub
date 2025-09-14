@@ -705,7 +705,7 @@ namespace HP_Gaming_Hub.ViewModels
                 System.Diagnostics.Debug.WriteLine("[UpdateOmenDataAsync] Starting unified OmenMon hardware data update");
                 
                 // Get all hardware data in one unified call
-                var (tempData, fanData, gpuData, keyboardData) = await _omenMonService.GetUnifiedHardwareDataAsync();
+                var (tempData, fanData, gpuData, keyboardData, systemData) = await _omenMonService.GetUnifiedHardwareDataAsync();
                 
                 // Update temperatures - only if we get valid data
                 if (tempData != null && (tempData.CpuTemperature > 0 || tempData.GpuTemperature > 0))
@@ -734,8 +734,7 @@ namespace HP_Gaming_Hub.ViewModels
                 HasBacklight = keyboardData.HasBacklight;
                 BacklightEnabled = keyboardData.BacklightEnabled;
                 
-                // Update system data (still need separate call for this)
-                var systemData = await _omenMonService.GetSystemDataAsync();
+                // Update system data from unified call
                 HasOverclock = systemData.HasOverclock;
                 HasMemoryOverclock = systemData.HasMemoryOverclock;
                 HasUndervolt = systemData.HasUndervolt;
@@ -773,9 +772,11 @@ namespace HP_Gaming_Hub.ViewModels
                 System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Starting hardware data update");
             MainWindow.Instance?.LogDebug("Starting hardware data update");
                 
+                // Get all hardware data in one unified call
+                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching all hardware data with unified call");
+                var (tempData, fanData, gpuData, keyboardData, systemData) = await _omenMonService.GetUnifiedHardwareDataAsync();
+                
                 // Update temperatures - only if we get valid data
-                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching temperature data");
-                var tempData = await _omenMonService.GetTemperaturesAsync();
                 if (tempData != null && (tempData.CpuTemperature > 0 || tempData.GpuTemperature > 0))
                 {
                     CpuTemperature = tempData.CpuTemperature;
@@ -790,8 +791,6 @@ namespace HP_Gaming_Hub.ViewModels
                 }
 
                 // Update fan data
-                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching fan data");
-                var fanData = await _omenMonService.GetFanDataAsync();
                 Fan1Speed = fanData.Fan1Speed;
                 Fan2Speed = fanData.Fan2Speed;
                 Fan1Level = fanData.Fan1Level;
@@ -801,27 +800,21 @@ namespace HP_Gaming_Hub.ViewModels
                 System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Fan data - Fan1: {Fan1Speed} RPM, Fan2: {Fan2Speed} RPM, Mode: {FanMode}");
 
                 // Update GPU data
-                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching GPU data");
-                var gpuData = await _omenMonService.GetGpuDataAsync();
                 GpuMode = gpuData.GpuMode;
                 GpuPreset = gpuData.GpuPreset;
                 System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] GPU data - Mode: {GpuMode}, Preset: {GpuPreset}");
 
                 // Update keyboard data
-                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching keyboard data");
-                var kbdData = await _omenMonService.GetKeyboardDataAsync();
-                HasBacklight = kbdData.HasBacklight;
-                BacklightEnabled = kbdData.BacklightEnabled;
-                CurrentColor = kbdData.CurrentColor;
+                HasBacklight = keyboardData.HasBacklight;
+                BacklightEnabled = keyboardData.BacklightEnabled;
+                CurrentColor = keyboardData.CurrentColor;
                 System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Keyboard data - HasBacklight: {HasBacklight}, Enabled: {BacklightEnabled}");
 
                 // Update system data
-                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching system data");
-                var sysData = await _omenMonService.GetSystemDataAsync();
-                SystemInfo = sysData.SystemInfo;
-                HasOverclock = sysData.HasOverclock;
-                HasMemoryOverclock = sysData.HasMemoryOverclock;
-                HasUndervolt = sysData.HasUndervolt;
+                SystemInfo = systemData.SystemInfo;
+                HasOverclock = systemData.HasOverclock;
+                HasMemoryOverclock = systemData.HasMemoryOverclock;
+                HasUndervolt = systemData.HasUndervolt;
                 System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] System data - Overclock: {HasOverclock}, MemOC: {HasMemoryOverclock}, Undervolt: {HasUndervolt}");
 
                 // Update status

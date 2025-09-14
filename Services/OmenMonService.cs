@@ -418,34 +418,43 @@ namespace HP_Gaming_Hub.Services
         /// <summary>
         /// Get all hardware data using unified OmenMon commands
         /// </summary>
-        public async Task<(TemperatureData temperatures, FanData fanData, GpuData gpuData, KeyboardData keyboardData)> GetUnifiedHardwareDataAsync()
+        public async Task<(TemperatureData temperatures, FanData fanData, GpuData gpuData, KeyboardData keyboardData, SystemData systemData)> GetUnifiedHardwareDataAsync()
         {
             Debug.WriteLine("[GetUnifiedHardwareDataAsync] Starting unified hardware data retrieval");
             
-            // Get temperatures using EC command
-            var tempResult = await ExecuteCommandAsync("-Ec CPUT GPTM");
+            // Single unified OmenMon call with all required arguments
+            var unifiedResult = await ExecuteCommandAsync("-Ec CPUT GPTM RPM1 RPM2 RPM3 RPM4 -Bios Gpu GpuMode KbdType HasBacklight Backlight Color System BornDate Adapter HasOverclock HasMemoryOverclock HasUndervolt FanCount FanMode");
+            
             var tempData = new TemperatureData();
-            if (tempResult.Success)
-            {
-                tempData = ParseEcTemperatureData(tempResult.Output);
-            }
-            
-            // Get fan data using existing BIOS command
-            var fanResult = await ExecuteCommandAsync("-Bios");
             var fanData = new FanData();
-            if (fanResult.Success)
+            var gpuData = new GpuData();
+            var keyboardData = new KeyboardData();
+            var systemData = new SystemData();
+            
+            if (unifiedResult.Success)
             {
-                fanData = ParseFanData(fanResult.Output);
+                // Parse temperature data from EC output
+                tempData = ParseEcTemperatureData(unifiedResult.Output);
+                
+                // Parse fan data from BIOS output
+                fanData = ParseFanData(unifiedResult.Output);
+                
+                // Parse GPU data from BIOS output
+                gpuData = ParseGpuData(unifiedResult.Output);
+                
+                // Parse keyboard data from BIOS output
+                keyboardData = ParseKeyboardData(unifiedResult.Output);
+                
+                // Parse system data from BIOS output
+                systemData = ParseSystemData(unifiedResult.Output);
             }
-            
-            // Get GPU data
-            var gpuData = await GetGpuDataAsync();
-            
-            // Get keyboard data
-            var keyboardData = await GetKeyboardDataAsync();
+            else
+            {
+                Debug.WriteLine($"[GetUnifiedHardwareDataAsync] Unified command failed: {unifiedResult.ErrorMessage}");
+            }
             
             Debug.WriteLine($"[GetUnifiedHardwareDataAsync] Unified data retrieval complete - CPU: {tempData.CpuTemperature}°C, GPU: {tempData.GpuTemperature}°C, Fan1: {fanData.Fan1Speed}RPM, Fan2: {fanData.Fan2Speed}RPM");
-            return (tempData, fanData, gpuData, keyboardData);
+            return (tempData, fanData, gpuData, keyboardData, systemData);
         }
 
         /// <summary>
@@ -1010,6 +1019,8 @@ namespace HP_Gaming_Hub.Services
             var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
             Debug.WriteLine($"[ParseFanData] Found {lines.Length} lines to parse");
             
+            int rpm1 = 0, rpm2 = 0, rpm3 = 0, rpm4 = 0;
+            
             foreach (var line in lines)
             {
                 Debug.WriteLine($"[ParseFanData] Processing line: {line}");
@@ -1028,48 +1039,61 @@ namespace HP_Gaming_Hub.Services
                         Debug.WriteLine($"[ParseFanData] Failed to parse fan count from: {line}");
                     }
                 }
-                // Parse individual fan levels: "- Fan #1 Level: 0x1f = 0b00011111 = 31 [Cpu]"
-                else if (line.Contains("Fan #1 Level:"))
+                // Parse RPM registers: "- Register 0x## Byte: 0x## = 0b######## = ## [RPM#]"
+                else if (line.Contains("[RPM1]"))
                 {
-                    var match = Regex.Match(line, @"=\s*(\d+)\s*\[");
-                    if (match.Success && int.TryParse(match.Groups[1].Value, out int level))
+                    var match = Regex.Match(line, @"=\s*(\d+)\s*\[RPM1\]");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int value))
                     {
-                        // Convert fan level (0-255) to approximate RPM
-                        // Typical conversion: RPM = (level / 255) * max_rpm
-                        // Assuming max RPM around 4000-5000 for gaming laptops
-                        fanData.Fan1Speed = (int)((level / 255.0) * 4500);
-                        fanData.Fan1Level = level;
-                        Debug.WriteLine($"[ParseFanData] Found Fan1 level: {level}, calculated speed: {fanData.Fan1Speed} RPM");
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"[ParseFanData] Failed to parse Fan1 level from: {line}");
+                        rpm1 = value;
+                        Debug.WriteLine($"[ParseFanData] Found RPM1: {rpm1}");
                     }
                 }
-                else if (line.Contains("Fan #2 Level:"))
+                else if (line.Contains("[RPM2]"))
                 {
-                    var match = Regex.Match(line, @"=\s*(\d+)\s*\[");
-                    if (match.Success && int.TryParse(match.Groups[1].Value, out int level))
+                    var match = Regex.Match(line, @"=\s*(\d+)\s*\[RPM2\]");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int value))
                     {
-                        // Convert fan level (0-255) to approximate RPM
-                        fanData.Fan2Speed = (int)((level / 255.0) * 4500);
-                        fanData.Fan2Level = level;
-                        Debug.WriteLine($"[ParseFanData] Found Fan2 level: {level}, calculated speed: {fanData.Fan2Speed} RPM");
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"[ParseFanData] Failed to parse Fan2 level from: {line}");
+                        rpm2 = value;
+                        Debug.WriteLine($"[ParseFanData] Found RPM2: {rpm2}");
                     }
                 }
-                // Parse maximum fan speed setting: "- Maximum Fan Speed: No"
-                else if (line.Contains("Maximum Fan Speed:"))
+                else if (line.Contains("[RPM3]"))
                 {
-                    var isMaxSpeed = line.Contains("Yes");
-                    Debug.WriteLine($"[ParseFanData] Maximum fan speed mode: {isMaxSpeed}");
+                    var match = Regex.Match(line, @"=\s*(\d+)\s*\[RPM3\]");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int value))
+                    {
+                        rpm3 = value;
+                        Debug.WriteLine($"[ParseFanData] Found RPM3: {rpm3}");
+                    }
+                }
+                else if (line.Contains("[RPM4]"))
+                {
+                    var match = Regex.Match(line, @"=\s*(\d+)\s*\[RPM4\]");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int value))
+                    {
+                        rpm4 = value;
+                        Debug.WriteLine($"[ParseFanData] Found RPM4: {rpm4}");
+                    }
+                }
+                // Parse fan mode: "- FanMode: 0x01 = 0b00000001 = 1 [Performance]"
+                else if (line.Contains("FanMode:"))
+                {
+                    var match = Regex.Match(line, @"\[(\w+)\]");
+                    if (match.Success)
+                    {
+                        fanData.FanMode = match.Groups[1].Value;
+                        Debug.WriteLine($"[ParseFanData] Found fan mode: {fanData.FanMode}");
+                    }
                 }
             }
             
-            Debug.WriteLine($"[ParseFanData] Final result - Count: {fanData.FanCount}, Fan1: {fanData.Fan1Speed} RPM (Level: {fanData.Fan1Level}), Fan2: {fanData.Fan2Speed} RPM (Level: {fanData.Fan2Level}), Mode: {fanData.FanMode}");
+            // Combine RPM registers as little-endian 16-bit integers
+            // RPM1/RPM2 for CPU fan (Fan1), RPM3/RPM4 for GPU fan (Fan2)
+            fanData.Fan1Speed = rpm1 | (rpm2 << 8); // Little-endian: low byte + (high byte << 8)
+            fanData.Fan2Speed = rpm3 | (rpm4 << 8); // Little-endian: low byte + (high byte << 8)
+            
+            Debug.WriteLine($"[ParseFanData] Final result - Count: {fanData.FanCount}, Fan1: {fanData.Fan1Speed} RPM (RPM1={rpm1}, RPM2={rpm2}), Fan2: {fanData.Fan2Speed} RPM (RPM3={rpm3}, RPM4={rpm4}), Mode: {fanData.FanMode}");
             return fanData;
         }
 
