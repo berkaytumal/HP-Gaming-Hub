@@ -139,15 +139,15 @@ namespace HP_Gaming_Hub
             if (success)
             {
                 UpdateKeyboardUI();
-                KeyboardSettingsInfoBar.IsOpen = true;
-                KeyboardSettingsInfoBar.Message = "Keyboard data refreshed successfully.";
-                KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Success;
+                // KeyboardSettingsInfoBar.IsOpen = true;
+                // KeyboardSettingsInfoBar.Message = "Keyboard data refreshed successfully.";
+                // KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Success;
             }
             else
             {
-                KeyboardSettingsInfoBar.IsOpen = true;
-                KeyboardSettingsInfoBar.Message = "Failed to refresh keyboard data. Please check the error messages and try again.";
-                KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Error;
+                // KeyboardSettingsInfoBar.IsOpen = true;
+                // KeyboardSettingsInfoBar.Message = "Failed to refresh keyboard data. Please check the error messages and try again.";
+                // KeyboardSettingsInfoBar.Severity = InfoBarSeverity.Error;
             }
         }
 

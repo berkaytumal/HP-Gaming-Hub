@@ -187,12 +187,13 @@ namespace HP_Gaming_Hub
         /// </summary>
         private void UpdateGpuUI()
         {
+            // GPU UI controls removed - Graphics page shows "Coming Soon"
             // Update GPU status display
-            if (CurrentGpuModeText != null)
-                CurrentGpuModeText.Text = _hardwareMonitorViewModel.GpuMode ?? "Unknown";
+            // if (CurrentGpuModeText != null)
+            //     CurrentGpuModeText.Text = _hardwareMonitorViewModel.GpuMode ?? "Unknown";
 
-            if (CurrentGpuTempText != null)
-                CurrentGpuTempText.Text = $"{_hardwareMonitorViewModel.GpuTemperature}°C";
+            // if (CurrentGpuTempText != null)
+            //     CurrentGpuTempText.Text = $"{_hardwareMonitorViewModel.GpuTemperature}°C";
             
             // Update connection status
             // if (GpuConnectionStatusText != null)

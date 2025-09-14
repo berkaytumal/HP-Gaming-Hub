@@ -144,35 +144,7 @@ namespace HP_Gaming_Hub
             }
         }
 
-        private async void MaxFanButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // FanConnectionStatusText.Text = "Enabling Max..."; // Badge removed
-                await _hardwareMonitorViewModel.SetMaxFanAsync(true);
-                // FanConnectionStatusText.Text = "Connected"; // Badge removed
-                UpdateFanUI();
-            }
-            catch (Exception ex)
-            {
-                // FanConnectionStatusText.Text = "Error"; // Badge removed
-            }
-        }
 
-        private async void RefreshFanDataButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // FanConnectionStatusText.Text = "Refreshing..."; // Badge removed
-                await _hardwareMonitorViewModel.RefreshDataAsync();
-                // FanConnectionStatusText.Text = "Connected"; // Badge removed
-                UpdateFanUI();
-            }
-            catch (Exception ex)
-            {
-                // FanConnectionStatusText.Text = "Error"; // Badge removed
-            }
-        }
 
 
     }

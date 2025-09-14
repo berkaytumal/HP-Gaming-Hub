@@ -190,102 +190,23 @@
                                  </StackPanel>
                              </StackPanel>
                              
-                             <!-- Fan Curve Editor -->
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="Advanced Settings" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <StackPanel Orientation="Horizontal" Spacing="16">
-                                     <Button x:Name="MaxFanButton" Content="Enable Max Fan" Click="MaxFanButton_Click"/>
-                                     <Button x:Name="RefreshFanDataButton" Content="Refresh Data" Click="RefreshFanDataButton_Click"/>
-                                 </StackPanel>
-                             </StackPanel>
+
                          </StackPanel>
                      </ScrollViewer>
                      
                      <!-- Graphics Page -->
                       <ScrollViewer x:Name="GraphicsPage" Visibility="Collapsed">
-                         <StackPanel Spacing="24">
-                             <TextBlock Text="Graphics Settings" Style="{StaticResource TitleTextBlockStyle}"/>
-                             <TextBlock Text="Configure GPU performance settings, switch between graphics modes, and monitor GPU status using OmenMon integration." TextWrapping="Wrap"/>
-                             
-                             <!-- GPU Mode Selection -->
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="GPU Mode" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <ComboBox x:Name="GpuModeComboBox" Header="Select GPU Mode" SelectedIndex="0" SelectionChanged="GpuModeComboBox_SelectionChanged">
-                                     <ComboBoxItem Content="Hybrid (Automatic)" Tag="Hybrid"/>
-                                     <ComboBoxItem Content="Discrete (High Performance)" Tag="Discrete"/>
-                                     <ComboBoxItem Content="Optimus (Balanced)" Tag="Optimus"/>
-                                 </ComboBox>
-                                 <TextBlock Text="Hybrid mode automatically switches between integrated and discrete GPU. Discrete mode uses dedicated GPU for maximum performance. Optimus provides balanced performance and battery life." TextWrapping="Wrap" Opacity="0.7" FontSize="12"/>
-                             </StackPanel>
-                             
-
-                             
-                             <!-- Current GPU Status -->
-                             <Grid>
-                                 <Grid.ColumnDefinitions>
-                                     <ColumnDefinition Width="*"/>
-                                     <ColumnDefinition Width="*"/>
-                                 </Grid.ColumnDefinitions>
-                                 <StackPanel Grid.Column="0" Spacing="16" Margin="0,0,12,0">
-                                     <TextBlock Text="Current GPU Status" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                     <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
-                                         <StackPanel Spacing="12">
-                                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                                 <TextBlock Text="Active Mode:" FontWeight="SemiBold"/>
-                                                 <TextBlock x:Name="CurrentGpuModeText" Text="Unknown" FontWeight="SemiBold" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                                             </StackPanel>
-
-                                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                                 <TextBlock Text="Temperature:" FontWeight="SemiBold"/>
-                                                 <TextBlock x:Name="CurrentGpuTempText" Text="--°C" FontWeight="SemiBold"/>
-                                             </StackPanel>
-                                         </StackPanel>
-                                     </Border>
-                                 </StackPanel>
-                                 <StackPanel Grid.Column="1" Spacing="16" Margin="12,0,0,0">
-                                     <TextBlock Text="Power Limits" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                     <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
-                                         <StackPanel Spacing="12">
-                                             <StackPanel Spacing="8">
-                                                 <TextBlock Text="CPU Power Limit 1 (PL1)" FontWeight="SemiBold"/>
-                                                 <Slider x:Name="CpuPL1Slider" Minimum="15" Maximum="45" Value="25" Header="Watts" ValueChanged="CpuPL1Slider_ValueChanged"/>
-                                                 <TextBlock x:Name="CpuPL1ValueText" Text="25W" Opacity="0.7" FontSize="12"/>
-                                             </StackPanel>
-                                             <StackPanel Spacing="8">
-                                                 <TextBlock Text="CPU Power Limit 4 (PL4)" FontWeight="SemiBold"/>
-                                                 <Slider x:Name="CpuPL4Slider" Minimum="35" Maximum="65" Value="45" Header="Watts" ValueChanged="CpuPL4Slider_ValueChanged"/>
-                                                 <TextBlock x:Name="CpuPL4ValueText" Text="45W" Opacity="0.7" FontSize="12"/>
-                                             </StackPanel>
-                                             <StackPanel Spacing="8">
-                                                 <TextBlock Text="GPU Power Limit" FontWeight="SemiBold"/>
-                                                 <Slider x:Name="GpuPLSlider" Minimum="50" Maximum="150" Value="100" Header="Watts" ValueChanged="GpuPLSlider_ValueChanged"/>
-                                                 <TextBlock x:Name="GpuPLValueText" Text="100W" Opacity="0.7" FontSize="12"/>
-                                             </StackPanel>
-                                         </StackPanel>
-                                     </Border>
-                                 </StackPanel>
-                             </Grid>
-                             
-                             <!-- Advanced GPU Settings -->
-                             <StackPanel Spacing="16">
-                                 <TextBlock Text="Advanced Settings" Style="{StaticResource SubtitleTextBlockStyle}"/>
-                                 <StackPanel Orientation="Horizontal" Spacing="16">
-                                     <ToggleSwitch x:Name="XmpToggle" Header="XMP Profile" OnContent="Enabled" OffContent="Disabled" Toggled="XmpToggle_Toggled"/>
-                                     <Button x:Name="ApplyGpuSettingsButton" Content="Apply Settings" Click="ApplyGpuSettingsButton_Click"/>
-                                     <Button x:Name="RefreshGpuDataButton" Content="Refresh Data" Click="RefreshGpuDataButton_Click"/>
-                                 </StackPanel>
-                                 
-                                 <InfoBar x:Name="GpuSettingsInfoBar" IsOpen="False" Severity="Informational" Title="Settings Applied" Message="GPU settings have been applied successfully. Changes may require a system restart to take full effect."/>
-                             </StackPanel>
+                         <StackPanel Spacing="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                             <TextBlock Text="Graphics Settings" Style="{StaticResource TitleTextBlockStyle}" HorizontalAlignment="Center"/>
+                             <TextBlock Text="Coming Soon" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Center" Opacity="0.7"/>
                          </StackPanel>
                      </ScrollViewer>
                      
                      <!-- Keyboard Page -->
                       <ScrollViewer x:Name="KeyboardPage" Visibility="Collapsed">
-                         <StackPanel Spacing="24">
-                             <TextBlock Text="Keyboard Settings" Style="{StaticResource TitleTextBlockStyle}"/>
-                             
-                             <InfoBar x:Name="KeyboardSettingsInfoBar" IsOpen="False" Severity="Informational" Title="Settings Applied" Message="Keyboard settings have been applied successfully."/>
+                         <StackPanel Spacing="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                             <TextBlock Text="Keyboard Settings" Style="{StaticResource TitleTextBlockStyle}" HorizontalAlignment="Center"/>
+                             <TextBlock Text="Coming Soon" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Center" Opacity="0.7"/>
                          </StackPanel>
                      </ScrollViewer>
                      

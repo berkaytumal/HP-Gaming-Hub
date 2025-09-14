@@ -8,7 +8,8 @@ namespace HP_Gaming_Hub
 {
     public partial class MainWindow
     {
-        // GPU Settings Event Handlers
+        // GPU Settings Event Handlers - Graphics page shows "Coming Soon"
+        /*
         private async void GpuModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (GpuModeComboBox?.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string mode)
@@ -34,6 +35,7 @@ namespace HP_Gaming_Hub
             }
         }
 
+        /*
         private void CpuPL1Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (CpuPL1ValueText != null)
@@ -141,5 +143,6 @@ namespace HP_Gaming_Hub
                 }
             }
         }
+        */
     }
 }
