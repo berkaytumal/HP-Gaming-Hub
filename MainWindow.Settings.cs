@@ -599,12 +599,18 @@ namespace HP_Gaming_Hub
              }
           }
 
+         private SizeChangedEventHandler _wallpaperSizeChangedHandler;
+        private Microsoft.UI.Composition.SpriteVisual _currentWallpaperSprite;
+
          private async Task SetupWallpaperCompositionVisual(Border wallpaperContainer, string wallpaperPath, Grid mainGrid)
          {
              // Force layout update and wait a bit to ensure proper sizing
              wallpaperContainer.UpdateLayout();
              mainGrid.UpdateLayout();
              await Task.Delay(50);
+             
+             // Clean up previous handler and sprite if they exist
+             CleanupWallpaperCompositionVisual(mainGrid);
              
              var compositor = ElementCompositionPreview.GetElementVisual(wallpaperContainer).Compositor;
              
@@ -636,8 +642,8 @@ namespace HP_Gaming_Hub
              mask.Mask = gradient;
              
              // SpriteVisual to display
-             var sprite = compositor.CreateSpriteVisual();
-             sprite.Brush = mask;
+             _currentWallpaperSprite = compositor.CreateSpriteVisual();
+             _currentWallpaperSprite.Brush = mask;
              
              // Ensure we have valid dimensions before setting size
              var width = (float)mainGrid.ActualWidth;
@@ -645,28 +651,39 @@ namespace HP_Gaming_Hub
              
              if (width > 0 && height > 0)
              {
-                 sprite.Size = new Vector2(width, height);
+                 _currentWallpaperSprite.Size = new Vector2(width, height);
              }
              else
              {
                  // Fallback to window bounds if ActualWidth/Height are still 0
                  var bounds = this.AppWindow.Size;
-                 sprite.Size = new Vector2((float)bounds.Width, (float)bounds.Height);
+                 _currentWallpaperSprite.Size = new Vector2((float)bounds.Width, (float)bounds.Height);
              }
              
-             ElementCompositionPreview.SetElementChildVisual(wallpaperContainer, sprite);
+             ElementCompositionPreview.SetElementChildVisual(wallpaperContainer, _currentWallpaperSprite);
              
-             // Update size when grid size changes
-             mainGrid.SizeChanged += (sender, args) =>
+             // Create and store the event handler
+             _wallpaperSizeChangedHandler = (sender, args) =>
              {
-                 if (args.NewSize.Width > 0 && args.NewSize.Height > 0)
+                 try
                  {
-                     sprite.Size = new Vector2(
-                         (float)args.NewSize.Width,
-                         (float)args.NewSize.Height
-                     );
+                     if (args.NewSize.Width > 0 && args.NewSize.Height > 0 && _currentWallpaperSprite != null)
+                     {
+                         _currentWallpaperSprite.Size = new Vector2(
+                             (float)args.NewSize.Width,
+                             (float)args.NewSize.Height
+                         );
+                     }
+                 }
+                 catch (System.ObjectDisposedException)
+                 {
+                     // Visual has been disposed, unsubscribe from the event
+                     CleanupWallpaperCompositionVisual(mainGrid);
                  }
              };
+             
+             // Subscribe to size changes
+             mainGrid.SizeChanged += _wallpaperSizeChangedHandler;
              
              // Fade in the new wallpaper
              var fadeInAnimation = new DoubleAnimation
@@ -682,6 +699,44 @@ namespace HP_Gaming_Hub
              fadeInStoryboard.Children.Add(fadeInAnimation);
              fadeInStoryboard.Begin();
          }
+
+         private void CleanupWallpaperCompositionVisual(Grid mainGrid)
+        {
+            try
+            {
+                // Unsubscribe from size changed event
+                if (mainGrid != null && _wallpaperSizeChangedHandler != null)
+                {
+                    mainGrid.SizeChanged -= _wallpaperSizeChangedHandler;
+                    _wallpaperSizeChangedHandler = null;
+                }
+                
+                // Dispose the sprite visual
+                if (_currentWallpaperSprite != null)
+                {
+                    _currentWallpaperSprite.Dispose();
+                    _currentWallpaperSprite = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error cleaning up wallpaper composition visual: {ex.Message}");
+            }
+        }
+
+        public void CleanupWallpaperCompositionVisual()
+        {
+            try
+            {
+                // Get the main grid from content
+                Grid? mainGrid = this.Content as Grid;
+                CleanupWallpaperCompositionVisual(mainGrid);
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error cleaning up wallpaper composition visual: {ex.Message}");
+            }
+        }
 
          private void ApplyBackdropSettings(string backdropType)
           {

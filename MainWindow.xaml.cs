@@ -69,6 +69,9 @@ namespace HP_Gaming_Hub
         {
             _hardwareMonitorViewModel?.StopMonitoring();
             _hardwareMonitorViewModel?.Dispose();
+            
+            // Clean up composition visuals
+            CleanupWallpaperCompositionVisual();
         }
 
         private async Task InitializeAsync()
