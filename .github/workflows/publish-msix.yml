@@ -1,0 +1,116 @@
+name: Publish MSIX Package
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build-and-publish:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+      
+    - name: Get version from tag or input
+      id: get_version
+      shell: pwsh
+      run: |
+        if ("${{ github.event_name }}" -eq "push") {
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+        } else {
+          $version = "${{ github.event.inputs.version }}"
+        }
+        echo "version=$version" >> $env:GITHUB_OUTPUT
+        echo "Version: $version"
+        
+    - name: Update version in project file
+      shell: pwsh
+      run: |
+        $version = "${{ steps.get_version.outputs.version }}"
+        $projectFile = "HP Gaming Hub.csproj"
+        $content = Get-Content $projectFile -Raw
+        $content = $content -replace '<Version>.*</Version>', "<Version>$version</Version>"
+        $content = $content -replace '<ApplicationVersion>.*</ApplicationVersion>', "<ApplicationVersion>$version</ApplicationVersion>"
+        Set-Content $projectFile $content
+        
+    - name: Restore dependencies
+      run: dotnet restore "HP Gaming Hub.csproj"
+      
+    - name: Build and package MSIX
+      run: |
+        msbuild "HP Gaming Hub.csproj" /p:Configuration=Release /p:Platform=x64 /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundlePlatforms=x64 /p:PackageCertificateKeyFile="" /p:PackageCertificatePassword="" /p:GenerateAppxPackageOnBuild=true
+        
+    - name: Find MSIX package
+      id: find_msix
+      shell: pwsh
+      run: |
+        $msixPath = Get-ChildItem -Path "AppPackages" -Filter "*.msix" -Recurse | Select-Object -First 1 -ExpandProperty FullName
+        if (-not $msixPath) {
+          $msixPath = Get-ChildItem -Path "bin\x64\Release" -Filter "*.msix" -Recurse | Select-Object -First 1 -ExpandProperty FullName
+        }
+        if ($msixPath) {
+          echo "msix_path=$msixPath" >> $env:GITHUB_OUTPUT
+          echo "Found MSIX: $msixPath"
+        } else {
+          echo "No MSIX package found"
+          exit 1
+        }
+        
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name || format('v{0}', steps.get_version.outputs.version) }}
+        release_name: HP Gaming Hub v${{ steps.get_version.outputs.version }}
+        body: |
+          ## HP Gaming Hub v${{ steps.get_version.outputs.version }}
+          
+          ### Installation
+          1. Download the MSIX package below
+          2. Install the certificate if prompted
+          3. Install the application
+          
+          ### Changes
+          - See commit history for detailed changes
+          
+          ### System Requirements
+          - Windows 10/11 (x64)
+          - .NET 8.0 Runtime
+          - HP OMEN/Pavilion/Victus gaming hardware
+        draft: false
+        prerelease: false
+        
+    - name: Upload MSIX to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.find_msix.outputs.msix_path }}
+        asset_name: HP-Gaming-Hub-v${{ steps.get_version.outputs.version }}.msix
+        asset_content_type: application/octet-stream
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: msix-package-v${{ steps.get_version.outputs.version }}
+        path: ${{ steps.find_msix.outputs.msix_path }}
+        retention-days: 30

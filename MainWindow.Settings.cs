@@ -946,5 +946,161 @@ namespace HP_Gaming_Hub
                 Log.Error(ex, "Error updating blurred refresh interval: {Message}", ex.Message);
             }
         }
+
+        // Update Check Functionality
+        private async void CheckForUpdatesButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is Button button)
+                {
+                    button.IsEnabled = false;
+                    button.Content = "Checking...";
+                }
+
+                var updateInfo = await CheckForUpdates();
+                
+                if (updateInfo.HasUpdate)
+                {
+                    ShowUpdateAvailableDialog(updateInfo);
+                }
+                else
+                {
+                    ShowNoUpdateDialog();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error checking for updates: {Message}", ex.Message);
+                ShowUpdateErrorDialog(ex.Message);
+            }
+            finally
+            {
+                if (sender is Button button)
+                {
+                    button.IsEnabled = true;
+                    button.Content = "Check for Updates";
+                }
+            }
+        }
+
+        private async Task<UpdateInfo> CheckForUpdates()
+        {
+            using var httpClient = new System.Net.Http.HttpClient();
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "HP-Gaming-Hub");
+            
+            var response = await httpClient.GetStringAsync("https://api.github.com/repos/berkaytumal/HP-Gaming-Hub/releases/latest");
+            var releaseInfo = System.Text.Json.JsonSerializer.Deserialize<GitHubRelease>(response);
+            
+            var currentVersion = GetCurrentVersion();
+            var latestVersion = releaseInfo.tag_name.TrimStart('v');
+            
+            var hasUpdate = IsNewerVersion(latestVersion, currentVersion);
+            
+            return new UpdateInfo
+            {
+                HasUpdate = hasUpdate,
+                LatestVersion = latestVersion,
+                CurrentVersion = currentVersion,
+                DownloadUrl = releaseInfo.assets?.FirstOrDefault(a => a.name.EndsWith(".msix"))?.browser_download_url,
+                ReleaseNotes = releaseInfo.body
+            };
+        }
+
+        private string GetCurrentVersion()
+        {
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var version = assembly.GetName().Version;
+            return $"{version.Major}.{version.Minor}.{version.Build}";
+        }
+
+        private bool IsNewerVersion(string latestVersion, string currentVersion)
+        {
+            try
+            {
+                var latest = new Version(latestVersion);
+                var current = new Version(currentVersion);
+                return latest > current;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private async void ShowUpdateAvailableDialog(UpdateInfo updateInfo)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Update Available",
+                Content = $"A new version ({updateInfo.LatestVersion}) is available!\n\nCurrent version: {updateInfo.CurrentVersion}\n\nRelease Notes:\n{updateInfo.ReleaseNotes}",
+                PrimaryButtonText = "Download",
+                SecondaryButtonText = "Later",
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary && !string.IsNullOrEmpty(updateInfo.DownloadUrl))
+            {
+                try
+                {
+                    var uri = new Uri(updateInfo.DownloadUrl);
+                    await Windows.System.Launcher.LaunchUriAsync(uri);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Error opening download URL: {Message}", ex.Message);
+                }
+            }
+        }
+
+        private async void ShowNoUpdateDialog()
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "No Updates Available",
+                Content = "You are running the latest version of HP Gaming Hub.",
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            await dialog.ShowAsync();
+        }
+
+        private async void ShowUpdateErrorDialog(string errorMessage)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Update Check Failed",
+                Content = $"Failed to check for updates:\n{errorMessage}",
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+
+            await dialog.ShowAsync();
+        }
+
+        // Data classes for GitHub API response
+        private class GitHubRelease
+        {
+            public string tag_name { get; set; }
+            public string body { get; set; }
+            public GitHubAsset[] assets { get; set; }
+        }
+
+        private class GitHubAsset
+        {
+            public string name { get; set; }
+            public string browser_download_url { get; set; }
+        }
+
+        private class UpdateInfo
+        {
+            public bool HasUpdate { get; set; }
+            public string LatestVersion { get; set; }
+            public string CurrentVersion { get; set; }
+            public string DownloadUrl { get; set; }
+            public string ReleaseNotes { get; set; }
+        }
     }
 }

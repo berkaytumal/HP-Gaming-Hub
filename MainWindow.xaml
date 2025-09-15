@@ -384,6 +384,24 @@
                                      </StackPanel>
                                  </Border>
                              </StackPanel>
+
+                             <!-- Update Settings -->
+                             <StackPanel Spacing="16">
+                                 <TextBlock Text="Updates" Style="{StaticResource SubtitleTextBlockStyle}"/>
+                                 <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                                     <StackPanel Spacing="12">
+                                         <TextBlock Text="Check for application updates from GitHub releases" TextWrapping="Wrap" Opacity="0.8"/>
+                                         <Button x:Name="CheckForUpdatesButton" Content="Check for Updates" Click="CheckForUpdatesButton_Click" HorizontalAlignment="Left">
+                                             <Button.Style>
+                                                 <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+                                                     <Setter Property="Background" Value="{ThemeResource AccentFillColorDefaultBrush}"/>
+                                                     <Setter Property="Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}"/>
+                                                 </Style>
+                                             </Button.Style>
+                                         </Button>
+                                     </StackPanel>
+                                 </Border>
+                             </StackPanel>
                    
                              <InfoBar x:Name="SettingsInfoBar" IsOpen="False" Severity="Informational" Title="Settings" Message="Backdrop settings have been applied successfully."/>
                          </StackPanel>
