@@ -14,7 +14,7 @@
         
         <!-- Main Content Area -->
         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <Border Background="Transparent" Padding="40">
+            <Border Background="Transparent" Padding="30">
                 <Grid x:Name="ContentGrid">
                 
                 <!-- Page 1: Welcome -->
@@ -23,26 +23,78 @@
                     <StackPanel.RenderTransform>
                         <TranslateTransform X="0" Y="0"/>
                     </StackPanel.RenderTransform>
+                     <Image Source="Assets/StoreLogo.scale-200.png" 
+                           Width="80" 
+                           Height="80" 
+                           Margin="0,0,0,20"/>
                     <TextBlock Text="Welcome to HP Gaming Hub!" 
                                FontSize="36" 
                                FontWeight="Bold" 
-                               HorizontalAlignment="Left" 
                                Margin="0,0,0,20"
                                TextWrapping="Wrap"
+                               TextAlignment="Center"
                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                     <TextBlock Text="An open source alternative to Omen Gaming Hub" 
                                FontSize="18" 
                                HorizontalAlignment="Center" 
                                TextWrapping="Wrap"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                    <Image Source="Assets/Square150x150Logo.png" 
-                           Width="120" 
-                           Height="120" 
-                           Margin="0,40,0,0"/>
                 </StackPanel>
                 
-                <!-- Page 2: Features -->
+                <!-- Page 2: Disclaimer -->
                 <StackPanel x:Name="Page2" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Opacity="0">
+                    <StackPanel.RenderTransform>
+                        <TranslateTransform X="30" Y="0"/>
+                    </StackPanel.RenderTransform>
+                    <TextBlock Text="Important Disclaimer" 
+                               FontSize="32" 
+                               FontWeight="Bold" 
+                               HorizontalAlignment="Center" 
+                               Margin="0,0,0,30"
+                               TextWrapping="Wrap"
+                               Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
+                    
+
+                        <StackPanel>
+                            <TextBlock Text="Early Development Software" 
+                                       FontSize="20" 
+                                       FontWeight="SemiBold" 
+                                       Margin="0,0,0,15"
+                                       HorizontalAlignment="Center"
+                                       Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
+                            
+                            <TextBlock Text="This software is in very early development and should NOT be used as a daily driver. It may contain bugs, cause system instability, or potentially damage your hardware." 
+                                       FontSize="16" 
+                                       TextWrapping="Wrap"
+                                       LineHeight="24"
+                                       Margin="0,0,0,20"
+                                       TextAlignment="Center"
+                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                            
+                            <TextBlock Text="Recommendations:" 
+                                       FontSize="18" 
+                                       FontWeight="SemiBold" 
+                                       Margin="0,0,0,10"
+                                       Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                            
+                            <TextBlock Text="• Use only for testing purposes&#x0a;• Monitor temperatures closely during use&#x0a;• Close the application after testing&#x0a;• Keep original HP Omen software as backup&#x0a;• Report any issues on GitHub" 
+                                       FontSize="16" 
+                                       TextWrapping="Wrap"
+                                       LineHeight="24"
+                                       Margin="0,0,0,20"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            
+                            <TextBlock Text="Use at your own risk!" 
+                                       FontSize="16" 
+                                       FontWeight="Bold" 
+                                       HorizontalAlignment="Center"
+                                       Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
+                        </StackPanel>
+                </StackPanel>
+                
+                <!-- Page 3: Features -->
+                <StackPanel x:Name="Page3" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
                            Opacity="0">
                     <StackPanel.RenderTransform>
                         <TranslateTransform X="30" Y="0"/>
@@ -54,18 +106,36 @@
                                Margin="0,0,0,30"
                                TextWrapping="Wrap"
                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                    <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." 
-                               FontSize="16" 
-                               HorizontalAlignment="Center" 
-                               TextWrapping="Wrap"
-                               MaxWidth="600"
-                               TextAlignment="Center"
-                               LineHeight="24"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <StackPanel MaxWidth="700" HorizontalAlignment="Center">
+                        <!-- Currently Available -->
+                        <TextBlock Text="✅ Currently Available" 
+                                   FontSize="20" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,0,15"
+                                   Foreground="{ThemeResource SystemFillColorSuccessBrush}"/>
+                        <TextBlock Text="• Fan Control (Quiet, Auto, Max modes) with real-time temperature monitoring&#x0a;• System Monitoring with CPU/GPU tracking and customizable refresh intervals&#x0a;• Settings &amp; Customization with multiple backdrop options and persistent preferences" 
+                                   FontSize="16" 
+                                   TextWrapping="Wrap"
+                                   LineHeight="24"
+                                   Margin="0,0,0,25"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        
+                        <!-- Coming Soon -->
+                        <TextBlock Text="🚀 Coming Soon" 
+                                   FontSize="20" 
+                                   FontWeight="SemiBold" 
+                                   Margin="0,0,0,15"
+                                   Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="• Custom Fan Curves with visual editor and multiple profiles&#x0a;• GPU Performance Control with power modes and TDP management&#x0a;• RGB Keyboard Lighting with full spectrum control and game integration&#x0a;• Quick Control Popup and system tray integration with hotkey support" 
+                                   FontSize="16" 
+                                   TextWrapping="Wrap"
+                                   LineHeight="24"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
                 </StackPanel>
                 
-                <!-- Page 3: Download Helper -->
-                <StackPanel x:Name="Page3" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
+                <!-- Page 4: Download Helper -->
+                <StackPanel x:Name="Page4" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
                            Opacity="0">
                     <StackPanel.RenderTransform>
                         <TranslateTransform X="30" Y="0"/>
@@ -127,8 +197,8 @@
                     </Border>
                 </StackPanel>
                 
-                <!-- Page 4: Ready to Start -->
-                <StackPanel x:Name="Page4" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
+                <!-- Page 5: Ready to Start -->
+                <StackPanel x:Name="Page5" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
                            Opacity="0">
                     <StackPanel.RenderTransform>
                         <TranslateTransform X="30" Y="0"/>
@@ -178,6 +248,7 @@
                     <Ellipse x:Name="Dot2" Width="12" Height="12" Fill="{ThemeResource ControlFillColorDisabledBrush}" Margin="4"/>
                     <Ellipse x:Name="Dot3" Width="12" Height="12" Fill="{ThemeResource ControlFillColorDisabledBrush}" Margin="4"/>
                     <Ellipse x:Name="Dot4" Width="12" Height="12" Fill="{ThemeResource ControlFillColorDisabledBrush}" Margin="4"/>
+                    <Ellipse x:Name="Dot5" Width="12" Height="12" Fill="{ThemeResource ControlFillColorDisabledBrush}" Margin="4"/>
                 </StackPanel>
                 
                 <Button x:Name="NextButton" 

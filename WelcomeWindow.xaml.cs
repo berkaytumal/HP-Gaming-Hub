@@ -17,7 +17,7 @@ namespace HP_Gaming_Hub
     public sealed partial class WelcomeWindow : Window
     {
         private int currentPage = 1;
-        private const int totalPages = 4;
+        private const int totalPages = 5;
         private bool isOmenMonDownloaded = false;
         private readonly HttpClient httpClient;
         private readonly AppSettings appSettings = AppSettings.Instance;
@@ -58,9 +58,6 @@ namespace HP_Gaming_Hub
             appWindow.TitleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
             appWindow.TitleBar.ButtonInactiveBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
             
-            // Set drag rectangles to make entire window draggable
-            appWindow.TitleBar.SetDragRectangles([new(0, 0, 600, 600)]);
-            
             httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("User-Agent", "HP-Gaming-Hub/1.0");
             
@@ -74,13 +71,13 @@ namespace HP_Gaming_Hub
             PreviousButton.IsEnabled = currentPage > 1;
 
             // Update Next button
-            if (currentPage == 3)
+            if (currentPage == 4)
             {
                 NextButton.IsEnabled = isOmenMonDownloaded;
                 NextButton.Content = "Next";
                 NextButton.Visibility = Visibility.Visible;
             }
-            else if (currentPage == 4)
+            else if (currentPage == 5)
             {
                 NextButton.Content = "Launch";
                 NextButton.IsEnabled = true;
@@ -102,7 +99,7 @@ namespace HP_Gaming_Hub
 
         private void UpdatePageIndicators()
         {
-            var dots = new[] { Dot1, Dot2, Dot3, Dot4 };
+            var dots = new[] { Dot1, Dot2, Dot3, Dot4, Dot5 };
             var activeBrush = (SolidColorBrush)Application.Current.Resources["AccentFillColorDefaultBrush"];
             var inactiveBrush = (SolidColorBrush)Application.Current.Resources["ControlFillColorDisabledBrush"];
 
@@ -114,7 +111,7 @@ namespace HP_Gaming_Hub
 
         private async Task AnimatePageTransition(bool isForward = true)
         {
-            var pages = new[] { Page1, Page2, Page3, Page4 };
+            var pages = new[] { Page1, Page2, Page3, Page4, Page5 };
             
             // First, fade out all visible pages
             var fadeOutTasks = new List<Task>();
@@ -226,8 +223,8 @@ namespace HP_Gaming_Hub
             {
                 currentPage--;
                 
-                // Recheck OmenMon status when navigating to page 3
-                if (currentPage == 3)
+                // Recheck OmenMon status when navigating to page 4
+                if (currentPage == 4)
                 {
                     CheckOmenMonStatus();
                 }
@@ -242,7 +239,7 @@ namespace HP_Gaming_Hub
 
         private async void NextButton_Click(object sender, RoutedEventArgs e)
         {
-            if (currentPage == 4)
+            if (currentPage == 5)
             {
                 // Launch the main application
                 LaunchButton_Click(sender, e);
@@ -253,8 +250,8 @@ namespace HP_Gaming_Hub
             {
                 currentPage++;
                 
-                // Recheck OmenMon status when navigating to page 3
-                if (currentPage == 3)
+                // Recheck OmenMon status when navigating to page 4
+                if (currentPage == 4)
                 {
                     CheckOmenMonStatus();
                 }
