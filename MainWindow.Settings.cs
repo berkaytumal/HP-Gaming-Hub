@@ -986,25 +986,41 @@ namespace HP_Gaming_Hub
 
         private async Task<UpdateInfo> CheckForUpdates()
         {
-            using var httpClient = new System.Net.Http.HttpClient();
-            httpClient.DefaultRequestHeaders.Add("User-Agent", "HP-Gaming-Hub");
-            
-            var response = await httpClient.GetStringAsync("https://api.github.com/repos/berkaytumal/HP-Gaming-Hub/releases/latest");
-            var releaseInfo = System.Text.Json.JsonSerializer.Deserialize<GitHubRelease>(response);
-            
-            var currentVersion = GetCurrentVersion();
-            var latestVersion = releaseInfo.tag_name.TrimStart('v');
-            
-            var hasUpdate = IsNewerVersion(latestVersion, currentVersion);
-            
-            return new UpdateInfo
+            try
             {
-                HasUpdate = hasUpdate,
-                LatestVersion = latestVersion,
-                CurrentVersion = currentVersion,
-                DownloadUrl = releaseInfo.assets?.FirstOrDefault(a => a.name.EndsWith(".msix"))?.browser_download_url,
-                ReleaseNotes = releaseInfo.body
-            };
+                using var httpClient = new System.Net.Http.HttpClient();
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "HP-Gaming-Hub");
+                
+                var response = await httpClient.GetStringAsync("https://api.github.com/repos/berkaytumal/HP-Gaming-Hub/releases/latest");
+                var releaseInfo = System.Text.Json.JsonSerializer.Deserialize<GitHubRelease>(response);
+                
+                var currentVersion = GetCurrentVersion();
+                var latestVersion = releaseInfo.tag_name.TrimStart('v');
+                
+                var hasUpdate = IsNewerVersion(latestVersion, currentVersion);
+                
+                return new UpdateInfo
+                {
+                    HasUpdate = hasUpdate,
+                    LatestVersion = latestVersion,
+                    CurrentVersion = currentVersion,
+                    DownloadUrl = releaseInfo.assets?.FirstOrDefault(a => a.name.EndsWith(".msix"))?.browser_download_url,
+                    ReleaseNotes = releaseInfo.body
+                };
+            }
+            catch (System.Net.Http.HttpRequestException ex) when (ex.Message.Contains("404"))
+            {
+                // No releases published yet, current version is the latest
+                var currentVersion = GetCurrentVersion();
+                return new UpdateInfo
+                {
+                    HasUpdate = false,
+                    LatestVersion = currentVersion,
+                    CurrentVersion = currentVersion,
+                    DownloadUrl = null,
+                    ReleaseNotes = "No releases published yet. You are running the development version."
+                };
+            }
         }
 
         private string GetCurrentVersion()
