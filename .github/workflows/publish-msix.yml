@@ -11,6 +11,13 @@ on:
         required: true
         default: '1.0.0'
 
+permissions:
+  contents: write
+  actions: read
+  pull-requests: write
+  issues: write
+  repository-projects: write
+
 jobs:
   build-and-publish:
     runs-on: windows-latest
@@ -72,41 +79,34 @@ jobs:
           exit 1
         }
         
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
+    - name: Create Release and Upload MSIX
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref_name || format('v{0}', steps.get_version.outputs.version) }}
-        release_name: HP Gaming Hub v${{ steps.get_version.outputs.version }}
-        body: |
-          ## HP Gaming Hub v${{ steps.get_version.outputs.version }}
-          
-          ### Installation
-          1. Download the MSIX package below
-          2. Install the certificate if prompted
-          3. Install the application
-          
-          ### Changes
-          - See commit history for detailed changes
-          
-          ### System Requirements
-          - Windows 10/11 (x64)
-          - .NET 8.0 Runtime
-          - HP OMEN/Pavilion/Victus gaming hardware
-        draft: false
-        prerelease: false
+      shell: pwsh
+      run: |
+        $version = "${{ steps.get_version.outputs.version }}"
+        $tagName = if ("${{ github.event_name }}" -eq "push") { "${{ github.ref_name }}" } else { "v$version" }
+        $msixPath = "${{ steps.find_msix.outputs.msix_path }}"
         
-    - name: Upload MSIX to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.find_msix.outputs.msix_path }}
-        asset_name: HP-Gaming-Hub-v${{ steps.get_version.outputs.version }}.msix
-        asset_content_type: application/octet-stream
+        $releaseBody = @"
+        ## HP Gaming Hub v$version
+        
+        ### Installation
+        1. Download the MSIX package below
+        2. Install the certificate if prompted
+        3. Install the application
+        
+        ### Changes
+        - See commit history for detailed changes
+        
+        ### System Requirements
+        - Windows 10/11 (x64)
+        - .NET 8.0 Runtime
+        - HP OMEN/Pavilion/Victus gaming hardware
+        "@
+        
+        # Create release using GitHub CLI
+        gh release create "$tagName" "$msixPath" --title "HP Gaming Hub v$version" --notes "$releaseBody" --repo "${{ github.repository }}"
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
