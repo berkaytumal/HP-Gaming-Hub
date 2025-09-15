@@ -54,7 +54,7 @@ jobs:
       
     - name: Build and package MSIX
       run: |
-        msbuild "HP Gaming Hub.csproj" /p:Configuration=Release /p:Platform=x64 /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundlePlatforms=x64 /p:PackageCertificateKeyFile="" /p:PackageCertificatePassword="" /p:GenerateAppxPackageOnBuild=true
+        msbuild "HP Gaming Hub.csproj" /p:Configuration=Release /p:Platform=x64 /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundlePlatforms=x64 /p:PackageCertificateKeyFile="" /p:PackageCertificatePassword="" /p:GenerateAppxPackageOnBuild=true /p:PublishReadyToRun=false
         
     - name: Find MSIX package
       id: find_msix
