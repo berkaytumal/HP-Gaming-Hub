@@ -219,11 +219,7 @@ namespace HP_Gaming_Hub
             if (Fan2LevelText != null)
                 Fan2LevelText.Text = data.Fan2Level?.ToString() ?? "--";
             
-            // Update max speeds (assuming we can get this from the service)
-            if (Fan1MaxSpeedText != null)
-                Fan1MaxSpeedText.Text = data.Fan1MaxSpeed > 0 ? $"{data.Fan1MaxSpeed} RPM" : "-- RPM";
-            if (Fan2MaxSpeedText != null)
-                Fan2MaxSpeedText.Text = data.Fan2MaxSpeed > 0 ? $"{data.Fan2MaxSpeed} RPM" : "-- RPM";
+
         }
 
         /// <summary>

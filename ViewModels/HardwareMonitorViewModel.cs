@@ -238,8 +238,7 @@ namespace HP_Gaming_Hub.ViewModels
         // Fan control properties
         private int? _fan1Level;
         private int? _fan2Level;
-        private int _fan1MaxSpeed;
-        private int _fan2MaxSpeed;
+
 
         public int? Fan1Level
         {
@@ -253,17 +252,7 @@ namespace HP_Gaming_Hub.ViewModels
             set => SetProperty(ref _fan2Level, value);
         }
 
-        public int Fan1MaxSpeed
-        {
-            get => _fan1MaxSpeed;
-            set => SetProperty(ref _fan1MaxSpeed, value);
-        }
 
-        public int Fan2MaxSpeed
-        {
-            get => _fan2MaxSpeed;
-            set => SetProperty(ref _fan2MaxSpeed, value);
-        }
 
         // GPU control properties (GpuMode and GpuPreset already defined above)
         private int _cpuPL1;

@@ -141,10 +141,7 @@
                                                  <TextBlock Text="Level:" FontWeight="SemiBold"/>
                                                  <TextBlock x:Name="Fan1LevelText" Text="--" FontWeight="SemiBold"/>
                                              </StackPanel>
-                                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                                 <TextBlock Text="Max Speed:" FontWeight="SemiBold"/>
-                                                 <TextBlock x:Name="Fan1MaxSpeedText" Text="-- RPM" FontWeight="SemiBold"/>
-                                             </StackPanel>
+
                                          </StackPanel>
                                      </Border>
                                  </StackPanel>
@@ -160,10 +157,7 @@
                                                  <TextBlock Text="Level:" FontWeight="SemiBold"/>
                                                  <TextBlock x:Name="Fan2LevelText" Text="--" FontWeight="SemiBold"/>
                                              </StackPanel>
-                                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                                 <TextBlock Text="Max Speed:" FontWeight="SemiBold"/>
-                                                 <TextBlock x:Name="Fan2MaxSpeedText" Text="-- RPM" FontWeight="SemiBold"/>
-                                             </StackPanel>
+
                                          </StackPanel>
                                      </Border>
                                  </StackPanel>

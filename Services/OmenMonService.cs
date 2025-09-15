@@ -423,7 +423,7 @@ namespace HP_Gaming_Hub.Services
             Debug.WriteLine("[GetUnifiedHardwareDataAsync] Starting unified hardware data retrieval");
             
             // Single unified OmenMon call with all required arguments
-            var unifiedResult = await ExecuteCommandAsync("-Ec CPUT GPTM RPM1 RPM2 RPM3 RPM4 -Bios Gpu GpuMode KbdType HasBacklight Backlight Color System BornDate Adapter HasOverclock HasMemoryOverclock HasUndervolt FanCount FanMode");
+            var unifiedResult = await ExecuteCommandAsync("-Ec CPUT GPTM RPM1 RPM2 RPM3 RPM4 XGS1 XGS2 -Bios Gpu GpuMode KbdType HasBacklight Backlight Color System BornDate Adapter HasOverclock HasMemoryOverclock HasUndervolt FanCount FanMode");
             
             var tempData = new TemperatureData();
             var fanData = new FanData();
@@ -1020,6 +1020,7 @@ namespace HP_Gaming_Hub.Services
             Debug.WriteLine($"[ParseFanData] Found {lines.Length} lines to parse");
             
             int rpm1 = 0, rpm2 = 0, rpm3 = 0, rpm4 = 0;
+            int xgs1 = 0, xgs2 = 0;
             
             foreach (var line in lines)
             {
@@ -1076,6 +1077,24 @@ namespace HP_Gaming_Hub.Services
                         Debug.WriteLine($"[ParseFanData] Found RPM4: {rpm4}");
                     }
                 }
+                else if (line.Contains("[XGS1]"))
+                {
+                    var match = Regex.Match(line, @"=\s*(\d+)\s*\[XGS1\]");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int value))
+                    {
+                        xgs1 = value;
+                        Debug.WriteLine($"[ParseFanData] Found XGS1: {xgs1}");
+                    }
+                }
+                else if (line.Contains("[XGS2]"))
+                {
+                    var match = Regex.Match(line, @"=\s*(\d+)\s*\[XGS2\]");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int value))
+                    {
+                        xgs2 = value;
+                        Debug.WriteLine($"[ParseFanData] Found XGS2: {xgs2}");
+                    }
+                }
                 // Parse fan mode: "- FanMode: 0x01 = 0b00000001 = 1 [Performance]"
                 else if (line.Contains("FanMode:"))
                 {
@@ -1093,7 +1112,11 @@ namespace HP_Gaming_Hub.Services
             fanData.Fan1Speed = rpm1 | (rpm2 << 8); // Little-endian: low byte + (high byte << 8)
             fanData.Fan2Speed = rpm3 | (rpm4 << 8); // Little-endian: low byte + (high byte << 8)
             
-            Debug.WriteLine($"[ParseFanData] Final result - Count: {fanData.FanCount}, Fan1: {fanData.Fan1Speed} RPM (RPM1={rpm1}, RPM2={rpm2}), Fan2: {fanData.Fan2Speed} RPM (RPM3={rpm3}, RPM4={rpm4}), Mode: {fanData.FanMode}");
+            // Store fan levels from XGS registers
+            fanData.Fan1Level = xgs1;
+            fanData.Fan2Level = xgs2;
+            
+            Debug.WriteLine($"[ParseFanData] Final result - Count: {fanData.FanCount}, Fan1: {fanData.Fan1Speed} RPM (Level: {xgs1}), Fan2: {fanData.Fan2Speed} RPM (Level: {xgs2}), Mode: {fanData.FanMode}");
             return fanData;
         }
 
