@@ -17,6 +17,9 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Serilog;
+using Windows.Storage;
+using Path = System.IO.Path;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -37,6 +40,18 @@ namespace HP_Gaming_Hub
         public App()
         {
             InitializeComponent();
+            
+            // Configure Serilog
+            var logPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "Logs", "hp-gaming-hub-.log");
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .WriteTo.File(logPath, 
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 7,
+                    shared: true)
+                .CreateLogger();
+            
+            Log.Information("HP Gaming Hub application starting...");
             
 #if DEBUG
             // Attach debugger if not already attached

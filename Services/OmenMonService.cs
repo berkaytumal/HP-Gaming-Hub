@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.ComponentModel.DataAnnotations;
@@ -31,7 +32,7 @@ namespace HP_Gaming_Hub.Services
             }
             
             // Windows API temperature service disabled - using only OmenMon
-            Debug.WriteLine("[OmenMonService] Using OmenMon only for temperature monitoring");
+            Log.Debug("Using OmenMon only for temperature monitoring");
             
             ValidateConfiguration();
         }
@@ -47,28 +48,28 @@ namespace HP_Gaming_Hub.Services
             }
 
             // Log configuration
-            Debug.WriteLine($"[ValidateConfiguration] OmenMonService initialized with path: {_omenMonPath}");
-            Debug.WriteLine($"[ValidateConfiguration] Command timeout: {CommandTimeoutMs}ms");
+            Log.Debug("OmenMonService initialized with path: {OmenMonPath}", _omenMonPath);
+            Log.Debug("Command timeout: {TimeoutMs}ms", CommandTimeoutMs);
             
             // Check if OmenMon executable exists
             var fullPath = Path.GetFullPath(_omenMonPath);
-            Debug.WriteLine($"[ValidateConfiguration] Full path: {fullPath}");
-            Debug.WriteLine($"[ValidateConfiguration] File exists: {File.Exists(fullPath)}");
+            Log.Debug("Full path: {FullPath}", fullPath);
+                Log.Debug("File exists: {FileExists}", File.Exists(fullPath));
             
             if (!File.Exists(fullPath))
             {
-                Debug.WriteLine($"[ValidateConfiguration] WARNING: OmenMon executable not found at {fullPath}");
-                Debug.WriteLine($"[ValidateConfiguration] Current directory: {Directory.GetCurrentDirectory()}");
+                Log.Warning("OmenMon executable not found at {FullPath}", fullPath);
+                Log.Debug("Current directory: {CurrentDirectory}", Directory.GetCurrentDirectory());
                 
                 // List files in current directory for debugging
                 try
                 {
                     var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.exe");
-                    Debug.WriteLine($"[ValidateConfiguration] Available .exe files in current directory: {string.Join(", ", files.Select(Path.GetFileName))}");
+                    Log.Debug("Available .exe files in current directory: {ExeFiles}", string.Join(", ", files.Select(Path.GetFileName)));
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"[ValidateConfiguration] Error listing files: {ex.Message}");
+                    Log.Error(ex, "Error listing files");
                 }
             }
         }
@@ -80,14 +81,14 @@ namespace HP_Gaming_Hub.Services
         {
             try
             {
-                Debug.WriteLine("[IsServiceAvailableAsync] Testing OmenMon availability");
+                Log.Debug("Testing OmenMon availability");
                 var result = await ExecuteCommandAsync("--version");
-                Debug.WriteLine($"[IsServiceAvailableAsync] Version check result - Success: {result.Success}, Output: {result.Output}");
+                Log.Debug("Version check result - Success: {Success}, Output: {Output}", result.Success, result.Output);
                 return result.Success;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[IsServiceAvailableAsync] Exception during availability check: {ex.Message}");
+                Log.Error(ex, "Exception during availability check");
                 return false;
             }
         }
@@ -97,14 +98,14 @@ namespace HP_Gaming_Hub.Services
         /// </summary>
         public async Task<OmenMonResult> TestConnectivityAsync()
         {
-            Debug.WriteLine("[TestConnectivityAsync] Starting comprehensive OmenMon test");
+            Log.Debug("Starting comprehensive OmenMon test");
             
             // Test 1: Check if executable exists
             var fullPath = Path.GetFullPath(_omenMonPath);
             if (!File.Exists(fullPath))
             {
                 var errorMsg = $"OmenMon executable not found at: {fullPath}";
-                Debug.WriteLine($"[TestConnectivityAsync] {errorMsg}");
+                Log.Warning("{ErrorMessage}", errorMsg);
                 return new OmenMonResult
                 {
                     Success = false,
@@ -114,26 +115,26 @@ namespace HP_Gaming_Hub.Services
             }
             
             // Test 2: Try version command
-            Debug.WriteLine("[TestConnectivityAsync] Testing version command");
+            Log.Debug("Testing version command");
             var versionResult = await ExecuteCommandAsync("--version");
             if (!versionResult.Success)
             {
-                Debug.WriteLine($"[TestConnectivityAsync] Version command failed: {versionResult.ErrorMessage}");
+                Log.Warning("Version command failed: {ErrorMessage}", versionResult.ErrorMessage);
                 return versionResult;
             }
             
             // Test 3: Try basic BIOS query
-            Debug.WriteLine("[TestConnectivityAsync] Testing basic BIOS query");
-            var biosResult = await ExecuteCommandAsync("-Bios");
-            Debug.WriteLine($"[TestConnectivityAsync] BIOS query result - Success: {biosResult.Success}");
+            Log.Debug("Testing basic BIOS query");
+            var biosResult = await ExecuteCommandAsync("BIOS");
+            Log.Debug("BIOS query result - Success: {Success}", biosResult.Success);
             
             if (biosResult.Success)
             {
-                Debug.WriteLine($"[TestConnectivityAsync] BIOS query output: {biosResult.Output}");
+                Log.Debug("BIOS query output: {Output}", biosResult.Output);
             }
             else
             {
-                Debug.WriteLine($"[TestConnectivityAsync] BIOS query failed: {biosResult.ErrorMessage}");
+                Log.Warning("BIOS query failed: {ErrorMessage}", biosResult.ErrorMessage);
             }
             
             return new OmenMonResult
@@ -152,7 +153,7 @@ namespace HP_Gaming_Hub.Services
         {
             if (value < min || value > max)
             {
-                Debug.WriteLine($"Invalid {paramName}: {value}. Must be between {min} and {max}");
+                Log.Warning("Invalid {ParamName}: {Value}. Must be between {Min} and {Max}", paramName, value, min, max);
                 return false;
             }
             return true;
@@ -165,7 +166,7 @@ namespace HP_Gaming_Hub.Services
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                Debug.WriteLine($"Invalid {paramName}: cannot be null or empty");
+                Log.Warning("Invalid {ParamName}: cannot be null or empty", paramName);
                 return false;
             }
 
@@ -173,7 +174,7 @@ namespace HP_Gaming_Hub.Services
             {
                 if (!Array.Exists(allowedValues, v => string.Equals(v, value, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Debug.WriteLine($"Invalid {paramName}: {value}. Allowed values: {string.Join(", ", allowedValues)}");
+                    Log.Warning("Invalid {ParamName}: {Value}. Allowed values: {AllowedValues}", paramName, value, string.Join(", ", allowedValues));
                     return false;
                 }
             }
@@ -218,7 +219,7 @@ namespace HP_Gaming_Hub.Services
 
             try
             {
-                Debug.WriteLine($"Executing OmenMon command: {arguments}");
+                Log.Debug("Executing OmenMon command: {Arguments}", arguments);
             MainWindow.Instance?.LogDebug($"Executing OmenMon: {arguments}");
                 
                 var processInfo = new ProcessStartInfo
@@ -265,7 +266,7 @@ namespace HP_Gaming_Hub.Services
                     }
                     catch (Exception killEx)
                     {
-                        Debug.WriteLine($"Error killing process: {killEx.Message}");
+                        Log.Error(killEx, "Error killing process");
                     }
                     
                     return new OmenMonResult
@@ -282,23 +283,23 @@ namespace HP_Gaming_Hub.Services
                 var output = outputBuilder.ToString();
                 var error = errorBuilder.ToString();
                     
-                    Debug.WriteLine($"OmenMon Output: {output}");
+                    Log.Debug("OmenMon Output: {Output}", output);
                     if (!string.IsNullOrEmpty(output.Trim()))
                     {
-                        MainWindow.Instance?.LogInfo($"OmenMon Output: {output.Trim()}");
+                        Log.Information("OmenMon Output: {Output}", output.Trim());
                     }
                     if (!string.IsNullOrEmpty(error))
                     {
-                        Debug.WriteLine($"OmenMon Error: {error}");
-                        MainWindow.Instance?.LogError($"OmenMon Error: {error.Trim()}");
+                        Log.Warning("OmenMon Error: {Error}", error);
+                        Log.Error("OmenMon Error: {Error}", error.Trim());
                     }
                     
                     var exitCode = process.ExitCode;
                     
-                    Debug.WriteLine($"OmenMon completed with exit code: {exitCode}, duration: {duration.TotalMilliseconds}ms");
+                    Log.Debug("OmenMon completed with exit code: {ExitCode}, duration: {DurationMs}ms", exitCode, duration.TotalMilliseconds);
                 if (exitCode == 0)
                 {
-                    MainWindow.Instance?.LogInfo($"OmenMon command completed successfully in {duration.TotalMilliseconds:F0}ms");
+                    Log.Information("OmenMon command completed successfully in {DurationMs:F0}ms", duration.TotalMilliseconds);
                 }
                 else
                 {
@@ -322,7 +323,7 @@ namespace HP_Gaming_Hub.Services
             }
             catch (UnauthorizedAccessException ex)
             {
-                MainWindow.Instance?.LogError($"Permission denied executing OmenMon: {ex.Message}");
+                Log.Error(ex, "Permission denied executing OmenMon: {Message}", ex.Message);
                 return new OmenMonResult
                 {
                     Success = false,
@@ -335,7 +336,7 @@ namespace HP_Gaming_Hub.Services
             }
             catch (FileNotFoundException ex)
             {
-                MainWindow.Instance?.LogError($"OmenMon executable not found: {ex.Message}");
+                Log.Error(ex, "OmenMon executable not found: {Message}", ex.Message);
                 return new OmenMonResult
                 {
                     Success = false,
@@ -348,8 +349,8 @@ namespace HP_Gaming_Hub.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Unexpected error executing OmenMon: {ex}");
-                MainWindow.Instance?.LogError($"Unexpected error executing OmenMon: {ex.Message}");
+                Log.Error(ex, "Unexpected error executing OmenMon");
+                Log.Error(ex, "Unexpected error executing OmenMon: {Message}", ex.Message);
                 return new OmenMonResult
                 {
                     Success = false,
@@ -391,7 +392,7 @@ namespace HP_Gaming_Hub.Services
         /// </summary>
         public async Task<TemperatureData> GetTemperaturesAsync()
         {
-            Debug.WriteLine("[GetTemperaturesAsync] Starting temperature retrieval using OmenMon EC command");
+            Log.Debug("Starting temperature retrieval using OmenMon EC command");
             
             // Use OmenMon EC command for temperature retrieval
             var result = await ExecuteCommandAsync("-Ec CPUT GPTM");
@@ -400,15 +401,15 @@ namespace HP_Gaming_Hub.Services
             
             if (result.Success)
             {
-                Debug.WriteLine($"[GetTemperaturesAsync] OmenMon EC command succeeded, parsing output");
+                Log.Debug("OmenMon EC command succeeded, parsing output");
                 tempData = ParseEcTemperatureData(result.Output);
             }
             else
             {
-                Debug.WriteLine($"[GetTemperaturesAsync] OmenMon EC command failed - Error: {result.ErrorMessage}");
+                Log.Warning("OmenMon EC command failed - Error: {ErrorMessage}", result.ErrorMessage);
             }
             
-            Debug.WriteLine($"[GetTemperaturesAsync] Final temperatures - CPU: {tempData.CpuTemperature}°C, GPU: {tempData.GpuTemperature}°C");
+            Log.Debug("Final temperatures - CPU: {CpuTemp}°C, GPU: {GpuTemp}°C", tempData.CpuTemperature, tempData.GpuTemperature);
             return tempData;
         }
 
@@ -420,7 +421,7 @@ namespace HP_Gaming_Hub.Services
         /// </summary>
         public async Task<(TemperatureData temperatures, FanData fanData, GpuData gpuData, KeyboardData keyboardData, SystemData systemData)> GetUnifiedHardwareDataAsync()
         {
-            Debug.WriteLine("[GetUnifiedHardwareDataAsync] Starting unified hardware data retrieval");
+            Log.Debug("Starting unified hardware data retrieval");
             
             // Single unified OmenMon call with all required arguments
             var unifiedResult = await ExecuteCommandAsync("-Ec CPUT GPTM RPM1 RPM2 RPM3 RPM4 XGS1 XGS2 -Bios Gpu GpuMode KbdType HasBacklight Backlight Color System BornDate Adapter HasOverclock HasMemoryOverclock HasUndervolt FanCount FanMode");
@@ -450,10 +451,10 @@ namespace HP_Gaming_Hub.Services
             }
             else
             {
-                Debug.WriteLine($"[GetUnifiedHardwareDataAsync] Unified command failed: {unifiedResult.ErrorMessage}");
+                Log.Warning("Unified command failed: {ErrorMessage}", unifiedResult.ErrorMessage);
             }
             
-            Debug.WriteLine($"[GetUnifiedHardwareDataAsync] Unified data retrieval complete - CPU: {tempData.CpuTemperature}°C, GPU: {tempData.GpuTemperature}°C, Fan1: {fanData.Fan1Speed}RPM, Fan2: {fanData.Fan2Speed}RPM");
+            Log.Debug("Unified data retrieval complete - CPU: {CpuTemp}°C, GPU: {GpuTemp}°C, Fan1: {Fan1Speed}RPM, Fan2: {Fan2Speed}RPM", tempData.CpuTemperature, tempData.GpuTemperature, fanData.Fan1Speed, fanData.Fan2Speed);
             return (tempData, fanData, gpuData, keyboardData, systemData);
         }
 
@@ -462,22 +463,22 @@ namespace HP_Gaming_Hub.Services
         /// </summary>
         public async Task<TemperatureData> GetOmenMonTemperaturesAsync()
         {
-            Debug.WriteLine("[GetOmenMonTemperaturesAsync] Using OmenMon EC command for temperature retrieval");
+            Log.Debug("Using OmenMon EC command for temperature retrieval");
             var result = await ExecuteCommandAsync("-Ec CPUT GPTM");
             
             var tempData = new TemperatureData();
             
             if (result.Success)
             {
-                Debug.WriteLine($"[GetOmenMonTemperaturesAsync] OmenMon EC command succeeded, parsing output");
+                Log.Debug("OmenMon EC command succeeded, parsing output");
                 tempData = ParseEcTemperatureData(result.Output);
             }
             else
             {
-                Debug.WriteLine($"[GetOmenMonTemperaturesAsync] OmenMon EC command failed - Error: {result.ErrorMessage}");
+                Log.Warning("OmenMon EC command failed - Error: {ErrorMessage}", result.ErrorMessage);
             }
             
-            Debug.WriteLine($"[GetOmenMonTemperaturesAsync] Final temperatures - CPU: {tempData.CpuTemperature}°C, GPU: {tempData.GpuTemperature}°C");
+            Log.Debug("Final temperatures - CPU: {CpuTemp}°C, GPU: {GpuTemp}°C", tempData.CpuTemperature, tempData.GpuTemperature);
             return tempData;
         }
 
@@ -486,16 +487,16 @@ namespace HP_Gaming_Hub.Services
         /// </summary>
         public async Task<FanData> GetFanDataAsync()
         {
-            Debug.WriteLine("[GetFanDataAsync] Starting fan data retrieval");
+            Log.Debug("Starting fan data retrieval");
             var result = await ExecuteCommandAsync("-Bios");
             
             if (!result.Success)
             {
-                Debug.WriteLine($"[GetFanDataAsync] BIOS command failed - Error: {result.ErrorMessage}, Type: {result.ErrorType}, ExitCode: {result.ExitCode}");
+                Log.Warning("BIOS command failed - Error: {ErrorMessage}, Type: {ErrorType}, ExitCode: {ExitCode}", result.ErrorMessage, result.ErrorType, result.ExitCode);
                 return new FanData();
             }
             
-            Debug.WriteLine($"[GetFanDataAsync] BIOS command succeeded, parsing output");
+            Log.Debug("BIOS command succeeded, parsing output");
             return ParseFanData(result.Output);
         }
 
@@ -673,7 +674,7 @@ namespace HP_Gaming_Hub.Services
             // Ensure PL4 >= PL1
             if (pl4 < pl1)
             {
-                Debug.WriteLine($"Invalid power limits: PL4 ({pl4}W) must be >= PL1 ({pl1}W)");
+                Log.Warning("Invalid power limits: PL4 ({PL4}W) must be >= PL1 ({PL1}W)", pl4, pl1);
                 return false;
             }
 
@@ -685,7 +686,7 @@ namespace HP_Gaming_Hub.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error setting CPU power limits: {ex.Message}");
+                Log.Error(ex, "Error setting CPU power limits");
                 return false;
             }
         }
@@ -708,7 +709,7 @@ namespace HP_Gaming_Hub.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error setting GPU power limit: {ex.Message}");
+                Log.Error(ex, "Error setting GPU power limit");
                 return false;
             }
         }
@@ -748,7 +749,7 @@ namespace HP_Gaming_Hub.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error setting keyboard color preset: {ex.Message}");
+                Log.Error(ex, "Error setting keyboard color preset");
                 return false;
             }
         }
@@ -791,7 +792,7 @@ namespace HP_Gaming_Hub.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error setting keyboard animation: {ex.Message}");
+                Log.Error(ex, "Error setting keyboard animation");
                 return false;
             }
         }
@@ -906,21 +907,21 @@ namespace HP_Gaming_Hub.Services
         {
             var tempData = new TemperatureData();
             
-            Debug.WriteLine($"[ParseTemperatureData] Raw output: {output}");
+            Log.Debug("ParseTemperatureData - Raw output: {Output}", output);
             
             if (string.IsNullOrWhiteSpace(output))
             {
-                Debug.WriteLine("[ParseTemperatureData] Output is null or empty");
+                Log.Debug("ParseTemperatureData - Output is null or empty");
                 return tempData;
             }
             
             // Parse temperature values from output
             var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            Debug.WriteLine($"[ParseTemperatureData] Found {lines.Length} lines to parse");
+            Log.Debug("ParseTemperatureData - Found {LineCount} lines to parse", lines.Length);
             
             foreach (var line in lines)
             {
-                Debug.WriteLine($"[ParseTemperatureData] Processing line: {line}");
+                Log.Debug("ParseTemperatureData - Processing line: {Line}", line);
                 
                 // Parse OmenMon temperature format: "- Temperature: 0x00 = 0b00000000 = 0 [°C]"
                 if (line.Contains("Temperature:") && line.Contains("[°C]"))
@@ -932,11 +933,11 @@ namespace HP_Gaming_Hub.Services
                         // For now, assume this is CPU temperature since OmenMon -Bios Temp returns CPU temp
                         // We'll need separate calls for GPU temperature if available
                         tempData.CpuTemperature = temp;
-                        Debug.WriteLine($"[ParseTemperatureData] Found CPU temperature: {temp}°C");
+                        Log.Debug("ParseTemperatureData - Found CPU temperature: {Temp}°C", temp);
                     }
                     else
                     {
-                        Debug.WriteLine($"[ParseTemperatureData] Failed to parse temperature from: {line}");
+                        Log.Debug("ParseTemperatureData - Failed to parse temperature from: {Line}", line);
                     }
                 }
                 // Also check for GPU Peak Temperature if present
@@ -946,12 +947,12 @@ namespace HP_Gaming_Hub.Services
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int temp))
                     {
                         tempData.GpuTemperature = temp;
-                        Debug.WriteLine($"[ParseTemperatureData] Found GPU temperature: {temp}°C");
+                        Log.Debug("ParseTemperatureData - Found GPU temperature: {Temp}°C", temp);
                     }
                 }
             }
             
-            Debug.WriteLine($"[ParseTemperatureData] Final result - CPU: {tempData.CpuTemperature}°C, GPU: {tempData.GpuTemperature}°C");
+            Log.Debug("ParseTemperatureData - Final result - CPU: {CpuTemp}°C, GPU: {GpuTemp}°C", tempData.CpuTemperature, tempData.GpuTemperature);
             return tempData;
         }
 
@@ -964,18 +965,18 @@ namespace HP_Gaming_Hub.Services
             
             if (string.IsNullOrEmpty(output))
             {
-                Debug.WriteLine("[ParseEcTemperatureData] Output is null or empty");
+                Log.Debug("ParseEcTemperatureData - Output is null or empty");
                 return tempData;
             }
 
-            Debug.WriteLine($"[ParseEcTemperatureData] Parsing EC output: {output}");
+            Log.Debug("ParseEcTemperatureData - Parsing EC output: {Output}", output);
             
             var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
             
             foreach (var line in lines)
             {
                 var trimmedLine = line.Trim();
-                Debug.WriteLine($"[ParseEcTemperatureData] Processing line: {trimmedLine}");
+                Log.Debug("ParseEcTemperatureData - Processing line: {Line}", trimmedLine);
                 
                 // Look for CPUT (CPU Temperature) - format: "- Register 0x57 Byte: 0x2c = 0b00101100 = 44 [CPUT]"
                 if (trimmedLine.Contains("[CPUT]"))
@@ -984,7 +985,7 @@ namespace HP_Gaming_Hub.Services
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int temp))
                     {
                         tempData.CpuTemperature = temp;
-                        Debug.WriteLine($"[ParseEcTemperatureData] Found CPU temperature: {temp}°C");
+                        Log.Debug("ParseEcTemperatureData - Found CPU temperature: {Temp}°C", temp);
                     }
                 }
                 // Look for GPTM (GPU Temperature) - format: "- Register 0xb7 Byte: 0x2f = 0b00101111 = 47 [GPTM]"
@@ -994,12 +995,12 @@ namespace HP_Gaming_Hub.Services
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int temp))
                     {
                         tempData.GpuTemperature = temp;
-                        Debug.WriteLine($"[ParseEcTemperatureData] Found GPU temperature: {temp}°C");
+                        Log.Debug("ParseEcTemperatureData - Found GPU temperature: {Temp}°C", temp);
                     }
                 }
             }
             
-            Debug.WriteLine($"[ParseEcTemperatureData] Final result - CPU: {tempData.CpuTemperature}°C, GPU: {tempData.GpuTemperature}°C");
+            Log.Debug("ParseEcTemperatureData - Final result - CPU: {CpuTemp}°C, GPU: {GpuTemp}°C", tempData.CpuTemperature, tempData.GpuTemperature);
             return tempData;
         }
 
@@ -1007,24 +1008,24 @@ namespace HP_Gaming_Hub.Services
         {
             var fanData = new FanData();
             
-            Debug.WriteLine($"[ParseFanData] Raw output: {output}");
+            Log.Debug("ParseFanData - Raw output: {Output}", output);
             
             if (string.IsNullOrWhiteSpace(output))
             {
-                Debug.WriteLine("[ParseFanData] Output is null or empty");
+                Log.Debug("ParseFanData - Output is null or empty");
                 return fanData;
             }
             
             // Parse fan data from output
             var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            Debug.WriteLine($"[ParseFanData] Found {lines.Length} lines to parse");
+            Log.Debug("ParseFanData - Found {LineCount} lines to parse", lines.Length);
             
             int rpm1 = 0, rpm2 = 0, rpm3 = 0, rpm4 = 0;
             int xgs1 = 0, xgs2 = 0;
             
             foreach (var line in lines)
             {
-                Debug.WriteLine($"[ParseFanData] Processing line: {line}");
+                Log.Debug("ParseFanData - Processing line: {Line}", line);
                 
                 // Parse OmenMon fan count format: "- Fan Count: 0x02 = 0b00000010 = 2"
                 if (line.Contains("Fan Count:"))
@@ -1033,11 +1034,11 @@ namespace HP_Gaming_Hub.Services
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int count))
                     {
                         fanData.FanCount = count;
-                        Debug.WriteLine($"[ParseFanData] Found fan count: {count}");
+                        Log.Debug("ParseFanData - Found fan count: {Count}", count);
                     }
                     else
                     {
-                        Debug.WriteLine($"[ParseFanData] Failed to parse fan count from: {line}");
+                        Log.Debug("ParseFanData - Failed to parse fan count from: {Line}", line);
                     }
                 }
                 // Parse RPM registers: "- Register 0x## Byte: 0x## = 0b######## = ## [RPM#]"
@@ -1047,7 +1048,7 @@ namespace HP_Gaming_Hub.Services
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int value))
                     {
                         rpm1 = value;
-                        Debug.WriteLine($"[ParseFanData] Found RPM1: {rpm1}");
+                        Log.Debug("ParseFanData - Found RPM1: {Rpm1}", rpm1);
                     }
                 }
                 else if (line.Contains("[RPM2]"))
@@ -1056,7 +1057,7 @@ namespace HP_Gaming_Hub.Services
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int value))
                     {
                         rpm2 = value;
-                        Debug.WriteLine($"[ParseFanData] Found RPM2: {rpm2}");
+                        Log.Debug("ParseFanData - Found RPM2: {Rpm2}", rpm2);
                     }
                 }
                 else if (line.Contains("[RPM3]"))
@@ -1065,7 +1066,7 @@ namespace HP_Gaming_Hub.Services
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int value))
                     {
                         rpm3 = value;
-                        Debug.WriteLine($"[ParseFanData] Found RPM3: {rpm3}");
+                        Log.Debug("ParseFanData - Found RPM3: {Rpm3}", rpm3);
                     }
                 }
                 else if (line.Contains("[RPM4]"))
@@ -1074,7 +1075,7 @@ namespace HP_Gaming_Hub.Services
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int value))
                     {
                         rpm4 = value;
-                        Debug.WriteLine($"[ParseFanData] Found RPM4: {rpm4}");
+                        Log.Debug("ParseFanData - Found RPM4: {Rpm4}", rpm4);
                     }
                 }
                 else if (line.Contains("[XGS1]"))
@@ -1083,7 +1084,7 @@ namespace HP_Gaming_Hub.Services
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int value))
                     {
                         xgs1 = value;
-                        Debug.WriteLine($"[ParseFanData] Found XGS1: {xgs1}");
+                        Log.Debug("ParseFanData - Found XGS1: {Xgs1}", xgs1);
                     }
                 }
                 else if (line.Contains("[XGS2]"))
@@ -1092,7 +1093,7 @@ namespace HP_Gaming_Hub.Services
                     if (match.Success && int.TryParse(match.Groups[1].Value, out int value))
                     {
                         xgs2 = value;
-                        Debug.WriteLine($"[ParseFanData] Found XGS2: {xgs2}");
+                        Log.Debug("ParseFanData - Found XGS2: {Xgs2}", xgs2);
                     }
                 }
                 // Parse fan mode: "- FanMode: 0x01 = 0b00000001 = 1 [Performance]"
@@ -1102,7 +1103,7 @@ namespace HP_Gaming_Hub.Services
                     if (match.Success)
                     {
                         fanData.FanMode = match.Groups[1].Value;
-                        Debug.WriteLine($"[ParseFanData] Found fan mode: {fanData.FanMode}");
+                        Log.Debug("ParseFanData - Found fan mode: {FanMode}", fanData.FanMode);
                     }
                 }
             }
@@ -1116,7 +1117,7 @@ namespace HP_Gaming_Hub.Services
             fanData.Fan1Level = xgs1;
             fanData.Fan2Level = xgs2;
             
-            Debug.WriteLine($"[ParseFanData] Final result - Count: {fanData.FanCount}, Fan1: {fanData.Fan1Speed} RPM (Level: {xgs1}), Fan2: {fanData.Fan2Speed} RPM (Level: {xgs2}), Mode: {fanData.FanMode}");
+            Log.Debug("ParseFanData - Final result - Count: {FanCount}, Fan1: {Fan1Speed} RPM (Level: {Xgs1}), Fan2: {Fan2Speed} RPM (Level: {Xgs2}), Mode: {FanMode}", fanData.FanCount, fanData.Fan1Speed, xgs1, fanData.Fan2Speed, xgs2, fanData.FanMode);
             return fanData;
         }
 

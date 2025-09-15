@@ -71,12 +71,6 @@
                 </NavigationView.MenuItems>
                  
                  <NavigationView.FooterMenuItems>
-                    <NavigationViewItem x:Name="LogsNavItem" Content="Logs">
-                        <NavigationViewItem.Icon>
-                            <ImageIcon Source="Assets/icons/Event Log.png"/>
-                        </NavigationViewItem.Icon>
-                    </NavigationViewItem>
-                     
                     <NavigationViewItem x:Name="SettingsNavItem" Content="Settings">
                          <NavigationViewItem.Icon>
                              <ImageIcon Source="Assets/icons/Settings.png"/>
@@ -303,33 +297,7 @@
                          </StackPanel>
                      </ScrollViewer>
                      
-                     <!-- Logs Page -->
-                     <Grid x:Name="LogsPage" Visibility="Collapsed">
-                         <Grid.RowDefinitions>
-                             <RowDefinition Height="Auto"/>
-                             <RowDefinition Height="Auto"/>
-                             <RowDefinition Height="Auto"/>
-                             <RowDefinition Height="*"/>
-                         </Grid.RowDefinitions>
-                         
-                         <TextBlock Grid.Row="0" Text="Logs" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,12"/>
-                         <TextBlock Grid.Row="1" Text="Real-time application logs and debug information from HP Gaming Hub and OmenMon service." TextWrapping="Wrap" Margin="0,0,0,24"/>
-                         
-                         <!-- Logs Controls -->
-                           <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="12" Margin="0,0,0,24">
-                               <Button x:Name="ClearLogsButton" Content="Clear" Click="ClearLogsButton_Click"/>
-                               <Button x:Name="CopyLogsButton" Content="Copy" Click="CopyLogsButton_Click"/>
-                               <ToggleButton x:Name="AutoScrollToggle" Content="Auto-scroll" IsChecked="True"/>
-                           </StackPanel>
-                         
-                         <!-- Logs Output -->
-                         <Border Grid.Row="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
-                             <ScrollViewer x:Name="LogsScrollViewer" ZoomMode="Disabled" HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                                  <TextBlock x:Name="LogsOutput" FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Text="HP Gaming Hub Logs - Ready\n" IsTextSelectionEnabled="True"/>
-                              </ScrollViewer>
-                         </Border>
-                     </Grid>
-                     
+
                      <!-- Settings Page -->
                       <ScrollViewer x:Name="SettingsPage" Visibility="Collapsed">
                          <StackPanel Spacing="24">

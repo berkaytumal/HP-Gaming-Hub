@@ -6,6 +6,7 @@ using HP_Gaming_Hub.Services;
 using Microsoft.UI.Dispatching;
 using System.Collections.Generic;
 using System.Linq;
+using Serilog;
 
 namespace HP_Gaming_Hub.ViewModels
 {
@@ -406,7 +407,7 @@ namespace HP_Gaming_Hub.ViewModels
         {
             _isWindowFocused = isFocused;
             UpdateTimerInterval();
-            System.Diagnostics.Debug.WriteLine($"[HardwareMonitorViewModel] Window focus changed to {isFocused}, timer interval updated to {_omenTimer.Interval.TotalSeconds}s");
+            Log.Debug("Window focus changed to {IsFocused}, timer interval updated to {IntervalSeconds}s", isFocused, _omenTimer.Interval.TotalSeconds);
         }
         
         public void OnAutoRefreshChanged(bool isEnabled)
@@ -691,7 +692,7 @@ namespace HP_Gaming_Hub.ViewModels
             try
             {
                 _isUpdating = true;
-                System.Diagnostics.Debug.WriteLine("[UpdateOmenDataAsync] Starting unified OmenMon hardware data update");
+                Log.Debug("Starting unified OmenMon hardware data update");
                 
                 // Get all hardware data in one unified call
                 var (tempData, fanData, gpuData, keyboardData, systemData) = await _omenMonService.GetUnifiedHardwareDataAsync();
@@ -701,11 +702,11 @@ namespace HP_Gaming_Hub.ViewModels
                 {
                     CpuTemperature = tempData.CpuTemperature;
                     GpuTemperature = tempData.GpuTemperature;
-                    System.Diagnostics.Debug.WriteLine($"[UpdateOmenDataAsync] Updated temperatures from unified call - CPU: {CpuTemperature}°C, GPU: {GpuTemperature}°C");
+                    Log.Debug("Updated temperatures from unified call - CPU: {CpuTemp}°C, GPU: {GpuTemp}°C", CpuTemperature, GpuTemperature);
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("[UpdateOmenDataAsync] Unified call returned no valid temperature data, keeping existing values");
+                    Log.Debug("Unified call returned no valid temperature data, keeping existing values");
                 }
                 _lastOmenUpdate = DateTime.Now;
                 
@@ -732,11 +733,11 @@ namespace HP_Gaming_Hub.ViewModels
                 IsConnected = true;
                 ConnectionStatus = "Connected";
                 
-                System.Diagnostics.Debug.WriteLine($"[UpdateOmenDataAsync] Unified OmenMon update completed - CPU: {CpuTemperature}°C, GPU: {GpuTemperature}°C, Fan1: {Fan1Speed}RPM");
+                Log.Debug("Unified OmenMon update completed - CPU: {CpuTemp}°C, GPU: {GpuTemp}°C, Fan1: {Fan1Speed}RPM", CpuTemperature, GpuTemperature, Fan1Speed);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateOmenDataAsync] Error: {ex.Message}");
+                Log.Error(ex, "Error during unified OmenMon update");
                 IsConnected = false;
                 ConnectionStatus = "Disconnected";
             }
@@ -751,18 +752,17 @@ namespace HP_Gaming_Hub.ViewModels
             // Prevent concurrent updates
             if (_isUpdating)
             {
-                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Update already in progress, skipping");
+                Log.Debug("Update already in progress, skipping");
                 return;
             }
 
             _isUpdating = true;
             try
             {
-                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Starting hardware data update");
-            MainWindow.Instance?.LogDebug("Starting hardware data update");
+                Log.Debug("Starting hardware data update");
                 
                 // Get all hardware data in one unified call
-                System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] Fetching all hardware data with unified call");
+                Log.Debug("Fetching all hardware data with unified call");
                 var (tempData, fanData, gpuData, keyboardData, systemData) = await _omenMonService.GetUnifiedHardwareDataAsync();
                 
                 // Update temperatures - only if we get valid data
@@ -770,13 +770,11 @@ namespace HP_Gaming_Hub.ViewModels
                 {
                     CpuTemperature = tempData.CpuTemperature;
                     GpuTemperature = tempData.GpuTemperature;
-                    System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Updated temperatures - CPU: {CpuTemperature}°C, GPU: {GpuTemperature}°C");
-                    MainWindow.Instance?.LogInfo($"Temperature update - CPU: {CpuTemperature}°C, GPU: {GpuTemperature}°C");
+                    Log.Debug("Updated temperatures - CPU: {CpuTemp}°C, GPU: {GpuTemp}°C", CpuTemperature, GpuTemperature);
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("[UpdateHardwareDataAsync] No valid temperature data received, keeping existing values");
-                    MainWindow.Instance?.LogInfo("Temperature update - No valid data received, keeping existing values");
+                    Log.Debug("No valid temperature data received, keeping existing values");
                 }
 
                 // Update fan data
@@ -786,36 +784,34 @@ namespace HP_Gaming_Hub.ViewModels
                 Fan2Level = fanData.Fan2Level;
                 FanMode = fanData.FanMode;
                 FanCount = fanData.FanCount;
-                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Fan data - Fan1: {Fan1Speed} RPM, Fan2: {Fan2Speed} RPM, Mode: {FanMode}");
+                Log.Debug("Fan data - Fan1: {Fan1Speed} RPM, Fan2: {Fan2Speed} RPM, Mode: {FanMode}", Fan1Speed, Fan2Speed, FanMode);
 
                 // Update GPU data
                 GpuMode = gpuData.GpuMode;
                 GpuPreset = gpuData.GpuPreset;
-                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] GPU data - Mode: {GpuMode}, Preset: {GpuPreset}");
+                Log.Debug("GPU data - Mode: {GpuMode}, Preset: {GpuPreset}", GpuMode, GpuPreset);
 
                 // Update keyboard data
                 HasBacklight = keyboardData.HasBacklight;
                 BacklightEnabled = keyboardData.BacklightEnabled;
                 CurrentColor = keyboardData.CurrentColor;
-                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Keyboard data - HasBacklight: {HasBacklight}, Enabled: {BacklightEnabled}");
+                Log.Debug("Keyboard data - HasBacklight: {HasBacklight}, Enabled: {BacklightEnabled}", HasBacklight, BacklightEnabled);
 
                 // Update system data
                 SystemInfo = systemData.SystemInfo;
                 HasOverclock = systemData.HasOverclock;
                 HasMemoryOverclock = systemData.HasMemoryOverclock;
                 HasUndervolt = systemData.HasUndervolt;
-                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] System data - Overclock: {HasOverclock}, MemOC: {HasMemoryOverclock}, Undervolt: {HasUndervolt}");
+                Log.Debug("System data - Overclock: {HasOverclock}, MemOC: {HasMemoryOverclock}, Undervolt: {HasUndervolt}", HasOverclock, HasMemoryOverclock, HasUndervolt);
 
                 // Update status
                 IsConnected = true;
                 LastUpdateTime = DateTime.Now.ToString("HH:mm:ss");
-                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Hardware data update completed successfully at {LastUpdateTime}");
+                Log.Debug("Hardware data update completed successfully at {LastUpdateTime}", LastUpdateTime);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Error during hardware data update: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[UpdateHardwareDataAsync] Stack trace: {ex.StackTrace}");
-                MainWindow.Instance?.LogError($"Hardware data update failed: {ex.Message}");
+                Log.Error(ex, "Error during hardware data update");
                 IsConnected = false;
                 LastUpdateTime = "Error";
             }

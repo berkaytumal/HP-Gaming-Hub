@@ -19,6 +19,7 @@ using HP_Gaming_Hub.ViewModels;
 using HP_Gaming_Hub.Services;
 using System.Diagnostics;
 using Windows.UI;
+using Serilog;
 
 namespace HP_Gaming_Hub
 {
@@ -47,20 +48,20 @@ namespace HP_Gaming_Hub
                 };
                 
                 // ConnectionStatusText.Text = "Connecting..."; // Badge removed
-                LogInfo("Connecting to OmenMon service...");
+                Log.Information("Connecting to OmenMon service...");
                 await _hardwareMonitorViewModel.RefreshDataAsync();
                 // ConnectionStatusText.Text = "Connected"; // Badge removed
-                LogInfo("Successfully connected to OmenMon service");
+                Log.Information("Successfully connected to OmenMon service");
                 
                 // Start monitoring based on user preference
                 if (AppSettings.Instance.AutoStartMonitoring)
                 {
                     await _hardwareMonitorViewModel.StartMonitoringAsync();
-                    LogInfo("Automatic monitoring started based on user preferences");
+                    Log.Information("Automatic monitoring started based on user preferences");
                 }
                 else
                 {
-                    LogInfo("Automatic monitoring disabled by user preferences");
+                    Log.Information("Automatic monitoring disabled by user preferences");
                 }
                 
                 UpdateMonitoringUI();
@@ -69,7 +70,7 @@ namespace HP_Gaming_Hub
             catch (Exception ex)
             {
                 // ConnectionStatusText.Text = "Error"; // Badge removed
-                LogError($"Error initializing monitoring: {ex.Message}");
+                Log.Error(ex, "Error initializing monitoring: {Message}", ex.Message);
                 await ShowErrorMessageAsync("Initialization Error", 
                     "Failed to initialize hardware monitoring. Some features may not work properly.", 
                     ex.Message);
@@ -95,7 +96,7 @@ namespace HP_Gaming_Hub
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error showing error dialog: {ex.Message}");
+                Log.Error(ex, "Error showing error dialog");
             }
         }
 
@@ -118,7 +119,7 @@ namespace HP_Gaming_Hub
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error showing success dialog: {ex.Message}");
+                Log.Error(ex, "Error showing success dialog");
             }
         }
 
@@ -139,7 +140,7 @@ namespace HP_Gaming_Hub
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error in {operationName}: {ex.Message}");
+                Log.Error(ex, "Error in {operationName}", operationName);
                 await ShowErrorMessageAsync("Unexpected Error", 
                     $"An unexpected error occurred while trying to {operationName}.", 
                     ex.Message);
@@ -231,37 +232,14 @@ namespace HP_Gaming_Hub
             // This method can be expanded when keyboard UI elements are available
         }
 
-        /// <summary>
-        /// Append message to console output
-        /// </summary>
-        private void AppendToConsole(string message)
-        {
-            try
-            {   
-                if (LogsOutput != null)
-                {
-                    LogsOutput.Text += $"[{DateTime.Now:HH:mm:ss}] {message}\n";
-                    
-                    // Auto-scroll to bottom
-                    if (LogsScrollViewer != null)
-                    {
-                        LogsScrollViewer.ScrollToVerticalOffset(LogsScrollViewer.ScrollableHeight);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error appending to console: {ex.Message}");
-            }
-        }
+
 
         /// <summary>
         /// Log debug message
         /// </summary>
         public void LogDebug(string message)
         {
-            Debug.WriteLine($"[DEBUG] {message}");
-            AppendToConsole($"[DEBUG] {message}");
+            Log.Debug(message);
         }
 
         /// <summary>
@@ -269,8 +247,7 @@ namespace HP_Gaming_Hub
         /// </summary>
         public void LogInfo(string message)
         {
-            Debug.WriteLine($"[INFO] {message}");
-            AppendToConsole($"[INFO] {message}");
+            Log.Information(message);
         }
 
         /// <summary>
@@ -278,8 +255,7 @@ namespace HP_Gaming_Hub
         /// </summary>
         public void LogWarning(string message)
         {
-            Debug.WriteLine($"[WARNING] {message}");
-            AppendToConsole($"[WARNING] {message}");
+            Log.Warning(message);
         }
 
         /// <summary>
@@ -287,8 +263,7 @@ namespace HP_Gaming_Hub
         /// </summary>
         public void LogError(string message)
         {
-            Debug.WriteLine($"[ERROR] {message}");
-            AppendToConsole($"[ERROR] {message}");
+            Log.Error(message);
         }
     }
 }

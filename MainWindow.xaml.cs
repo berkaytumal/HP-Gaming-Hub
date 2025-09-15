@@ -19,6 +19,7 @@ using HP_Gaming_Hub.ViewModels;
 using HP_Gaming_Hub.Services;
 using System.Diagnostics;
 using Windows.UI;
+using Serilog;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -45,14 +46,14 @@ namespace HP_Gaming_Hub
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
             _hardwareMonitorViewModel = new HardwareMonitorViewModel();
-            LogInfo("HP Gaming Hub started - Initializing monitoring...");
+            Log.Information("HP Gaming Hub started - Initializing monitoring...");
             
             // Add window focus event handlers
             this.Activated += MainWindow_Activated;
             this.Closed += MainWindow_Closed;
             
             // Load and apply saved settings on startup
-            Debug.WriteLine("[MainWindow] Loading saved settings on startup");
+            Log.Debug("MainWindow - Loading saved settings on startup");
             _ = InitializeAsync();
             
             InitializeMonitoring();
@@ -61,7 +62,7 @@ namespace HP_Gaming_Hub
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs e)
         {
             _isWindowFocused = e.WindowActivationState != WindowActivationState.Deactivated;
-            Debug.WriteLine($"[MainWindow] Window focus changed: {_isWindowFocused}");
+            Log.Debug("MainWindow - Window focus changed: {IsWindowFocused}", _isWindowFocused);
             _hardwareMonitorViewModel?.OnWindowFocusChanged(_isWindowFocused);
         }
         

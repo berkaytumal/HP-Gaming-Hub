@@ -4,6 +4,7 @@ using System.Text.Json;
 using Windows.Storage;
 using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
+using Serilog;
 
 namespace HP_Gaming_Hub
 {
@@ -20,8 +21,7 @@ namespace HP_Gaming_Hub
                 {
                     lock (_lock)
                     {
-                        Debug.WriteLine("[AppSettings] Creating new AppSettings instance");
-                        Console.WriteLine("[AppSettings] Creating new AppSettings instance");
+                        Log.Debug("Creating new AppSettings instance");
                         _instance ??= new AppSettings();
                     }
                 }
@@ -34,8 +34,7 @@ namespace HP_Gaming_Hub
         
         private AppSettings()
         {
-            Debug.WriteLine("[AppSettings] Initializing AppSettings singleton instance");
-            Console.WriteLine("[AppSettings] Initializing AppSettings singleton instance");
+            Log.Debug("Initializing AppSettings singleton instance");
             LoadSettings();
         }
         
@@ -44,7 +43,7 @@ namespace HP_Gaming_Hub
             get => _settings.IsWelcomeCompleted;
             set
             {
-                Debug.WriteLine($"[AppSettings] Setting IsWelcomeCompleted from {_settings.IsWelcomeCompleted} to {value}");
+                Log.Debug("Setting IsWelcomeCompleted from {OldValue} to {NewValue}", _settings.IsWelcomeCompleted, value);
                 _settings.IsWelcomeCompleted = value;
                 SaveSettings();
             }
@@ -55,7 +54,7 @@ namespace HP_Gaming_Hub
             get => _settings.IsAppDevelopment || GetAppConfigValue("ForceWelcomeScreen", false);
             set
             {
-                Debug.WriteLine($"[AppSettings] Setting IsAppDevelopment from {_settings.IsAppDevelopment} to {value}");
+                Log.Debug("Setting IsAppDevelopment from {OldValue} to {NewValue}", _settings.IsAppDevelopment, value);
                 _settings.IsAppDevelopment = value;
                 SaveSettings();
             }
@@ -68,7 +67,7 @@ namespace HP_Gaming_Hub
             get => _settings.SettingsPage.BackdropSelectedIndex;
             set
             {
-                Debug.WriteLine($"[AppSettings] Setting BackdropSelectedIndex from {_settings.SettingsPage.BackdropSelectedIndex} to {value}");
+                Log.Debug("Setting BackdropSelectedIndex from {OldValue} to {NewValue}", _settings.SettingsPage.BackdropSelectedIndex, value);
                 _settings.SettingsPage.BackdropSelectedIndex = value;
                 SaveSettings();
             }
@@ -79,7 +78,7 @@ namespace HP_Gaming_Hub
             get => _settings.SettingsPage.SelectedWallpaperIndex;
             set
             {
-                Debug.WriteLine($"[AppSettings] Setting SelectedWallpaperIndex from {_settings.SettingsPage.SelectedWallpaperIndex} to {value}");
+                Log.Debug("Setting SelectedWallpaperIndex from {OldValue} to {NewValue}", _settings.SettingsPage.SelectedWallpaperIndex, value);
                 _settings.SettingsPage.SelectedWallpaperIndex = value;
                 SaveSettings();
             }
@@ -91,7 +90,7 @@ namespace HP_Gaming_Hub
             get => _settings.SettingsPage.AutoStartMonitoring;
             set
             {
-                Debug.WriteLine($"[AppSettings] Setting AutoStartMonitoring from {_settings.SettingsPage.AutoStartMonitoring} to {value}");
+                Log.Debug("Setting AutoStartMonitoring from {OldValue} to {NewValue}", _settings.SettingsPage.AutoStartMonitoring, value);
                 _settings.SettingsPage.AutoStartMonitoring = value;
                 SaveSettings();
             }
@@ -105,7 +104,7 @@ namespace HP_Gaming_Hub
             get => _settings.SettingsPage.FocusedRefreshInterval;
             set
             {
-                Debug.WriteLine($"[AppSettings] Setting FocusedRefreshInterval from {_settings.SettingsPage.FocusedRefreshInterval} to {value}");
+                Log.Debug("Setting FocusedRefreshInterval from {OldValue} to {NewValue}", _settings.SettingsPage.FocusedRefreshInterval, value);
                 _settings.SettingsPage.FocusedRefreshInterval = value;
                 SaveSettings();
             }
@@ -116,7 +115,7 @@ namespace HP_Gaming_Hub
             get => _settings.SettingsPage.BlurredRefreshInterval;
             set
             {
-                Debug.WriteLine($"[AppSettings] Setting BlurredRefreshInterval from {_settings.SettingsPage.BlurredRefreshInterval} to {value}");
+                Log.Debug("Setting BlurredRefreshInterval from {OldValue} to {NewValue}", _settings.SettingsPage.BlurredRefreshInterval, value);
                 _settings.SettingsPage.BlurredRefreshInterval = value;
                 SaveSettings();
             }
@@ -129,29 +128,27 @@ namespace HP_Gaming_Hub
                 var localFolder = ApplicationData.Current.LocalFolder;
                 var settingsPath = Path.Combine(localFolder.Path, SettingsFileName);
                 
-                Debug.WriteLine($"[AppSettings] Loading settings from: {settingsPath}");
-                Debug.WriteLine($"[AppSettings] Full preferences file path: {Path.GetFullPath(settingsPath)}");
-                Console.WriteLine($"[AppSettings] Loading settings from: {settingsPath}");
-                Console.WriteLine($"[AppSettings] Full preferences file path: {Path.GetFullPath(settingsPath)}");
+                Log.Debug("Loading settings from: {SettingsPath}", settingsPath);
+                Log.Debug("Full preferences file path: {FullPath}", Path.GetFullPath(settingsPath));
                 
                 if (File.Exists(settingsPath))
                 {
                     var json = File.ReadAllText(settingsPath);
-                    Debug.WriteLine($"[AppSettings] Settings file content: {json}");
+                    Log.Debug("Settings file content: {Json}", json);
                     
                     _settings = JsonSerializer.Deserialize<SettingsData>(json) ?? new SettingsData();
                     
-                    Debug.WriteLine($"[AppSettings] Loaded settings - BackdropSelectedIndex: {_settings.SettingsPage.BackdropSelectedIndex}, SelectedWallpaperIndex: {_settings.SettingsPage.SelectedWallpaperIndex}, IsWelcomeCompleted: {_settings.IsWelcomeCompleted}");
+                    Log.Debug("Loaded settings - BackdropSelectedIndex: {BackdropIndex}, SelectedWallpaperIndex: {WallpaperIndex}, IsWelcomeCompleted: {WelcomeCompleted}", _settings.SettingsPage.BackdropSelectedIndex, _settings.SettingsPage.SelectedWallpaperIndex, _settings.IsWelcomeCompleted);
                 }
                 else
                 {
-                    Debug.WriteLine($"[AppSettings] Settings file does not exist, creating default settings");
+                    Log.Debug("Settings file does not exist, creating default settings");
                     _settings = new SettingsData();
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[AppSettings] Error loading settings: {ex.Message}");
+                Log.Error(ex, "Error loading settings");
                 _settings = new SettingsData();
             }
         }
@@ -163,20 +160,18 @@ namespace HP_Gaming_Hub
                 var localFolder = ApplicationData.Current.LocalFolder;
                 var settingsPath = Path.Combine(localFolder.Path, SettingsFileName);
                 
-                Debug.WriteLine($"[AppSettings] Saving settings to: {settingsPath}");
-                Debug.WriteLine($"[AppSettings] Full preferences file path: {Path.GetFullPath(settingsPath)}");
-                Console.WriteLine($"[AppSettings] Saving settings to: {settingsPath}");
-                Console.WriteLine($"[AppSettings] Full preferences file path: {Path.GetFullPath(settingsPath)}");
-                Debug.WriteLine($"[AppSettings] Current settings - BackdropSelectedIndex: {_settings.SettingsPage.BackdropSelectedIndex}, SelectedWallpaperIndex: {_settings.SettingsPage.SelectedWallpaperIndex}, IsWelcomeCompleted: {_settings.IsWelcomeCompleted}");
+                Log.Debug("Saving settings to: {SettingsPath}", settingsPath);
+                Log.Debug("Full preferences file path: {FullPath}", Path.GetFullPath(settingsPath));
+                Log.Debug("Current settings - BackdropSelectedIndex: {BackdropIndex}, SelectedWallpaperIndex: {WallpaperIndex}, IsWelcomeCompleted: {WelcomeCompleted}", _settings.SettingsPage.BackdropSelectedIndex, _settings.SettingsPage.SelectedWallpaperIndex, _settings.IsWelcomeCompleted);
                 
                 var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(settingsPath, json);
                 
-                Debug.WriteLine($"[AppSettings] Settings saved successfully. File content: {json}");
+                Log.Debug("Settings saved successfully. File content: {Json}", json);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[AppSettings] Error saving settings: {ex.Message}");
+                Log.Error(ex, "Error saving settings");
             }
         }
         
@@ -214,8 +209,8 @@ namespace HP_Gaming_Hub
         
         public void LoadSettingsPagePreferences()
         {
-            Debug.WriteLine("[AppSettings] LoadSettingsPagePreferences called");
-            Debug.WriteLine($"[AppSettings] Current preferences - BackdropSelectedIndex: {_settings.SettingsPage.BackdropSelectedIndex}, SelectedWallpaperIndex: {_settings.SettingsPage.SelectedWallpaperIndex}");
+            Log.Debug("LoadSettingsPagePreferences called");
+            Log.Debug("Current preferences - BackdropSelectedIndex: {BackdropIndex}, SelectedWallpaperIndex: {WallpaperIndex}", _settings.SettingsPage.BackdropSelectedIndex, _settings.SettingsPage.SelectedWallpaperIndex);
             // This method can be called when navigating to settings page
             // The preferences are already loaded in the constructor
         }
@@ -278,14 +273,12 @@ namespace HP_Gaming_Hub
         { 
             get 
             {
-                Debug.WriteLine("[AppSettings] Getting SettingsPage property");
-                Console.WriteLine("[AppSettings] Getting SettingsPage property");
+                Log.Debug("Getting SettingsPage property");
                 return _settingsPage;
             }
             set 
             {
-                Debug.WriteLine("[AppSettings] Setting SettingsPage property");
-                Console.WriteLine("[AppSettings] Setting SettingsPage property");
+                Log.Debug("Setting SettingsPage property");
                 _settingsPage = value;
             }
         }
@@ -298,14 +291,12 @@ namespace HP_Gaming_Hub
         { 
             get 
             {
-                Debug.WriteLine($"[AppSettings] Getting BackdropSelectedIndex: {_backdropSelectedIndex}");
-                Console.WriteLine($"[AppSettings] Getting BackdropSelectedIndex: {_backdropSelectedIndex}");
+                Log.Debug("Getting BackdropSelectedIndex: {BackdropIndex}", _backdropSelectedIndex);
                 return _backdropSelectedIndex;
             }
             set 
             {
-                Debug.WriteLine($"[AppSettings] Setting BackdropSelectedIndex from {_backdropSelectedIndex} to {value}");
-                Console.WriteLine($"[AppSettings] Setting BackdropSelectedIndex from {_backdropSelectedIndex} to {value}");
+                Log.Debug("Setting BackdropSelectedIndex from {OldValue} to {NewValue}", _backdropSelectedIndex, value);
                 _backdropSelectedIndex = value;
             }
         }

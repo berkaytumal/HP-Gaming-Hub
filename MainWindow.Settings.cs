@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Composition;
+using Serilog;
 
 namespace HP_Gaming_Hub
 {
@@ -31,7 +32,6 @@ namespace HP_Gaming_Hub
             else if (GraphicsPage.Visibility == Visibility.Visible) currentPage = GraphicsPage;
             else if (KeyboardPage.Visibility == Visibility.Visible) currentPage = KeyboardPage;
             else if (MonitorPage.Visibility == Visibility.Visible) currentPage = MonitorPage;
-            else if (LogsPage.Visibility == Visibility.Visible) currentPage = LogsPage;
             else if (SettingsPage.Visibility == Visibility.Visible) currentPage = SettingsPage;
 
             // Determine target page and index
@@ -41,8 +41,7 @@ namespace HP_Gaming_Hub
             else if (args.SelectedItem == GraphicsNavItem) { targetPage = GraphicsPage; currentSelectedIndex = 1; }
             else if (args.SelectedItem == KeyboardNavItem) { targetPage = KeyboardPage; currentSelectedIndex = 2; }
             else if (args.SelectedItem == MonitorNavItem) { targetPage = MonitorPage; currentSelectedIndex = 3; }
-            else if (args.SelectedItem == LogsNavItem) { targetPage = LogsPage; currentSelectedIndex = 4; }
-            else if (args.SelectedItem == SettingsNavItem) { targetPage = SettingsPage; currentSelectedIndex = 5; }
+            else if (args.SelectedItem == SettingsNavItem) { targetPage = SettingsPage; currentSelectedIndex = 4; }
 
             // If same page is selected, do nothing
             if (currentPage == targetPage) return;
@@ -190,10 +189,10 @@ namespace HP_Gaming_Hub
         {
             try
             {
-                Debug.WriteLine("[MainWindow] LoadSettingsPagePreferences called");
+                Log.Debug("MainWindow - LoadSettingsPagePreferences called");
                 var appSettings = AppSettings.Instance;
                 
-                Debug.WriteLine($"[MainWindow] Retrieved settings - BackdropSelectedIndex: {appSettings.BackdropSelectedIndex}, SelectedWallpaperIndex: {appSettings.SelectedWallpaperIndex}");
+                Log.Debug("MainWindow - Retrieved settings - BackdropSelectedIndex: {BackdropSelectedIndex}, SelectedWallpaperIndex: {SelectedWallpaperIndex}", appSettings.BackdropSelectedIndex, appSettings.SelectedWallpaperIndex);
                 
                 // Load monitor settings without triggering events
                 if (AutoStartMonitoringToggle != null)
@@ -234,7 +233,7 @@ namespace HP_Gaming_Hub
                 // Load backdrop selection without triggering events
                 if (BackdropComboBox != null)
                 {
-                    Debug.WriteLine($"[MainWindow] Setting BackdropComboBox.SelectedIndex to {appSettings.BackdropSelectedIndex}");
+                    Log.Debug("MainWindow - Setting BackdropComboBox.SelectedIndex to {BackdropSelectedIndex}", appSettings.BackdropSelectedIndex);
                     BackdropComboBox.SelectionChanged -= BackdropComboBox_SelectionChanged;
                     BackdropComboBox.SelectedIndex = appSettings.BackdropSelectedIndex;
                     BackdropComboBox.SelectionChanged += BackdropComboBox_SelectionChanged;
@@ -243,13 +242,13 @@ namespace HP_Gaming_Hub
                     if (BackdropComboBox.SelectedItem is ComboBoxItem selectedItem)
                     {
                         var backdrop = selectedItem.Tag?.ToString();
-                        Debug.WriteLine($"[MainWindow] Applying backdrop setting: {backdrop}");
+                        Log.Debug("MainWindow - Applying backdrop setting: {Backdrop}", backdrop);
                         ApplyBackdropSettings(backdrop);
                         
                         // Show wallpaper panel and apply wallpaper if Image backdrop is selected
                         if (backdrop == "Image" && WallpaperPanel != null)
                         {
-                            Debug.WriteLine($"[MainWindow] Image backdrop selected, showing wallpaper panel and applying wallpaper index {appSettings.SelectedWallpaperIndex}");
+                            Log.Debug("MainWindow - Image backdrop selected, showing wallpaper panel and applying wallpaper index {WallpaperIndex}", appSettings.SelectedWallpaperIndex);
                             ShowWallpaperGalleryWithAnimation();
                             UpdateWallpaperSelection(appSettings.SelectedWallpaperIndex);
                             // Apply the saved wallpaper
@@ -257,27 +256,27 @@ namespace HP_Gaming_Hub
                         }
                         else if (WallpaperPanel != null)
                         {
-                            Debug.WriteLine("[MainWindow] Non-image backdrop selected, hiding wallpaper panel");
+                            Log.Debug("MainWindow - Non-image backdrop selected, hiding wallpaper panel");
                             WallpaperPanel.Visibility = Visibility.Collapsed;
                         }
                     }
                     else
                     {
-                        Debug.WriteLine("[MainWindow] Warning: BackdropComboBox.SelectedItem is not a ComboBoxItem");
+                        Log.Warning("MainWindow - BackdropComboBox.SelectedItem is not a ComboBoxItem");
                     }
                 }
                 else
                 {
-                    Debug.WriteLine("[MainWindow] Warning: BackdropComboBox is null");
+                    Log.Warning("MainWindow - BackdropComboBox is null");
                 }
                 
-                LogInfo("Settings page preferences loaded");
-                Debug.WriteLine("[MainWindow] LoadSettingsPagePreferences completed successfully");
+                Log.Information("Settings page preferences loaded");
+                Log.Debug("MainWindow - LoadSettingsPagePreferences completed successfully");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[MainWindow] Error in LoadSettingsPagePreferences: {ex.Message}");
-                LogError($"Error loading settings page preferences: {ex.Message}");
+                Log.Error(ex, "MainWindow - Error in LoadSettingsPagePreferences");
+                Log.Error(ex, "Error loading settings page preferences: {Message}", ex.Message);
             }
         }
         
@@ -285,19 +284,19 @@ namespace HP_Gaming_Hub
         {
             try
             {
-                Debug.WriteLine($"[MainWindow] BackdropComboBox_SelectionChanged triggered, SelectedIndex: {BackdropComboBox?.SelectedIndex}");
+                Log.Debug("MainWindow - BackdropComboBox_SelectionChanged triggered, SelectedIndex: {SelectedIndex}", BackdropComboBox?.SelectedIndex);
                 
                 if (BackdropComboBox?.SelectedItem is ComboBoxItem selectedItem)
                 {
                     var backdrop = selectedItem.Tag?.ToString();
-                    Debug.WriteLine($"[MainWindow] User selected backdrop: {backdrop}");
+                    Log.Debug("MainWindow - User selected backdrop: {Backdrop}", backdrop);
                     
                     // Save preference
-                    Debug.WriteLine($"[MainWindow] Saving BackdropSelectedIndex: {BackdropComboBox.SelectedIndex}");
+                    Log.Debug("MainWindow - Saving BackdropSelectedIndex: {SelectedIndex}", BackdropComboBox.SelectedIndex);
                     AppSettings.Instance.BackdropSelectedIndex = BackdropComboBox.SelectedIndex;
                     
                     // Apply the selected backdrop
-                    Debug.WriteLine($"[MainWindow] Applying backdrop: {backdrop}");
+                    Log.Debug("MainWindow - Applying backdrop: {Backdrop}", backdrop);
                     ApplyBackdropSettings(backdrop);
                     
                     // Show/hide wallpaper selection based on backdrop choice
@@ -305,30 +304,30 @@ namespace HP_Gaming_Hub
                     {
                         if (WallpaperPanel != null)
                         {
-                            Debug.WriteLine("[MainWindow] Showing wallpaper panel for Image backdrop");
+                            Log.Debug("MainWindow - Showing wallpaper panel for Image backdrop");
                             ShowWallpaperGalleryWithAnimation();
                             
                             // Apply the default wallpaper immediately
                             var defaultWallpaperIndex = AppSettings.Instance.SelectedWallpaperIndex;
-                            Debug.WriteLine($"[MainWindow] Applying default wallpaper index: {defaultWallpaperIndex}");
+                            Log.Debug("MainWindow - Applying default wallpaper index: {WallpaperIndex}", defaultWallpaperIndex);
                             UpdateWallpaperSelection(defaultWallpaperIndex);
                             await ApplyWallpaperSettings(defaultWallpaperIndex.ToString());
                         }
                         else
                         {
-                            LogError("WallpaperPanel is null when trying to show it");
+                            Log.Error("WallpaperPanel is null when trying to show it");
                         }
                     }
                     else
                     {
                         if (WallpaperPanel != null)
                         {
-                            Debug.WriteLine("[MainWindow] Hiding wallpaper panel for non-Image backdrop");
+                            Log.Debug("MainWindow - Hiding wallpaper panel for non-Image backdrop");
                             HideWallpaperGalleryWithAnimation();
                         }
                         else
                         {
-                            LogError("WallpaperPanel is null when trying to hide it");
+                            Log.Error("WallpaperPanel is null when trying to hide it");
                         }
                     }
                     
@@ -337,8 +336,8 @@ namespace HP_Gaming_Hub
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[MainWindow] Error in BackdropComboBox_SelectionChanged: {ex.Message}");
-                LogError($"Error in BackdropComboBox_SelectionChanged: {ex.Message}");
+                Log.Error(ex, "MainWindow - Error in BackdropComboBox_SelectionChanged");
+                Log.Error(ex, "Error in BackdropComboBox_SelectionChanged: {Message}", ex.Message);
                 if (SettingsInfoBar != null)
                 {
                     SettingsInfoBar.IsOpen = true;
@@ -353,18 +352,18 @@ namespace HP_Gaming_Hub
             // Handle wallpaper selection
             if (sender is Border border && border.Tag is string wallpaperIndex)
             {
-                Debug.WriteLine($"[MainWindow] WallpaperBorder_Tapped - wallpaper index: {wallpaperIndex}");
+                Log.Debug("MainWindow - WallpaperBorder_Tapped - wallpaper index: {WallpaperIndex}", wallpaperIndex);
                 
                 // Save preference
                 if (int.TryParse(wallpaperIndex, out int index))
                 {
-                    Debug.WriteLine($"[MainWindow] Saving SelectedWallpaperIndex: {index}");
+                    Log.Debug("MainWindow - Saving SelectedWallpaperIndex: {Index}", index);
                     AppSettings.Instance.SelectedWallpaperIndex = index;
                     UpdateWallpaperSelection(index);
                 }
                 
                 // Apply selected wallpaper
-                Debug.WriteLine($"[MainWindow] Applying wallpaper settings for index: {wallpaperIndex}");
+                Log.Debug("MainWindow - Applying wallpaper settings for index: {WallpaperIndex}", wallpaperIndex);
                 await ApplyWallpaperSettings(wallpaperIndex);
             }
         }
@@ -408,7 +407,7 @@ namespace HP_Gaming_Hub
             }
             catch (Exception ex)
             {
-                LogError($"Error updating wallpaper selection: {ex.Message}");
+                Log.Error(ex, "Error updating wallpaper selection: {Message}", ex.Message);
             }
         }
 
@@ -442,7 +441,7 @@ namespace HP_Gaming_Hub
             }
             catch (Exception ex)
             {
-                LogError($"Error showing wallpaper gallery: {ex.Message}");
+                Log.Error(ex, "Error showing wallpaper gallery: {Message}", ex.Message);
             }
         }
 
@@ -478,7 +477,7 @@ namespace HP_Gaming_Hub
             }
             catch (Exception ex)
             {
-                LogError($"Error hiding wallpaper gallery: {ex.Message}");
+                Log.Error(ex, "Error hiding wallpaper gallery: {Message}", ex.Message);
             }
         }
 
@@ -520,7 +519,7 @@ namespace HP_Gaming_Hub
             }
             catch (Exception ex)
             {
-                LogError($"Error animating wallpaper thumbnails: {ex.Message}");
+                Log.Error(ex, "Error animating wallpaper thumbnails: {Message}", ex.Message);
             }
         }
 
@@ -584,13 +583,13 @@ namespace HP_Gaming_Hub
                      await SetupWallpaperCompositionVisual(wallpaperContainer, wallpaperPath, mainGrid);
                  }
                  
-                 LogInfo($"Wallpaper applied with acrylic backdrop: {wallpaperPath}");
+                 Log.Information("Wallpaper applied with acrylic backdrop: {WallpaperPath}", wallpaperPath);
                  
                  // Wallpaper changed notification removed
              }
              catch (Exception ex)
              {
-                 LogError($"Failed to apply wallpaper {wallpaperIndex}: {ex.Message}");
+                 Log.Error(ex, "Failed to apply wallpaper {WallpaperIndex}: {Message}", wallpaperIndex, ex.Message);
                  if (SettingsInfoBar != null)
                  {
                      SettingsInfoBar.IsOpen = true;
@@ -721,7 +720,7 @@ namespace HP_Gaming_Hub
             }
             catch (Exception ex)
             {
-                LogError($"Error cleaning up wallpaper composition visual: {ex.Message}");
+                Log.Error(ex, "Error cleaning up wallpaper composition visual: {Message}", ex.Message);
             }
         }
 
@@ -735,7 +734,7 @@ namespace HP_Gaming_Hub
             }
             catch (Exception ex)
             {
-                LogError($"Error cleaning up wallpaper composition visual: {ex.Message}");
+                Log.Error(ex, "Error cleaning up wallpaper composition visual: {Message}", ex.Message);
             }
         }
 
@@ -788,37 +787,15 @@ namespace HP_Gaming_Hub
                           break;
                   }
                   
-                  LogInfo($"Backdrop changed to: {backdropType}");
+                  Log.Information("Backdrop changed to: {BackdropType}", backdropType);
               }
               catch (Exception ex)
               {
-                  LogError($"Failed to apply backdrop {backdropType}: {ex.Message}");
+                  Log.Error(ex, "Failed to apply backdrop {BackdropType}: {Message}", backdropType, ex.Message);
               }
            }
 
-        // Console functionality
-        private void ClearLogsButton_Click(object sender, RoutedEventArgs e)
-        {
-            LogsOutput.Text = "HP Gaming Hub Console - Ready\n";
-        }
 
-        private void CopyLogsButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
-                dataPackage.SetText(LogsOutput.Text);
-                Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
-                
-                // Optional: Show a brief confirmation
-                LogInfo("Console content copied to clipboard");
-            }
-            catch (Exception ex)
-            {
-                LogError($"Failed to copy to clipboard: {ex.Message}");
-            }
-        }
-        
         // Monitor Settings Event Handlers
         private void AutoStartMonitoringToggle_Toggled(object sender, RoutedEventArgs e)
         {
@@ -827,12 +804,12 @@ namespace HP_Gaming_Hub
                 if (sender is ToggleSwitch toggle)
                 {
                     AppSettings.Instance.AutoStartMonitoring = toggle.IsOn;
-                    LogInfo($"Auto start monitoring {(toggle.IsOn ? "enabled" : "disabled")}");
+                    Log.Information("Auto start monitoring {Status}", toggle.IsOn ? "enabled" : "disabled");
                 }
             }
             catch (Exception ex)
             {
-                LogError($"Error updating auto start monitoring setting: {ex.Message}");
+                Log.Error(ex, "Error updating auto start monitoring setting: {Message}", ex.Message);
             }
         }
         
@@ -843,7 +820,7 @@ namespace HP_Gaming_Hub
                 if (sender is ToggleSwitch toggle)
                 {
                     // AutoRefresh is now runtime-only, not saved to preferences
-                    LogInfo($"Auto refresh {(toggle.IsOn ? "enabled" : "disabled")} (runtime only)");
+                    Log.Information("Auto refresh {Status} (runtime only)", toggle.IsOn ? "enabled" : "disabled");
                     
                     // Update the hardware monitor view model
                     if (_hardwareMonitorViewModel != null)
@@ -854,7 +831,7 @@ namespace HP_Gaming_Hub
             }
             catch (Exception ex)
             {
-                LogError($"Error updating auto refresh setting: {ex.Message}");
+                Log.Error(ex, "Error updating auto refresh setting: {Message}", ex.Message);
             }
         }
         
@@ -877,12 +854,12 @@ namespace HP_Gaming_Hub
                         _hardwareMonitorViewModel.OnRefreshIntervalChanged(value, AppSettings.Instance.BlurredRefreshInterval);
                     }
                     
-                    LogInfo($"Focused refresh interval set to {value} seconds");
+                    Log.Information("Focused refresh interval set to {Value} seconds", value);
                 }
             }
             catch (Exception ex)
             {
-                LogError($"Error updating focused refresh interval: {ex.Message}");
+                Log.Error(ex, "Error updating focused refresh interval: {Message}", ex.Message);
             }
         }
         
@@ -905,12 +882,12 @@ namespace HP_Gaming_Hub
                         _hardwareMonitorViewModel.OnRefreshIntervalChanged(value, AppSettings.Instance.BlurredRefreshInterval);
                     }
                     
-                    LogInfo($"Focused refresh interval set to {value} seconds");
+                    Log.Information("Focused refresh interval set to {Value} seconds", value);
                 }
             }
             catch (Exception ex)
             {
-                LogError($"Error updating focused refresh interval: {ex.Message}");
+                Log.Error(ex, "Error updating focused refresh interval: {Message}", ex.Message);
             }
         }
         
@@ -933,12 +910,12 @@ namespace HP_Gaming_Hub
                         _hardwareMonitorViewModel.OnRefreshIntervalChanged(AppSettings.Instance.FocusedRefreshInterval, value);
                     }
                     
-                    LogInfo($"Blurred refresh interval set to {value} seconds");
+                    Log.Information("Blurred refresh interval set to {Value} seconds", value);
                 }
             }
             catch (Exception ex)
             {
-                LogError($"Error updating blurred refresh interval: {ex.Message}");
+                Log.Error(ex, "Error updating blurred refresh interval: {Message}", ex.Message);
             }
         }
         
@@ -961,12 +938,12 @@ namespace HP_Gaming_Hub
                         _hardwareMonitorViewModel.OnRefreshIntervalChanged(AppSettings.Instance.FocusedRefreshInterval, value);
                     }
                     
-                    LogInfo($"Blurred refresh interval set to {value} seconds");
+                    Log.Information("Blurred refresh interval set to {Value} seconds", value);
                 }
             }
             catch (Exception ex)
             {
-                LogError($"Error updating blurred refresh interval: {ex.Message}");
+                Log.Error(ex, "Error updating blurred refresh interval: {Message}", ex.Message);
             }
         }
     }
