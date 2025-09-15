@@ -56,9 +56,6 @@ jobs:
         $content = $content -replace '<ApplicationVersion>.*</ApplicationVersion>', "<ApplicationVersion>$version</ApplicationVersion>"
         Set-Content $projectFile $content
         
-    - name: Restore dependencies
-      run: dotnet restore "HP Gaming Hub.csproj"
-      
     - name: Setup certificate from secrets
       shell: pwsh
       run: |
@@ -66,10 +63,62 @@ jobs:
         [System.IO.File]::WriteAllBytes("HPGamingHub.pfx", $certBytes)
         echo "Certificate decoded and saved to HPGamingHub.pfx"
         
-        # Import certificate to certificate store
+    - name: Validate certificate
+      shell: pwsh
+      run: |
+        # Check if certificate file exists and is valid
+        if (-not (Test-Path "HPGamingHub.pfx")) {
+          echo "ERROR: Certificate file not found"
+          exit 1
+        }
+        
+        # Test certificate password and validity
+        try {
+          $password = ConvertTo-SecureString -String "${{ secrets.CERTIFICATE_PASSWORD }}" -Force -AsPlainText
+          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2("HPGamingHub.pfx", $password)
+          
+          echo "Certificate Subject: $($cert.Subject)"
+          echo "Certificate Issuer: $($cert.Issuer)"
+          echo "Certificate Valid From: $($cert.NotBefore)"
+          echo "Certificate Valid To: $($cert.NotAfter)"
+          echo "Certificate Thumbprint: $($cert.Thumbprint)"
+          
+          # Check if certificate is expired
+          $now = Get-Date
+          if ($cert.NotAfter -lt $now) {
+            echo "ERROR: Certificate has expired on $($cert.NotAfter)"
+            exit 1
+          }
+          
+          if ($cert.NotBefore -gt $now) {
+            echo "ERROR: Certificate is not yet valid (valid from $($cert.NotBefore))"
+            exit 1
+          }
+          
+          # Check if certificate has a private key
+          if (-not $cert.HasPrivateKey) {
+            echo "ERROR: Certificate does not contain a private key"
+            exit 1
+          }
+          
+          echo "✅ Certificate validation successful - ready for code signing"
+        }
+        catch {
+          echo "ERROR: Failed to load certificate - $($_.Exception.Message)"
+          echo "This usually indicates an incorrect password or corrupted certificate file"
+          exit 1
+        }
+        
+    - name: Import certificate to store
+      shell: pwsh
+      run: |
+        # Import certificate to certificate store for signing
         $password = ConvertTo-SecureString -String "${{ secrets.CERTIFICATE_PASSWORD }}" -Force -AsPlainText
         Import-PfxCertificate -FilePath "HPGamingHub.pfx" -CertStoreLocation "Cert:\CurrentUser\My" -Password $password
         echo "Certificate imported to certificate store"
+        
+    - name: Restore dependencies
+      run: dotnet restore "HP Gaming Hub.csproj"
         
     - name: Build and package MSIX
       run: |
