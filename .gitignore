@@ -376,3 +376,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# ElevatedHelper build artifacts and binaries
+ElevatedHelper/
