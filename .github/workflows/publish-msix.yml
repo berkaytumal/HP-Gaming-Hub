@@ -66,6 +66,11 @@ jobs:
         [System.IO.File]::WriteAllBytes("HPGamingHub.pfx", $certBytes)
         echo "Certificate decoded and saved to HPGamingHub.pfx"
         
+        # Import certificate to certificate store
+        $password = ConvertTo-SecureString -String "${{ secrets.CERTIFICATE_PASSWORD }}" -Force -AsPlainText
+        Import-PfxCertificate -FilePath "HPGamingHub.pfx" -CertStoreLocation "Cert:\CurrentUser\My" -Password $password
+        echo "Certificate imported to certificate store"
+        
     - name: Build and package MSIX
       run: |
         msbuild "HP Gaming Hub.csproj" /p:Configuration=Release /p:Platform=x64 /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundlePlatforms=x64 /p:PackageCertificateKeyFile="HPGamingHub.pfx" /p:PackageCertificatePassword="${{ secrets.CERTIFICATE_PASSWORD }}" /p:GenerateAppxPackageOnBuild=true /p:PublishReadyToRun=false
