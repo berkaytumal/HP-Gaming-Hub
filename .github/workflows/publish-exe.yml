@@ -40,7 +40,7 @@ jobs:
         echo "version=$version" >> $env:GITHUB_OUTPUT
         echo "Version: $version"
         
-    - name: Update version in project file
+    - name: Update version and configure for unpackaged build
       shell: pwsh
       run: |
         $version = "${{ steps.get_version.outputs.version }}"
@@ -48,13 +48,35 @@ jobs:
         $content = Get-Content $projectFile -Raw
         $content = $content -replace '<Version>.*</Version>', "<Version>$version</Version>"
         $content = $content -replace '<ApplicationVersion>.*</ApplicationVersion>', "<ApplicationVersion>$version</ApplicationVersion>"
+        
+        # Configure for unpackaged build
+        $content = $content -replace '<WindowsPackagedType>.*</WindowsPackagedType>', "<WindowsPackageType>None</WindowsPackageType>"
+        $content = $content -replace '<EnableMsixTooling>.*</EnableMsixTooling>', "<EnableMsixTooling>false</EnableMsixTooling>"
+        
+        # Add WindowsPackageType if it doesn't exist
+        if ($content -notmatch '<WindowsPackageType>') {
+          $content = $content -replace '(<UseWinUI>true</UseWinUI>)', '$1`n    <WindowsPackageType>None</WindowsPackageType>'
+        }
+        
         Set-Content $projectFile $content
+        echo "Project configured for unpackaged build"
         
     - name: Build unpackaged EXE
       shell: pwsh
       run: |
-        # Build as regular exe without MSIX packaging
-        dotnet publish "HP Gaming Hub.csproj" -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "publish"
+        # Build as unpackaged WinUI app
+        dotnet build "HP Gaming Hub.csproj" -c Release -p:Platform=x64 -p:WindowsPackageType=None -p:EnableMsixTooling=false
+        
+        # Copy output to publish folder
+        New-Item -ItemType Directory -Force -Path "publish"
+        $buildOutput = "bin\x64\Release\net8.0-windows10.0.19041.0\win10-x64"
+        if (Test-Path $buildOutput) {
+          Copy-Item -Path "$buildOutput\*" -Destination "publish\" -Recurse -Force
+        } else {
+          # Try alternative path
+          $buildOutput = "bin\x64\Release\net8.0-windows10.0.19041.0"
+          Copy-Item -Path "$buildOutput\*" -Destination "publish\" -Recurse -Force
+        }
         
         # List the output
         echo "Build output:"
