@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
@@ -9,14 +9,14 @@
 
   <Identity
     Name="55bef326-8883-4f25-824c-a3de54da018a"
-    Publisher="CN=berka"
+    Publisher="CN=berkaytumal"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="55bef326-8883-4f25-824c-a3de54da018a" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>HP Gaming Hub</DisplayName>
-    <PublisherDisplayName>berka</PublisherDisplayName>
+    <PublisherDisplayName>Berkay Tumal</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
