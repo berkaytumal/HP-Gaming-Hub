@@ -78,10 +78,10 @@ jobs:
         $version = "${{ steps.get_version.outputs.version }}"
         
         # Create Product.wxs file
-        $productWxs = @"
+        $productWxs = @'
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="HP Gaming Hub" Language="1033" Version="$version" Manufacturer="Berkay Tumal" UpgradeCode="55BEF326-8883-4F25-824C-A3DE54DA018A">
+  <Product Id="*" Name="HP Gaming Hub" Language="1033" Version="{0}" Manufacturer="Berkay Tumal" UpgradeCode="55BEF326-8883-4F25-824C-A3DE54DA018A">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" />
     
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
@@ -112,8 +112,9 @@ jobs:
     <Property Id="ARPPRODUCTICON" Value="HPGamingHub.exe" />
   </Product>
 </Wix>
-"@
+'@
         
+        $productWxs = $productWxs -f $version
         Set-Content -Path "Product.wxs" -Value $productWxs
         echo "Created Product.wxs"
         
