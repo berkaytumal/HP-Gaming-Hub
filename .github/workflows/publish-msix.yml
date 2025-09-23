@@ -74,8 +74,17 @@ jobs:
         
         # Test certificate password and validity
         try {
-          $password = ConvertTo-SecureString -String "${{ secrets.CERTIFICATE_PASSWORD }}" -Force -AsPlainText
-          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2("HPGamingHub.pfx", $password)
+          $password = if ("${{ secrets.CERTIFICATE_PASSWORD }}" -eq "") { 
+            $null 
+          } else { 
+            ConvertTo-SecureString -String "${{ secrets.CERTIFICATE_PASSWORD }}" -Force -AsPlainText 
+          }
+          
+          $cert = if ($password) {
+            New-Object System.Security.Cryptography.X509Certificates.X509Certificate2("HPGamingHub.pfx", $password)
+          } else {
+            New-Object System.Security.Cryptography.X509Certificates.X509Certificate2("HPGamingHub.pfx")
+          }
           
           echo "Certificate Subject: $($cert.Subject)"
           echo "Certificate Issuer: $($cert.Issuer)"
@@ -113,9 +122,19 @@ jobs:
       shell: pwsh
       run: |
         # Import certificate to certificate store for signing
-        $password = ConvertTo-SecureString -String "${{ secrets.CERTIFICATE_PASSWORD }}" -Force -AsPlainText
-        Import-PfxCertificate -FilePath "HPGamingHub.pfx" -CertStoreLocation "Cert:\CurrentUser\My" -Password $password
-        echo "Certificate imported to certificate store"
+        try {
+          if ("${{ secrets.CERTIFICATE_PASSWORD }}" -eq "") {
+            Import-PfxCertificate -FilePath "HPGamingHub.pfx" -CertStoreLocation "Cert:\CurrentUser\My"
+            echo "Certificate imported to certificate store (no password)"
+          } else {
+            $password = ConvertTo-SecureString -String "${{ secrets.CERTIFICATE_PASSWORD }}" -Force -AsPlainText
+            Import-PfxCertificate -FilePath "HPGamingHub.pfx" -CertStoreLocation "Cert:\CurrentUser\My" -Password $password
+            echo "Certificate imported to certificate store (with password)"
+          }
+        } catch {
+          echo "ERROR: Failed to import certificate - $($_.Exception.Message)"
+          exit 1
+        }
         
     - name: Restore dependencies
       run: dotnet restore "HP Gaming Hub.csproj"
