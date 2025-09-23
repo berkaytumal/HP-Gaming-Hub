@@ -140,8 +140,14 @@ jobs:
       run: dotnet restore "HP Gaming Hub.csproj"
         
     - name: Build and package MSIX
+      shell: pwsh
       run: |
-        msbuild "HP Gaming Hub.csproj" /p:Configuration=Release /p:Platform=x64 /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundlePlatforms=x64 /p:PackageCertificateKeyFile="HPGamingHub.pfx" /p:PackageCertificatePassword="${{ secrets.CERTIFICATE_PASSWORD }}" /p:GenerateAppxPackageOnBuild=true /p:PublishReadyToRun=false
+        # Get the certificate thumbprint from the store
+        $certThumbprint = (Get-ChildItem -Path "Cert:\CurrentUser\My" | Where-Object { $_.Subject -like "*berkaytumal*" } | Select-Object -First 1).Thumbprint
+        echo "Using certificate with thumbprint: $certThumbprint"
+        
+        # Build with certificate from store using thumbprint
+        msbuild "HP Gaming Hub.csproj" /p:Configuration=Release /p:Platform=x64 /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundlePlatforms=x64 /p:PackageCertificateThumbprint="$certThumbprint" /p:GenerateAppxPackageOnBuild=true /p:PublishReadyToRun=false
         
     - name: Find MSIX package
       id: find_msix
