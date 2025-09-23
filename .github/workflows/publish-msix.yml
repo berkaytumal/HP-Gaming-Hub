@@ -174,29 +174,8 @@ jobs:
         $tagName = if ("${{ github.event_name }}" -eq "push") { "${{ github.ref_name }}" } else { "v$version" }
         $msixPath = "${{ steps.find_msix.outputs.msix_path }}"
         
-        $releaseBody = @"
-         ## HP Gaming Hub v$version
-         
-         ### Installation
-         1. Download both the MSIX package and the HPGamingHub.pfx certificate file
-         2. Right-click on HPGamingHub.pfx and select "Install PFX"
-         3. Choose "Current User" and click Next
-         4. Leave password field empty and click Next
-         5. Select "Place all certificates in the following store" and browse to "Trusted Root Certification Authorities"
-         6. Click Next and Finish
-         7. Now you can install the MSIX package without certificate errors
-         
-         ### Changes
-         - See commit history for detailed changes
-         
-         ### System Requirements
-         - Windows 10/11 (x64)
-         - .NET 8.0 Runtime
-         - HP OMEN/Pavilion/Victus gaming hardware
-         "@
-        
         # Create release using GitHub CLI
-         gh release create "$tagName" "$msixPath" "HPGamingHub.pfx" --title "HP Gaming Hub v$version" --notes "$releaseBody" --repo "${{ github.repository }}"
+        gh release create "$tagName" "$msixPath" "HPGamingHub.pfx" --title "HP Gaming Hub v$version" --repo "${{ github.repository }}"
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
