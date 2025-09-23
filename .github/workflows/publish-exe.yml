@@ -1,0 +1,164 @@
+name: Publish EXE with MSI Installer
+
+on:
+  push:
+    tags:
+      - 'exe-v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  build-and-publish-exe:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Get version from tag or input
+      id: get_version
+      shell: pwsh
+      run: |
+        if ("${{ github.event_name }}" -eq "push") {
+          $version = "${{ github.ref_name }}" -replace '^exe-v', ''
+        } else {
+          $version = "${{ github.event.inputs.version }}"
+        }
+        echo "version=$version" >> $env:GITHUB_OUTPUT
+        echo "Version: $version"
+        
+    - name: Update version in project file
+      shell: pwsh
+      run: |
+        $version = "${{ steps.get_version.outputs.version }}"
+        $projectFile = "HP Gaming Hub.csproj"
+        $content = Get-Content $projectFile -Raw
+        $content = $content -replace '<Version>.*</Version>', "<Version>$version</Version>"
+        $content = $content -replace '<ApplicationVersion>.*</ApplicationVersion>', "<ApplicationVersion>$version</ApplicationVersion>"
+        Set-Content $projectFile $content
+        
+    - name: Build unpackaged EXE
+      shell: pwsh
+      run: |
+        # Build as regular exe without MSIX packaging
+        dotnet publish "HP Gaming Hub.csproj" -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "publish"
+        
+        # List the output
+        echo "Build output:"
+        Get-ChildItem -Path "publish" -Recurse
+        
+    - name: Install WiX Toolset
+      shell: pwsh
+      run: |
+        # Download and install WiX Toolset
+        $wixUrl = "https://github.com/wixtoolset/wix3/releases/download/wix3112rtm/wix311.exe"
+        Invoke-WebRequest -Uri $wixUrl -OutFile "wix311.exe"
+        Start-Process -FilePath "wix311.exe" -ArgumentList "/quiet" -Wait
+        
+        # Add WiX to PATH
+        $wixPath = "${env:ProgramFiles(x86)}\WiX Toolset v3.11\bin"
+        echo "$wixPath" >> $env:GITHUB_PATH
+        
+    - name: Create WiX installer files
+      shell: pwsh
+      run: |
+        $version = "${{ steps.get_version.outputs.version }}"
+        
+        # Create Product.wxs file
+        $productWxs = @"
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="HP Gaming Hub" Language="1033" Version="$version" Manufacturer="Berkay Tumal" UpgradeCode="55BEF326-8883-4F25-824C-A3DE54DA018A">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" />
+    
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+    
+    <Feature Id="ProductFeature" Title="HP Gaming Hub" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+    
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="LocalAppDataFolder">
+        <Directory Id="INSTALLFOLDER" Name="HP Gaming Hub" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="HP Gaming Hub"/>
+      </Directory>
+    </Directory>
+    
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="MainExecutable" Guid="*">
+        <File Id="HPGamingHubExe" Source="publish\HP Gaming Hub.exe" KeyPath="yes">
+          <Shortcut Id="StartMenuShortcut" Directory="ApplicationProgramsFolder" Name="HP Gaming Hub" WorkingDirectory="INSTALLFOLDER" Icon="HPGamingHub.exe" IconIndex="0" Advertise="yes" />
+        </File>
+      </Component>
+    </ComponentGroup>
+    
+    <Icon Id="HPGamingHub.exe" SourceFile="publish\HP Gaming Hub.exe" />
+    <Property Id="ARPPRODUCTICON" Value="HPGamingHub.exe" />
+  </Product>
+</Wix>
+"@
+        
+        Set-Content -Path "Product.wxs" -Value $productWxs
+        echo "Created Product.wxs"
+        
+    - name: Build MSI installer
+      shell: cmd
+      run: |
+        echo "Compiling WiX..."
+        candle.exe Product.wxs -out Product.wixobj
+        
+        echo "Linking MSI..."
+        light.exe Product.wixobj -out "HP Gaming Hub v${{ steps.get_version.outputs.version }}.msi"
+        
+        echo "MSI created successfully"
+        dir "*.msi"
+        
+    - name: Find MSI package
+      id: find_msi
+      shell: pwsh
+      run: |
+        $msiPath = Get-ChildItem -Path "." -Filter "*.msi" | Select-Object -First 1 -ExpandProperty FullName
+        if ($msiPath) {
+          echo "msi_path=$msiPath" >> $env:GITHUB_OUTPUT
+          echo "Found MSI: $msiPath"
+        } else {
+          echo "No MSI package found"
+          exit 1
+        }
+        
+    - name: Create Release and Upload MSI
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      shell: pwsh
+      run: |
+        $version = "${{ steps.get_version.outputs.version }}"
+        $tagName = if ("${{ github.event_name }}" -eq "push") { "${{ github.ref_name }}" } else { "exe-v$version" }
+        $msiPath = "${{ steps.find_msi.outputs.msi_path }}"
+        
+        # Create release using GitHub CLI
+        gh release create "$tagName" "$msiPath" --title "HP Gaming Hub EXE v$version" --repo "${{ github.repository }}"
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: exe-installer-v${{ steps.get_version.outputs.version }}
+        path: |
+          ${{ steps.find_msi.outputs.msi_path }}
+          publish/HP Gaming Hub.exe
+        retention-days: 30
