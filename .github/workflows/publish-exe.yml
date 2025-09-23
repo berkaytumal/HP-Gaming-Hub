@@ -79,39 +79,39 @@ jobs:
         
         # Create Product.wxs file
         $productWxs = @'
-<?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="HP Gaming Hub" Language="1033" Version="{0}" Manufacturer="Berkay Tumal" UpgradeCode="55BEF326-8883-4F25-824C-A3DE54DA018A">
-    <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" />
-    
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-    <MediaTemplate EmbedCab="yes" />
-    
-    <Feature Id="ProductFeature" Title="HP Gaming Hub" Level="1">
-      <ComponentGroupRef Id="ProductComponents" />
-    </Feature>
-    
-    <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="LocalAppDataFolder">
-        <Directory Id="INSTALLFOLDER" Name="HP Gaming Hub" />
-      </Directory>
-      <Directory Id="ProgramMenuFolder">
-        <Directory Id="ApplicationProgramsFolder" Name="HP Gaming Hub"/>
-      </Directory>
-    </Directory>
-    
-    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
-      <Component Id="MainExecutable" Guid="*">
-        <File Id="HPGamingHubExe" Source="publish\HP Gaming Hub.exe" KeyPath="yes">
-          <Shortcut Id="StartMenuShortcut" Directory="ApplicationProgramsFolder" Name="HP Gaming Hub" WorkingDirectory="INSTALLFOLDER" Icon="HPGamingHub.exe" IconIndex="0" Advertise="yes" />
-        </File>
-      </Component>
-    </ComponentGroup>
-    
-    <Icon Id="HPGamingHub.exe" SourceFile="publish\HP Gaming Hub.exe" />
-    <Property Id="ARPPRODUCTICON" Value="HPGamingHub.exe" />
-  </Product>
-</Wix>
+        <?xml version="1.0" encoding="UTF-8"?>
+        <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+          <Product Id="*" Name="HP Gaming Hub" Language="1033" Version="{0}" Manufacturer="Berkay Tumal" UpgradeCode="55BEF326-8883-4F25-824C-A3DE54DA018A">
+            <Package InstallerVersion="200" Compressed="yes" InstallScope="perUser" />
+            
+            <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+            <MediaTemplate EmbedCab="yes" />
+            
+            <Feature Id="ProductFeature" Title="HP Gaming Hub" Level="1">
+              <ComponentGroupRef Id="ProductComponents" />
+            </Feature>
+            
+            <Directory Id="TARGETDIR" Name="SourceDir">
+              <Directory Id="LocalAppDataFolder">
+                <Directory Id="INSTALLFOLDER" Name="HP Gaming Hub" />
+              </Directory>
+              <Directory Id="ProgramMenuFolder">
+                <Directory Id="ApplicationProgramsFolder" Name="HP Gaming Hub"/>
+              </Directory>
+            </Directory>
+            
+            <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+              <Component Id="MainExecutable" Guid="*">
+                <File Id="HPGamingHubExe" Source="publish\HP Gaming Hub.exe" KeyPath="yes">
+                  <Shortcut Id="StartMenuShortcut" Directory="ApplicationProgramsFolder" Name="HP Gaming Hub" WorkingDirectory="INSTALLFOLDER" Icon="HPGamingHub.exe" IconIndex="0" Advertise="yes" />
+                </File>
+              </Component>
+            </ComponentGroup>
+            
+            <Icon Id="HPGamingHub.exe" SourceFile="publish\HP Gaming Hub.exe" />
+            <Property Id="ARPPRODUCTICON" Value="HPGamingHub.exe" />
+          </Product>
+        </Wix>
 '@
         
         $productWxs = $productWxs -f $version
