@@ -112,7 +112,7 @@ jobs:
             <Property Id="ARPPRODUCTICON" Value="HPGamingHub.exe" />
           </Product>
         </Wix>
-'@
+        '@
         
         $productWxs = $productWxs -f $version
         Set-Content -Path "Product.wxs" -Value $productWxs
