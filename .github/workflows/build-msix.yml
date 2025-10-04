@@ -67,9 +67,51 @@ jobs:
     - name: Remove the pfx
       run: Remove-Item -path GitHubActionsWorkflow.pfx
 
+    # Debug: List all files in Packages directory
+    - name: Debug - List Packages directory contents
+      run: |
+        Write-Host "=== Debugging Packages Directory ==="
+        if (Test-Path "Packages") {
+          Write-Host "Packages directory exists"
+          Write-Host "Contents of Packages directory:"
+          Get-ChildItem -Path "Packages" -Recurse | ForEach-Object {
+            Write-Host "  $($_.FullName) (Size: $($_.Length) bytes)"
+          }
+        } else {
+          Write-Host "ERROR: Packages directory does not exist!"
+          Write-Host "Current directory contents:"
+          Get-ChildItem -Path "." | ForEach-Object {
+            Write-Host "  $($_.Name)"
+          }
+        }
+
+    # Debug: Search for MSIX files specifically
+    - name: Debug - Search for MSIX files
+      run: |
+        Write-Host "=== Searching for MSIX files ==="
+        $msixFiles = Get-ChildItem -Path "." -Filter "*.msix" -Recurse -ErrorAction SilentlyContinue
+        if ($msixFiles) {
+          Write-Host "Found MSIX files:"
+          $msixFiles | ForEach-Object {
+            Write-Host "  $($_.FullName) (Size: $($_.Length) bytes, Modified: $($_.LastWriteTime))"
+          }
+        } else {
+          Write-Host "No MSIX files found in the repository"
+        }
+        
+        $appxFiles = Get-ChildItem -Path "." -Filter "*.appx" -Recurse -ErrorAction SilentlyContinue
+        if ($appxFiles) {
+          Write-Host "Found APPX files:"
+          $appxFiles | ForEach-Object {
+            Write-Host "  $($_.FullName) (Size: $($_.Length) bytes, Modified: $($_.LastWriteTime))"
+          }
+        } else {
+          Write-Host "No APPX files found in the repository"
+        }
+
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Upload MSIX package
       uses: actions/upload-artifact@v4
       with:
         name: MSIX Package
-        path: ${{ env.Solution_Name }}\\Packages
+        path: Packages
